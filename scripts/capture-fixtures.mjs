@@ -3,7 +3,7 @@
  * capture-fixtures.mjs — Capture engine scaffold for the Gemini CLI SDK fixture pipeline.
  *
  * Wave 0: Provides CLI parser, scenario registry, and stubbed subcommands.
- * W1 fills in: `feasibility` handler + `simple-text` spawn logic.
+ * W1 fills in: `simple-text` spawn logic (this file).
  * W2 fills in: three smoke test scenarios.
  * W3 fills in: remaining fixture scenarios.
  *
@@ -18,10 +18,14 @@
  *   1  -- unknown argument (not a slug, not a subcommand)
  *   2  -- NOT_IMPLEMENTED: stubbed subcommand or scenario
  *   3  -- manifest/scenario drift detected (scenario registry out of sync with fixtures.manifest.json)
+ *   4  -- GEMINI_API_KEY not set for a live scenario
+ *   10 -- redactor leaked the real API key; fixture write aborted
  *   99 -- uncaught runtime error
  */
 
-import { readFileSync } from 'node:fs';
+import { spawn } from 'node:child_process';
+import { writeFileSync, mkdirSync, readFileSync } from 'node:fs';
+import readline from 'node:readline';
 import { fileURLToPath } from 'node:url';
 import path from 'node:path';
 import process from 'node:process';
@@ -66,8 +70,8 @@ export const SCENARIOS = {
   'simple-text': {
     slug: 'simple-text',
     description: 'Single-turn text prompt, no tool use. Baseline.',
-    args: ['-p', 'Say "hello" in one word.', '--output-format', 'stream-json'],
-    stubbed: true
+    args: ['-p', 'Say "hello" in one word.', '--output-format', 'stream-json']
+    // stubbed removed: W1 implements this scenario
   },
   'tool-use-builtin': {
     slug: 'tool-use-builtin',
@@ -153,6 +157,9 @@ export const SCENARIOS = {
   }
 };
 
+// Scenarios implemented in W1; W2/W3 add more entries here.
+const IMPLEMENTED = new Set(['simple-text']);
+
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
@@ -208,6 +215,226 @@ function verifyManifestParity() {
 }
 
 // ---------------------------------------------------------------------------
+// Scenario runner (W1 implementation)
+// ---------------------------------------------------------------------------
+
+/**
+ * Derive a normalized MessageChunk sequence from captured NDJSON lines.
+ * This is a best-effort seed; human refines the .expected.json before commit.
+ *
+ * @param {string[]} lines  Redacted NDJSON lines
+ * @returns {object[]}
+ */
+function deriveChunks(lines) {
+  const chunks = [];
+  for (const line of lines) {
+    let ev;
+    try { ev = JSON.parse(line); } catch { continue; }
+    if (ev.type === 'init') {
+      chunks.push({ type: 'system', subtype: 'init', sessionId: ev.session_id || '<REDACTED_SESSION_ID>', model: ev.model });
+    } else if (ev.type === 'message') {
+      // role may be 'user' or 'assistant'
+      chunks.push({ type: ev.role || 'assistant', content: ev.content || '' });
+    } else if (ev.type === 'result') {
+      chunks.push({ type: 'result', sessionId: ev.session_id || '<REDACTED_SESSION_ID>', stopReason: ev.stop_reason || 'end_turn' });
+    } else {
+      chunks.push({ type: 'unknown', raw: ev });
+    }
+  }
+  return chunks;
+}
+
+/**
+ * Spawn gemini-cli, capture stdout line-by-line through both redaction layers,
+ * drain stderr in parallel (Pitfall 2), write NDJSON + expected.json sidecar.
+ *
+ * @param {string} slug  Scenario slug key from SCENARIOS
+ */
+async function runScenario(slug) {
+  const scenario = SCENARIOS[slug];
+  if (!scenario) {
+    console.error(`UNKNOWN scenario: ${slug}`);
+    process.exit(1);
+  }
+  if (scenario.synthetic) {
+    console.error(`NOT_IMPLEMENTED: synthetic scenario ${slug} handled by plan 01-06`);
+    process.exit(2);
+  }
+
+  // Build env for child: process.env + scenario overrides
+  const envForChild = { ...process.env, ...(scenario.env || {}) };
+
+  // Safety: pre-flight check — require either GEMINI_API_KEY or OAuth credentials.
+  // OAuth credentials live at ~/.gemini/oauth_creds.json and are used by gemini-cli
+  // automatically; we don't need to pass them explicitly.
+  // error-auth intentionally overrides with a bad key, so the env override satisfies this check.
+  const hasApiKey = Boolean(envForChild.GEMINI_API_KEY);
+  const oauthPath = path.join(
+    process.env.HOME || process.env.USERPROFILE || '',
+    '.gemini', 'oauth_creds.json'
+  );
+  const { existsSync } = await import('node:fs');
+  const hasOAuth = existsSync(oauthPath);
+  if (!hasApiKey && !hasOAuth) {
+    console.error('FAIL: no auth found — set GEMINI_API_KEY or run `gemini auth login` first');
+    process.exit(4);
+  }
+
+  // Capture key prefix for post-capture leak check (never written to disk).
+  // In OAuth mode, GEMINI_API_KEY may not be set; the prefix check is skipped in that case.
+  const realKey = envForChild.GEMINI_API_KEY || '';
+  const realKeyPrefix = realKey.slice(0, 10);
+
+  mkdirSync('spec/fixtures', { recursive: true });
+  const ndjsonPath = path.join('spec', 'fixtures', `${slug}.ndjson`);
+  const stderrPath = path.join('spec', 'fixtures', `${slug}.stderr.txt`);
+
+  console.error(`INFO: spawning gemini ${scenario.args.join(' ')}`);
+
+  // Spawn gemini-cli per RESEARCH.md §"Pattern 3":
+  //   shell: false  — prevents CVE-2024-27980 on POSIX (Pitfall 6)
+  //   windowsHide: true — suppresses console window on Windows
+  //   stdio: ['ignore','pipe','pipe'] — parallel drain prevents deadlock (Pitfall 2)
+  //
+  // Windows note: npm installs gemini as `gemini.cmd` (a batch wrapper). On Windows,
+  // .cmd files must be launched via cmd.exe (shell:true). Passing args as an array
+  // when shell:true causes cmd.exe to concatenate them improperly (especially args
+  // containing quotes or spaces). The safe pattern is to build a single command string
+  // and use shell:true with an empty args array, quoting each argument with cmd-safe
+  // double-quote escaping. The args here are static registry values (not user input),
+  // so the CVE-2024-27980 injection risk does not apply.
+  const isWindows = process.platform === 'win32';
+
+  const spawnCwd = scenario.cwd
+    ? path.resolve(REPO_ROOT, scenario.cwd)
+    : REPO_ROOT;
+
+  let spawnCmd, spawnArgs, spawnShell;
+  if (isWindows) {
+    // Build a single command string; quote each arg with cmd.exe-safe double quotes.
+    // We double any existing double-quote chars inside args with `"`.
+    const quotedArgs = scenario.args.map(a => `"${a.replace(/"/g, '""')}"`).join(' ');
+    spawnCmd = `gemini.cmd ${quotedArgs}`;
+    spawnArgs = [];
+    spawnShell = true;
+  } else {
+    spawnCmd = 'gemini';
+    spawnArgs = scenario.args;
+    spawnShell = false;
+  }
+
+  const proc = spawn(spawnCmd, spawnArgs, {
+    cwd: spawnCwd,
+    env: envForChild,
+    shell: spawnShell,
+    windowsHide: true,
+    stdio: ['ignore', 'pipe', 'pipe']
+  });
+
+  // Parallel drain both streams (Pitfall 2 in PITFALLS.md)
+  const stdoutLines = [];
+  const stderrChunks = [];
+
+  const stdoutRl = readline.createInterface({
+    input: proc.stdout,
+    crlfDelay: Infinity
+  });
+
+  stdoutRl.on('line', (rawLine) => {
+    // Two-layer redaction: parse → structural walk → serialize → regex pass.
+    //
+    // gemini-cli may prefix a JSON event line with a non-JSON warning string
+    // (e.g. "MCP issues detected. Run /mcp list for status.{...}"). Strip any
+    // leading non-JSON prefix by finding the first '{' and discarding everything before.
+    let processedLine = rawLine;
+    const braceIdx = rawLine.indexOf('{');
+    if (braceIdx > 0) {
+      const prefix = rawLine.slice(0, braceIdx);
+      const maybeJson = rawLine.slice(braceIdx);
+      try {
+        JSON.parse(maybeJson);
+        // It's valid JSON after stripping the prefix — log the prefix as stderr warning
+        if (prefix.trim()) {
+          console.error(`WARN: gemini-cli stdout prefix stripped: ${prefix.trim()}`);
+        }
+        processedLine = maybeJson;
+      } catch {
+        // Not valid JSON even after stripping — keep original line
+        processedLine = rawLine;
+      }
+    }
+
+    let redacted;
+    try {
+      const obj = JSON.parse(processedLine);
+      const structWalked = redactJsonValue(obj);
+      redacted = redact(JSON.stringify(structWalked));
+    } catch {
+      // Non-JSON line (cli_log or other); apply regex layer only
+      redacted = redact(processedLine);
+    }
+    stdoutLines.push(redacted);
+  });
+
+  proc.stderr.on('data', (chunk) => {
+    stderrChunks.push(chunk.toString('utf8'));
+  });
+
+  // Optional abort timer (abort-midstream scenario)
+  let abortTimer;
+  if (scenario.abortAtMs) {
+    abortTimer = setTimeout(() => {
+      console.error(`INFO: sending SIGTERM to child after ${scenario.abortAtMs}ms`);
+      proc.kill('SIGTERM');
+    }, scenario.abortAtMs);
+  }
+
+  const exitCode = await new Promise((resolve, reject) => {
+    proc.on('error', reject);
+    proc.on('close', (code) => {
+      if (abortTimer) clearTimeout(abortTimer);
+      resolve(code ?? -1);
+    });
+  });
+
+  if (exitCode !== 0 && !scenario.expectNonZeroExit && !scenario.abortAtMs) {
+    console.error(`WARN: gemini exited with code ${exitCode} (unexpected for scenario ${slug})`);
+  }
+
+  // Post-capture leak check: assert none of the captured content contains the real key prefix
+  const combined = stdoutLines.join('\n') + '\n' + stderrChunks.join('');
+  if (realKeyPrefix && realKeyPrefix.length >= 8 && combined.includes(realKeyPrefix)) {
+    console.error('FAIL: redactor leaked the real API key prefix; aborting write');
+    process.exit(10);
+  }
+
+  // Write the NDJSON fixture
+  writeFileSync(ndjsonPath, stdoutLines.join('\n') + '\n', 'utf8');
+
+  if (scenario.captureStderr || stderrChunks.length > 0) {
+    writeFileSync(stderrPath, redact(stderrChunks.join('')), 'utf8');
+  }
+
+  // Write the expected.json sidecar (best-effort skeleton; human refines)
+  const expectedPath = path.join('spec', 'fixtures', `${slug}.expected.json`);
+  const pinnedVersion = readFileSync('.gemini-cli-compat', 'utf8').trim();
+  const expected = {
+    fixture: `${slug}.ndjson`,
+    captured_against: `gemini-cli@${pinnedVersion}`,
+    captured_at: new Date().toISOString(),
+    description: scenario.description,
+    chunks: deriveChunks(stdoutLines),
+    exit_code: exitCode,
+    stderr_patterns: []
+  };
+  writeFileSync(expectedPath, JSON.stringify(expected, null, 2) + '\n', 'utf8');
+
+  console.error(`PASS: captured ${slug} (${stdoutLines.length} events, exit=${exitCode})`);
+  console.error(`INFO: wrote ${ndjsonPath}`);
+  console.error(`INFO: wrote ${expectedPath}`);
+}
+
+// ---------------------------------------------------------------------------
 // Main dispatcher
 // ---------------------------------------------------------------------------
 
@@ -241,10 +468,14 @@ async function main() {
     process.exit(2);
   }
 
-  // individual slug
+  // individual slug dispatch
   if (SCENARIOS[arg]) {
-    console.error(`NOT_IMPLEMENTED: scenario ${arg} stubbed until W3`);
-    process.exit(2);
+    if (!IMPLEMENTED.has(arg)) {
+      console.error(`NOT_IMPLEMENTED: scenario ${arg} (pending later wave)`);
+      process.exit(2);
+    }
+    await runScenario(arg);
+    process.exit(0);
   }
 
   // unknown argument

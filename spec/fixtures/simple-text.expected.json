@@ -1,0 +1,29 @@
+{
+  "fixture": "simple-text.ndjson",
+  "captured_against": "gemini-cli@0.37.1",
+  "captured_at": "2026-04-11T22:35:50.726Z",
+  "description": "Single-turn text prompt, no tool use. Baseline.",
+  "chunks": [
+    {
+      "type": "system",
+      "subtype": "init",
+      "sessionId": "<REDACTED_SESSION_ID>",
+      "model": "auto-gemini-3"
+    },
+    {
+      "type": "user",
+      "content": "Say \"hello\" in one word."
+    },
+    {
+      "type": "assistant",
+      "content": "hello"
+    },
+    {
+      "type": "result",
+      "sessionId": "<REDACTED_SESSION_ID>",
+      "stopReason": "end_turn"
+    }
+  ],
+  "exit_code": 0,
+  "stderr_patterns": []
+}
