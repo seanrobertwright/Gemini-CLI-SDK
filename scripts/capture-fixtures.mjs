@@ -1050,6 +1050,307 @@ Verdict: ${flush.verdict.toUpperCase()} — ${flush.details}
 }
 
 // ---------------------------------------------------------------------------
+// W3: Resume-session pair helpers (plan 01-08)
+// ---------------------------------------------------------------------------
+
+/**
+ * Read the resume_verdict field from spec/feasibility.md frontmatter.
+ * Returns 'pass' | 'fail' | 'partial' | 'pending'.
+ */
+function readResumeVerdict() {
+  let text;
+  try {
+    text = readFileSync('spec/feasibility.md', 'utf8');
+  } catch {
+    return 'pending';
+  }
+  const m = text.match(/^---\s*\n([\s\S]*?)\n---/);
+  if (!m) return 'pending';
+  for (const line of m[1].split(/\r?\n/)) {
+    const kv = line.match(/^resume_verdict:\s*(\S+)\s*$/);
+    if (kv) return kv[1];
+  }
+  return 'pending';
+}
+
+/**
+ * Spawn gemini-cli and capture raw stdout lines (before redaction) plus stderr.
+ * Returns { rawStdoutLines, rawStderrChunks, exitCode, elapsedMs }.
+ *
+ * Unlike runScenario this function does NOT apply redaction — callers do that
+ * AFTER extracting any state (e.g. session_id) they need from the raw output.
+ *
+ * @param {string}    bin   Binary name ('gemini' — adjusted for Windows internally)
+ * @param {string[]}  args  argv array
+ * @param {object}   [opts]
+ * @param {boolean}  [opts.captureStderr]       Drain stderr into rawStderrChunks (default: false)
+ * @param {boolean}  [opts.expectNonZeroExit]   If true, non-zero exit is not warned (default: false)
+ * @param {object}   [opts.env]                 Additional env overrides (merged with process.env)
+ * @param {number}   [opts.timeoutMs]           Spawn timeout in ms (default: 60000)
+ * @returns {Promise<{rawStdoutLines:string[], rawStderrChunks:string[], exitCode:number, elapsedMs:number}>}
+ */
+async function spawnAndCapture(bin, args, opts = {}) {
+  const {
+    captureStderr = false,
+    expectNonZeroExit = false,
+    env: extraEnv = {},
+    timeoutMs = 60000
+  } = opts;
+
+  const envForChild = { ...process.env, ...extraEnv };
+  const isWindows = process.platform === 'win32';
+
+  let spawnCmd, spawnArgs, spawnShell;
+  if (isWindows) {
+    // cmd.exe requires a single command string; args array is ignored when shell:true
+    const quotedArgs = args.map(a => `"${a.replace(/"/g, '""')}"`).join(' ');
+    spawnCmd = `${bin}.cmd ${quotedArgs}`;
+    spawnArgs = [];
+    spawnShell = true;
+  } else {
+    spawnCmd = bin;
+    spawnArgs = args;
+    spawnShell = false;
+  }
+
+  const proc = spawn(spawnCmd, spawnArgs, {
+    cwd: REPO_ROOT,
+    env: envForChild,
+    shell: spawnShell,
+    windowsHide: true,
+    stdio: ['ignore', 'pipe', 'pipe']
+  });
+
+  const rawStdoutLines = [];
+  const rawStderrChunks = [];
+  const startTime = Date.now();
+
+  const stdoutRl = readline.createInterface({ input: proc.stdout, crlfDelay: Infinity });
+  stdoutRl.on('line', (rawLine) => {
+    // Strip non-JSON prefix from gemini-cli policy warnings (same as runScenario)
+    let line = rawLine;
+    const braceIdx = rawLine.indexOf('{');
+    if (braceIdx > 0) {
+      const maybeJson = rawLine.slice(braceIdx);
+      try { JSON.parse(maybeJson); line = maybeJson; } catch { /* keep raw */ }
+    }
+    rawStdoutLines.push(line);
+  });
+
+  // Always drain stderr to prevent pipe deadlock (Pitfall 2)
+  if (captureStderr) {
+    proc.stderr.on('data', chunk => rawStderrChunks.push(chunk.toString('utf8')));
+  } else {
+    proc.stderr.on('data', () => {});
+  }
+
+  let timedOut = false;
+  const timeoutHandle = setTimeout(() => {
+    timedOut = true;
+    proc.kill('SIGTERM');
+  }, timeoutMs);
+
+  const exitCode = await new Promise((resolve) => {
+    proc.on('error', () => resolve(-1));
+    proc.on('close', code => { clearTimeout(timeoutHandle); resolve(code ?? -1); });
+  });
+
+  const elapsedMs = Date.now() - startTime;
+
+  if (timedOut) {
+    console.error(`WARN: spawnAndCapture timed out after ${timeoutMs}ms`);
+  } else if (exitCode !== 0 && !expectNonZeroExit) {
+    console.error(`WARN: spawnAndCapture exited with code ${exitCode}`);
+  }
+
+  return { rawStdoutLines, rawStderrChunks, exitCode, elapsedMs };
+}
+
+/**
+ * Apply two-layer redaction to raw stdout lines, then write:
+ *   spec/fixtures/<slug>.ndjson        — redacted NDJSON events (one per line)
+ *   spec/fixtures/<slug>.expected.json — best-effort chunk sidecar
+ *
+ * @param {string} slug           Fixture slug (e.g. 'resume-session-turn1')
+ * @param {object} captureResult  Output of spawnAndCapture()
+ * @param {object} [meta]
+ * @param {string} [meta.description]  Human-readable description for .expected.json
+ * @param {number} [meta.exit_code]    Exit code to record in sidecar
+ * @param {object} [meta.extra_fields] Extra top-level fields merged into sidecar
+ */
+function writeRedactedFixture(slug, captureResult, meta = {}) {
+  const { rawStdoutLines } = captureResult;
+  const exitCode = meta.exit_code !== undefined ? meta.exit_code : captureResult.exitCode;
+
+  mkdirSync('spec/fixtures', { recursive: true });
+  const ndjsonPath = path.join('spec', 'fixtures', `${slug}.ndjson`);
+  const expectedPath = path.join('spec', 'fixtures', `${slug}.expected.json`);
+
+  // Apply two-layer redaction to each stdout line
+  const redactedLines = rawStdoutLines.map(rawLine => {
+    try {
+      const obj = JSON.parse(rawLine);
+      const structWalked = redactJsonValue(obj);
+      return redact(JSON.stringify(structWalked));
+    } catch {
+      return redact(rawLine);
+    }
+  });
+
+  // Post-capture leak check
+  const realKey = process.env.GEMINI_API_KEY || '';
+  const realKeyPrefix = realKey.slice(0, 10);
+  const combined = redactedLines.join('\n');
+  if (realKeyPrefix && realKeyPrefix.length >= 8 && combined.includes(realKeyPrefix)) {
+    console.error(`FAIL: redactor leaked real API key prefix in ${slug}; aborting write`);
+    process.exit(10);
+  }
+
+  // Write NDJSON fixture (trailing newline)
+  writeFileSync(ndjsonPath, redactedLines.join('\n') + '\n', 'utf8');
+
+  // Build expected.json sidecar
+  const pinnedVersion = readFileSync('.gemini-cli-compat', 'utf8').trim();
+  const sidecar = {
+    fixture: `${slug}.ndjson`,
+    captured_against: `gemini-cli@${pinnedVersion}`,
+    captured_at: new Date().toISOString(),
+    description: meta.description || SCENARIOS[slug]?.description || slug,
+    chunks: deriveChunks(redactedLines),
+    exit_code: exitCode,
+    stderr_patterns: [],
+    ...(meta.extra_fields || {})
+  };
+  writeFileSync(expectedPath, JSON.stringify(sidecar, null, 2) + '\n', 'utf8');
+
+  console.error(`INFO: wrote ${ndjsonPath} (${redactedLines.length} events)`);
+  console.error(`INFO: wrote ${expectedPath}`);
+}
+
+/**
+ * Capture the two-turn resume-session fixture pair.
+ *
+ * Single-policy contract: either slug alias ('resume-session-turn1' or
+ * 'resume-session-turn2') triggers this function EXACTLY ONCE and always writes
+ * BOTH .ndjson files and BOTH .expected.json sidecars.
+ *
+ * Verdict-aware branching:
+ *   pass/partial  → normal --resume <id> -p flow (happy path)
+ *   fail          → capture failure mode as documentation
+ *   pending       → refuse with instructions and exit 6
+ */
+async function runResumePair() {
+  const verdict = readResumeVerdict();
+  console.error(`INFO: resume_verdict from spec/feasibility.md = ${verdict}`);
+
+  if (verdict === 'pending') {
+    console.error('FAIL: resume_verdict is pending — run `node scripts/capture-fixtures.mjs feasibility` first');
+    process.exit(6);
+  }
+
+  // Pre-flight auth check (same policy as runScenario)
+  const oauthPath = path.join(
+    process.env.HOME || process.env.USERPROFILE || '',
+    '.gemini', 'oauth_creds.json'
+  );
+  const hasApiKey = Boolean(process.env.GEMINI_API_KEY);
+  const hasOAuth = existsSync(oauthPath);
+  if (!hasApiKey && !hasOAuth) {
+    console.error('FAIL: no auth found — set GEMINI_API_KEY or run `gemini auth login` first');
+    process.exit(4);
+  }
+
+  // --- Turn 1: establish a new session ---
+  const turn1Args = [
+    '-p', 'My favorite number is 47. Remember it exactly.',
+    '--output-format', 'stream-json'
+  ];
+  console.error('INFO: spawning turn 1 (establish session)');
+  const t1 = await spawnAndCapture('gemini', turn1Args, { captureStderr: false });
+
+  if (t1.exitCode !== 0) {
+    console.error(`FAIL: turn 1 exited non-zero (exit=${t1.exitCode}); fixture pair cannot be completed`);
+    process.exit(5);
+  }
+
+  // Extract session_id from turn 1 raw output BEFORE redaction
+  let sessionId = null;
+  for (const rawLine of t1.rawStdoutLines) {
+    try {
+      const ev = JSON.parse(rawLine);
+      if (ev && ev.type === 'init' && ev.session_id) { sessionId = ev.session_id; break; }
+    } catch { /* ignore */ }
+  }
+  // Fallback: some gemini-cli versions put session_id on the 'result' event
+  if (!sessionId) {
+    for (const rawLine of t1.rawStdoutLines) {
+      try {
+        const ev = JSON.parse(rawLine);
+        if (ev && ev.type === 'result' && ev.session_id) { sessionId = ev.session_id; break; }
+      } catch { /* ignore */ }
+    }
+  }
+
+  if (!sessionId) {
+    console.error(`FAIL: could not extract session_id from turn 1 (${t1.rawStdoutLines.length} lines received)`);
+    t1.rawStdoutLines.forEach((l, i) => console.error(`  [${i}] ${l.slice(0, 120)}`));
+    process.exit(5);
+  }
+
+  console.error(`INFO: captured session_id from turn 1 (length=${sessionId.length}); using for turn 2 --resume`);
+
+  // Write turn 1 fixture (redacted)
+  writeRedactedFixture('resume-session-turn1', t1, {
+    description: 'Turn 1 of resume pair: establishes session, captures session_id from init event. Turn 2 resumes using that ID.',
+    exit_code: t1.exitCode,
+    extra_fields: {
+      verdict_at_capture: verdict,
+      pair_role: 'turn1'
+    }
+  });
+  console.log('Captured: resume-session-turn1.ndjson');
+
+  // --- Turn 2: resume the session ---
+  let t2Description;
+  const turn2Args = [
+    '--resume', sessionId,  // real session_id here; redacted after capture
+    '-p', 'What number did I just say?',
+    '--output-format', 'stream-json'
+  ];
+
+  if (verdict === 'pass' || verdict === 'partial') {
+    t2Description = 'Turn 2 of resume pair: uses --resume <id> -p to continue the session from turn 1. The assistant response should reference the number 47 from turn 1 context.';
+  } else {
+    console.error('INFO: resume_verdict is FAIL; capturing turn 2 as documentation of the failure mode');
+    t2Description = 'Turn 2 of resume pair: CAPTURE OF FAILURE MODE. resume_verdict=fail in spec/feasibility.md. This fixture documents the broken state so Phase 7 can reference it when implementing the transcript-prepend fallback.';
+  }
+
+  console.error('INFO: spawning turn 2 (--resume <id> -p "What number did I just say?")');
+  const t2 = await spawnAndCapture('gemini', turn2Args, {
+    captureStderr: true,
+    expectNonZeroExit: verdict === 'fail'
+  });
+
+  if (verdict !== 'fail' && t2.exitCode !== 0) {
+    console.error(`WARN: turn 2 exited non-zero (exit=${t2.exitCode}) despite verdict=${verdict}`);
+  }
+
+  // Write turn 2 fixture (redacted; real session_id is scrubbed by the redactor layer)
+  writeRedactedFixture('resume-session-turn2', t2, {
+    description: t2Description,
+    exit_code: t2.exitCode,
+    extra_fields: {
+      verdict_at_capture: verdict,
+      pair_role: 'turn2',
+      turn1_session_id_redacted: '<REDACTED_SESSION_ID>'
+    }
+  });
+  console.log('Captured: resume-session-turn2.ndjson');
+
+  console.error('PASS: captured resume-session-turn1 + resume-session-turn2');
+}
+
+// ---------------------------------------------------------------------------
 // Main dispatcher
 // ---------------------------------------------------------------------------
 
@@ -1087,14 +1388,29 @@ async function main() {
     process.exit(0);
   }
 
-  // all: capture every non-synthetic IMPLEMENTED scenario; skip stubbed ones
+  // all: capture every non-synthetic IMPLEMENTED scenario; skip stubbed ones.
+  // Guard: resume pair slugs are handled exactly once via runResumePair().
   if (arg === 'all') {
     let anyFailed = false;
+    let resumePairCaptured = false;
     for (const slug of Object.keys(SCENARIOS)) {
       const scenario = SCENARIOS[slug];
       if (scenario.synthetic) continue;
       if (!IMPLEMENTED.has(slug)) {
         console.error(`SKIP: scenario ${slug} not yet implemented (pending later wave)`);
+        continue;
+      }
+      // Resume pair: invoke once via runResumePair(), not runScenario()
+      if (slug === 'resume-session-turn1' || slug === 'resume-session-turn2') {
+        if (!resumePairCaptured) {
+          try {
+            await runResumePair();
+            resumePairCaptured = true;
+          } catch (err) {
+            console.error(`FAIL: resume-session pair — ${err.message}`);
+            anyFailed = true;
+          }
+        }
         continue;
       }
       try {
@@ -1105,6 +1421,13 @@ async function main() {
       }
     }
     process.exit(anyFailed ? 1 : 0);
+  }
+
+  // Resume-session pair: both slugs are aliases for the same pair operation.
+  // Single-policy: either slug triggers runResumePair() exactly once.
+  if (arg === 'resume-session-turn1' || arg === 'resume-session-turn2') {
+    await runResumePair();
+    process.exit(0);
   }
 
   // individual slug dispatch
