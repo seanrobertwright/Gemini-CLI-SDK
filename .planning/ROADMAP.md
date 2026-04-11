@@ -41,7 +41,7 @@ Plans:
 - [x] 01-02-PLAN.md — Wave 0: validation scripts (validate-fixtures.mjs + validate-schema-ts/py + audit-fixtures)
 - [x] 01-03-PLAN.md — Wave 0: capture engine scaffold + redactor module + platform wrappers
 - [x] 01-04-PLAN.md — Wave 1: install gemini-cli 0.37.1, pin version, npm install, capture first simple-text fixture
-- [ ] 01-05-PLAN.md — Wave 2: three feasibility smoke tests → spec/feasibility.md verdicts
+- [x] 01-05-PLAN.md — Wave 2: three feasibility smoke tests → spec/feasibility.md verdicts (resume=pass, config_dir=pass, flush=partial)
 - [ ] 01-06-PLAN.md — Wave 3: capture tool-use-builtin, error-rate-limit, error-auth, event-unknown
 - [ ] 01-07-PLAN.md — Wave 3: capture thinking, multimodal-image, multimodal-pdf, large-output, abort-midstream + binary assets
 - [ ] 01-08-PLAN.md — Wave 3: capture resume-session pair with verdict-aware branching
@@ -165,7 +165,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8 →
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Feasibility Spike + Fixture Capture | 3/10 | In Progress|  |
+| 1. Feasibility Spike + Fixture Capture | 5/10 | In Progress|  |
 | 2. Process Foundation + Workspace + CI Matrix | 0/TBD | Not started | - |
 | 3. NDJSON Parser + EventDispatcher + MessageChunk Types | 0/TBD | Not started | - |
 | 4. Public query() + ArgvBuilder + systemPrompt + Workspace + Model | 0/TBD | Not started | - |

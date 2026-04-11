@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Completed 01-04-PLAN.md
-last_updated: "2026-04-11T22:40:00.000Z"
-last_activity: "2026-04-11 — Completed plan 01-04: gemini-cli install + simple-text fixture capture (first real NDJSON end-to-end)"
+stopped_at: Completed 01-05-PLAN.md
+last_updated: "2026-04-11T23:00:00.000Z"
+last_activity: "2026-04-11 — Completed plan 01-05: feasibility smoke tests — resume=pass, config_dir=pass, flush=partial"
 progress:
   total_phases: 11
   completed_phases: 0
   total_plans: 10
-  completed_plans: 3
-  percent: 2
+  completed_plans: 4
+  percent: 4
 ---
 
 # Project State
@@ -26,11 +26,11 @@ See: .planning/PROJECT.md (updated 2026-04-11)
 ## Current Position
 
 Phase: 1 of 11 (Feasibility Spike + Fixture Capture)
-Plan: 4 of 10 in current phase
-Status: Executing — plan 01-04 complete
-Last activity: 2026-04-11 — Completed plan 01-04: gemini-cli install + simple-text fixture capture (first real NDJSON end-to-end)
+Plan: 5 of 10 in current phase
+Status: Executing — plan 01-05 complete
+Last activity: 2026-04-11 — Completed plan 01-05: feasibility smoke tests — resume=pass, config_dir=pass, flush=partial
 
-Progress: [█░░░░░░░░░] 4% (4/10 plans complete in Phase 1)
+Progress: [██░░░░░░░░] 5% (5/10 plans complete in Phase 1)
 
 ## Performance Metrics
 
@@ -73,6 +73,9 @@ Recent decisions affecting current work:
 - Plan 01-04: Windows spawn requires shell:true with gemini.cmd; args must be baked into command string (cmd.exe concatenates args improperly when args contain quotes)
 - Plan 01-04: capture host uses OAuth (oauth_creds.json) not GEMINI_API_KEY; preflight check updated to accept either auth method
 - Plan 01-04: gemini-cli 0.37.1 prepends non-JSON policy warnings to stdout JSON event lines; capture script must strip prefix before first `{` character
+- Plan 01-05: resume_verdict=pass — all 9 cells of the --resume × prompt-mode matrix pass on 0.37.1; Phase 7 primary path is --resume <id> -p; transcript-prepend fallback dark-shipped behind config flag
+- Plan 01-05: config_dir_verdict=pass — GEMINI_CONFIG_DIR respected on Windows; real ~/.gemini/settings.json mtime unchanged; Phase 9 uses GEMINI_CONFIG_DIR for MCP isolation
+- Plan 01-05: flush_verdict=partial — long run produced only 24 KB (inconclusive; below 64 KB threshold); Phase 4 defaults forcePty:false with user opt-in
 - Plan 01-04: stderr.txt written as diagnostic artifact for all scenarios with stderr output; not a required fixture but useful for debugging capture-host issues
 
 ### Pending Todos
