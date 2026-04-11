@@ -1,0 +1,18 @@
+{
+  "version": 1,
+  "description": "Canonical list of fixture slugs required by Phase 1. Each slug <name> must have a <name>.ndjson and <name>.expected.json under spec/fixtures/. resume-session is captured as a PAIR (turn1 + turn2) per CONTEXT.md.",
+  "slugs": [
+    "simple-text",
+    "tool-use-builtin",
+    "resume-session-turn1",
+    "resume-session-turn2",
+    "error-rate-limit",
+    "error-auth",
+    "event-unknown",
+    "thinking",
+    "multimodal-image",
+    "multimodal-pdf",
+    "large-output",
+    "abort-midstream"
+  ]
+}

@@ -1,0 +1,7 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://gemini-sdk.dev/spec/events.schema.json",
+  "title": "Gemini CLI stream-json event",
+  "description": "Discriminated union of all event types emitted by gemini --output-format stream-json. Field schemas derived empirically from spec/fixtures/*.ndjson captured against the version pinned in .gemini-cli-compat. Populated in Phase 1 Wave 4.",
+  "oneOf": []
+}
