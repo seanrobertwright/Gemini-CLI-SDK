@@ -35,7 +35,18 @@ Decimal phases appear between their surrounding integers in numeric order.
   2. `spec/events.schema.json` exists and is pinned — `json-schema-to-typescript` and `datamodel-code-generator` both run against it and produce compilable output in their target languages
   3. A pinned `gemini-cli` version (e.g. `0.X.Y`) is committed to `.gemini-cli-compat` and the three feasibility smoke tests (`--resume`+`-p`, `GEMINI_CONFIG_DIR`, stream-json flushing) have a documented pass/fail verdict per `spec/feasibility.md`
   4. `spec/protocol.md` draft and `spec/errors.md` draft exist and cite fixture filenames as evidence for every normative claim
-**Plans**: TBD
+**Plans**: 10 plans
+Plans:
+- [ ] 01-01-PLAN.md — Wave 0: repo-root manifest + spec/ skeleton (package.json, .gitattributes, fixtures.manifest.json, seeded placeholders)
+- [ ] 01-02-PLAN.md — Wave 0: validation scripts (validate-fixtures.mjs + validate-schema-ts/py + audit-fixtures)
+- [ ] 01-03-PLAN.md — Wave 0: capture engine scaffold + redactor module + platform wrappers
+- [ ] 01-04-PLAN.md — Wave 1: install gemini-cli 0.37.1, pin version, npm install, capture first simple-text fixture
+- [ ] 01-05-PLAN.md — Wave 2: three feasibility smoke tests → spec/feasibility.md verdicts
+- [ ] 01-06-PLAN.md — Wave 3: capture tool-use-builtin, error-rate-limit, error-auth, event-unknown
+- [ ] 01-07-PLAN.md — Wave 3: capture thinking, multimodal-image, multimodal-pdf, large-output, abort-midstream + binary assets
+- [ ] 01-08-PLAN.md — Wave 3: capture resume-session pair with verdict-aware branching
+- [ ] 01-09-PLAN.md — Wave 4: derive spec/events.schema.json from fixtures + run both codegen smoke tests
+- [ ] 01-10-PLAN.md — Wave 4: draft spec/protocol.md + spec/errors.md with fixture citations
 
 ### Phase 2: Process Foundation + Workspace Scaffolding + CI Matrix
 **Goal**: Stand up the polyglot monorepo layout (`spec/`, `ts/`, `python/`, `adapter-archon/`), bring up `BinaryResolver`, `EnvBuilder`, and `ProcessManager` with a pluggable `ProcessStrategy` interface shipping `SpawnPerCallStrategy`, and turn on the full `{ubuntu, macos, windows} × {node 18/20/22} × {python 3.10–3.13}` CI matrix with a non-en-US Windows runner. This is where every hard Windows/subprocess gotcha gets retired at the source, and where TS ↔ Python lock-step begins. A "hello world" spawn test passes on all three OSes in both languages by the end of this phase.
@@ -154,7 +165,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8 →
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Feasibility Spike + Fixture Capture | 0/TBD | Not started | - |
+| 1. Feasibility Spike + Fixture Capture | 0/10 | Not started | - |
 | 2. Process Foundation + Workspace + CI Matrix | 0/TBD | Not started | - |
 | 3. NDJSON Parser + EventDispatcher + MessageChunk Types | 0/TBD | Not started | - |
 | 4. Public query() + ArgvBuilder + systemPrompt + Workspace + Model | 0/TBD | Not started | - |
