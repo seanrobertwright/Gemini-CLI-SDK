@@ -127,34 +127,34 @@ export const SCENARIOS = {
   'thinking': {
     slug: 'thinking',
     description: 'gemini-2.5-pro extended reasoning; may or may not expose thinking events in headless mode.',
-    args: ['--model', 'gemini-2.5-pro', '-p', 'What is 23*17? Think step by step.', '--output-format', 'stream-json'],
-    stubbed: true
+    args: ['--model', 'gemini-2.5-pro', '-p', 'What is 23*17? Think step by step.', '--output-format', 'stream-json']
+    // stubbed removed: W3 plan 01-07 implements this scenario
   },
   'multimodal-image': {
     slug: 'multimodal-image',
     description: 'Prompt with @-reference to a small committed PNG.',
-    args: ['-p', 'Describe @spec/fixtures/_assets/sample-image.png in one sentence.', '--output-format', 'stream-json'],
-    stubbed: true
+    args: ['-p', 'Describe @spec/fixtures/_assets/sample-image.png in one sentence.', '--output-format', 'stream-json']
+    // stubbed removed: W3 plan 01-07 implements this scenario (asset: sample-image.png)
   },
   'multimodal-pdf': {
     slug: 'multimodal-pdf',
     description: 'Prompt with @-reference to a small committed PDF.',
-    args: ['-p', 'Summarize @spec/fixtures/_assets/sample-document.pdf in one sentence.', '--output-format', 'stream-json'],
-    stubbed: true
+    args: ['-p', 'Summarize @spec/fixtures/_assets/sample-document.pdf in one sentence.', '--output-format', 'stream-json']
+    // stubbed removed: W3 plan 01-07 implements this scenario (asset: sample-document.pdf)
   },
   'large-output': {
     slug: 'large-output',
     description: 'Long output (>128 KB) to exceed Node pipe buffer and expose block-buffering.',
     args: ['-p', 'List 200 distinct facts about octopuses, one per line, numbered.', '--output-format', 'stream-json'],
-    timeoutMs: 180000,
-    stubbed: true
+    timeoutMs: 180000
+    // stubbed removed: W3 plan 01-07 implements this scenario
   },
   'abort-midstream': {
     slug: 'abort-midstream',
     description: 'Start a long prompt but SIGTERM the child at ~2s; truncated NDJSON expected.',
     args: ['-p', 'List 200 distinct facts about octopuses, one per line, numbered.', '--output-format', 'stream-json'],
-    abortAtMs: 2000,
-    stubbed: true
+    abortAtMs: 2000
+    // stubbed removed: W3 plan 01-07 implements this scenario (taskkill on Windows)
   }
 };
 
@@ -471,6 +471,12 @@ async function runScenario(slug) {
   // Write the expected.json sidecar (best-effort skeleton; human refines)
   const expectedPath = path.join('spec', 'fixtures', `${slug}.expected.json`);
   const pinnedVersion = readFileSync('.gemini-cli-compat', 'utf8').trim();
+
+  // Detect whether any thinking events appeared (thinking scenario note)
+  const hasThinkingEvents = stdoutLines.some(l => {
+    try { return JSON.parse(l).type === 'thinking'; } catch { return false; }
+  });
+
   const expected = {
     fixture: `${slug}.ndjson`,
     captured_against: `gemini-cli@${pinnedVersion}`,
@@ -480,6 +486,21 @@ async function runScenario(slug) {
     exit_code: exitCode,
     stderr_patterns: []
   };
+
+  // Abort-midstream: record aborted flag and abort timestamp
+  if (scenario.abortAtMs) {
+    expected.aborted = true;
+    expected.abort_after_ms = scenario.abortAtMs;
+    expected.note = 'Truncated capture — child terminated mid-stream; partial/missing final line expected. Phase 5 tests "stream ended without terminal result event" path.';
+  }
+
+  // Thinking scenario: document whether thinking events appeared
+  if (slug === 'thinking' && !hasThinkingEvents) {
+    expected.thinking_events_present = false;
+    expected.note = 'Captured but no thinking events appeared in headless mode; Phase 3 synthesizes the variant from structural knowledge per RESEARCH.md §Open Questions #4.';
+  } else if (slug === 'thinking' && hasThinkingEvents) {
+    expected.thinking_events_present = true;
+  }
   writeFileSync(expectedPath, JSON.stringify(expected, null, 2) + '\n', 'utf8');
 
   console.error(`PASS: captured ${slug} (${stdoutLines.length} events, exit=${exitCode})`);
@@ -1066,14 +1087,24 @@ async function main() {
     process.exit(0);
   }
 
-  // all: capture every non-synthetic scenario — stubbed until W3
+  // all: capture every non-synthetic IMPLEMENTED scenario; skip stubbed ones
   if (arg === 'all') {
+    let anyFailed = false;
     for (const slug of Object.keys(SCENARIOS)) {
       const scenario = SCENARIOS[slug];
       if (scenario.synthetic) continue;
-      console.error(`NOT_IMPLEMENTED: scenario ${slug}`);
+      if (!IMPLEMENTED.has(slug)) {
+        console.error(`SKIP: scenario ${slug} not yet implemented (pending later wave)`);
+        continue;
+      }
+      try {
+        await runScenario(slug);
+      } catch (err) {
+        console.error(`FAIL: scenario ${slug} — ${err.message}`);
+        anyFailed = true;
+      }
     }
-    process.exit(2);
+    process.exit(anyFailed ? 1 : 0);
   }
 
   // individual slug dispatch
