@@ -223,17 +223,129 @@ Explicitly excluded. Documented to prevent scope creep.
 
 ## Traceability
 
-Populated during roadmap creation. All v1 requirements will map to exactly one phase.
+All v1 requirements map to exactly one phase. Coverage: 102/102.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| (to be filled by gsd-roadmapper) | — | Pending |
+| FDN-01 | Phase 2 | Pending |
+| FDN-02 | Phase 2 | Pending |
+| FDN-03 | Phase 2 | Pending |
+| FDN-04 | Phase 2 | Pending |
+| FDN-05 | Phase 2 | Pending |
+| FDN-06 | Phase 2 | Pending |
+| FDN-07 | Phase 2 | Pending |
+| FDN-08 | Phase 2 | Pending |
+| FDN-09 | Phase 2 | Pending |
+| PRS-01 | Phase 3 | Pending |
+| PRS-02 | Phase 3 | Pending |
+| PRS-03 | Phase 3 | Pending |
+| PRS-04 | Phase 3 | Pending |
+| PRS-05 | Phase 3 | Pending |
+| PRS-06 | Phase 3 | Pending |
+| PRS-07 | Phase 3 | Pending |
+| PRS-08 | Phase 1 | Pending |
+| PRS-09 | Phase 1 | Pending |
+| API-01 | Phase 4 | Pending |
+| API-02 | Phase 4 | Pending |
+| API-03 | Phase 4 | Pending |
+| API-04 | Phase 4 | Pending |
+| API-05 | Phase 4 | Pending |
+| API-06 | Phase 4 | Pending |
+| MDL-01 | Phase 4 | Pending |
+| MDL-02 | Phase 4 | Pending |
+| MDL-03 | Phase 4 | Pending |
+| MDL-04 | Phase 4 | Pending |
+| SYS-01 | Phase 4 | Pending |
+| SYS-02 | Phase 4 | Pending |
+| CWD-01 | Phase 4 | Pending |
+| CWD-02 | Phase 4 | Pending |
+| SES-01 | Phase 7 | Pending |
+| SES-02 | Phase 7 | Pending |
+| SES-03 | Phase 7 | Pending |
+| SES-04 | Phase 7 | Pending |
+| TOL-01 | Phase 8 | Pending |
+| TOL-02 | Phase 8 | Pending |
+| TOL-03 | Phase 8 | Pending |
+| TOL-04 | Phase 8 | Pending |
+| MCP-01 | Phase 9 | Pending |
+| MCP-02 | Phase 9 | Pending |
+| MCP-03 | Phase 9 | Pending |
+| MCP-04 | Phase 9 | Pending |
+| AUT-01 | Phase 6 | Pending |
+| AUT-02 | Phase 6 | Pending |
+| AUT-03 | Phase 6 | Pending |
+| AUT-04 | Phase 6 | Pending |
+| AUT-05 | Phase 6 | Pending |
+| AUT-06 | Phase 6 | Pending |
+| AUT-07 | Phase 6 | Pending |
+| AUT-08 | Phase 6 | Pending |
+| AUT-09 | Phase 6 | Pending |
+| OUT-01 | Phase 8 | Pending |
+| OUT-02 | Phase 8 | Pending |
+| OUT-03 | Phase 8 | Pending |
+| OUT-04 | Phase 8 | Pending |
+| ERR-01 | Phase 5 | Pending |
+| ERR-02 | Phase 5 | Pending |
+| ERR-03 | Phase 5 | Pending |
+| ERR-04 | Phase 5 | Pending |
+| ERR-05 | Phase 5 | Pending |
+| ERR-06 | Phase 5 | Pending |
+| ERR-07 | Phase 5 | Pending |
+| PLT-01 | Phase 11 | Pending |
+| PLT-02 | Phase 11 | Pending |
+| PLT-03 | Phase 2 | Pending |
+| PLT-04 | Phase 2 | Pending |
+| PLT-05 | Phase 2 | Pending |
+| ARC-01 | Phase 10 | Pending |
+| ARC-02 | Phase 10 | Pending |
+| ARC-03 | Phase 10 | Pending |
+| ARC-04 | Phase 10 | Pending |
+| ARC-05 | Phase 10 | Pending |
+| ARC-06 | Phase 10 | Pending |
+| ARC-07 | Phase 10 | Pending |
+| ARC-08 | Phase 10 | Pending |
+| ARC-09 | Phase 10 | Pending |
+| PAR-01 | Phase 2 | Pending |
+| PAR-02 | Phase 3 | Pending |
+| PAR-03 | Phase 2 | Pending |
+| PAR-04 | Phase 2 | Pending |
+| PAR-05 | Phase 5 | Pending |
+| DOC-01 | Phase 11 | Pending |
+| DOC-02 | Phase 11 | Pending |
+| DOC-03 | Phase 11 | Pending |
+| DOC-04 | Phase 11 | Pending |
+| DOC-05 | Phase 11 | Pending |
+| DOC-06 | Phase 11 | Pending |
+| DOC-07 | Phase 11 | Pending |
+| REL-01 | Phase 11 | Pending |
+| REL-02 | Phase 11 | Pending |
+| REL-03 | Phase 11 | Pending |
+| REL-04 | Phase 11 | Pending |
+| REL-05 | Phase 11 | Pending |
+| REL-06 | Phase 11 | Pending |
+| REL-07 | Phase 11 | Pending |
 
 **Coverage:**
-- v1 requirements: 87 total (to be confirmed by traceability pass)
-- Mapped to phases: 0
-- Unmapped: 87 ⚠️
+- v1 requirements: 102 total
+- Mapped to phases: 102
+- Unmapped: 0
+
+**Per-phase requirement count:**
+
+| Phase | Requirements | IDs |
+|-------|--------------|-----|
+| 1. Feasibility Spike + Fixture Capture | 2 | PRS-08, PRS-09 |
+| 2. Process Foundation + Workspace + CI Matrix | 15 | FDN-01..09, PLT-03, PLT-04, PLT-05, PAR-01, PAR-03, PAR-04 |
+| 3. NDJSON Parser + EventDispatcher + MessageChunk Types | 8 | PRS-01..07, PAR-02 |
+| 4. Public query() + ArgvBuilder + systemPrompt + Workspace + Model | 14 | API-01..06, SYS-01, SYS-02, CWD-01, CWD-02, MDL-01..04 |
+| 5. Error Taxonomy + Archon 5-Bucket Mapping | 8 | ERR-01..07, PAR-05 |
+| 6. Auth Environment | 9 | AUT-01..09 |
+| 7. Session Resume + Multi-Turn | 4 | SES-01..04 |
+| 8. Tools + Approval Mode + Structured Output | 8 | TOL-01..04, OUT-01..04 |
+| 9. MCP Passthrough + Isolated Config Dir | 4 | MCP-01..04 |
+| 10. Archon Adapter (TS only) | 9 | ARC-01..09 |
+| 11. Docs Site + Compat Matrix + Release | 16 | DOC-01..07, REL-01..07, PLT-01, PLT-02 |
 
 ---
 *Requirements defined: 2026-04-11*
-*Last updated: 2026-04-11 after initial definition*
+*Last updated: 2026-04-11 — traceability populated by gsd-roadmapper (11 phases, 102/102 mapped)*
