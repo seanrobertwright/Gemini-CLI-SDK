@@ -23,7 +23,7 @@
  *   99 -- uncaught runtime error
  */
 
-import { spawn } from 'node:child_process';
+import { spawn, execSync } from 'node:child_process';
 import { writeFileSync, mkdirSync, readFileSync, mkdtempSync, statSync, existsSync } from 'node:fs';
 import readline from 'node:readline';
 import { fileURLToPath } from 'node:url';
@@ -82,8 +82,8 @@ export const SCENARIOS = {
       '--output-format', 'stream-json',
       '--approval-mode', 'yolo'
     ],
-    cwd: 'spec/fixtures/_assets/workspace',
-    stubbed: true
+    cwd: 'spec/fixtures/_assets/workspace'
+    // stubbed removed: W3 plan 01-06 implements this scenario
   },
   'resume-session-turn1': {
     slug: 'resume-session-turn1',
@@ -104,8 +104,8 @@ export const SCENARIOS = {
     description: 'Rate-limit failure; capture stream-json error event + stderr + non-zero exit.',
     args: ['-p', 'trigger quota', '--output-format', 'stream-json'],
     captureStderr: true,
-    expectNonZeroExit: true,
-    stubbed: true
+    expectNonZeroExit: true
+    // stubbed removed: W3 plan 01-06 implements this scenario
   },
   'error-auth': {
     slug: 'error-auth',
@@ -113,8 +113,8 @@ export const SCENARIOS = {
     args: ['-p', 'hello', '--output-format', 'stream-json'],
     env: { GEMINI_API_KEY: 'invalid-key-12345' },
     captureStderr: true,
-    expectNonZeroExit: true,
-    stubbed: true
+    expectNonZeroExit: true
+    // stubbed removed: W3 plan 01-06 implements this scenario
   },
   'event-unknown': {
     slug: 'event-unknown',
@@ -158,8 +158,22 @@ export const SCENARIOS = {
   }
 };
 
-// Scenarios implemented in W1; W2/W3 add more entries here.
-const IMPLEMENTED = new Set(['simple-text']);
+// Scenarios implemented in W1/W2/W3.
+// W3 plan 01-07 adds thinking, multimodal-image, multimodal-pdf, large-output, abort-midstream.
+// W3 plan 01-08 adds resume-session-turn1/turn2 (handled via runResumePair, not runScenario).
+const IMPLEMENTED = new Set([
+  'simple-text',
+  'tool-use-builtin',
+  'error-rate-limit',
+  'error-auth',
+  'thinking',
+  'multimodal-image',
+  'multimodal-pdf',
+  'large-output',
+  'abort-midstream',
+  'resume-session-turn1',
+  'resume-session-turn2'
+]);
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -262,6 +276,19 @@ async function runScenario(slug) {
     process.exit(2);
   }
 
+  // Pre-check: tool-use-builtin requires spec/fixtures/_assets/workspace/test.txt to exist.
+  // If the file is missing, fail loudly pointing to plan 01-06 task 1.
+  if (slug === 'tool-use-builtin') {
+    const workspaceFile = path.join(REPO_ROOT, 'spec', 'fixtures', '_assets', 'workspace', 'test.txt');
+    if (!existsSync(workspaceFile)) {
+      console.error(
+        `FAIL: workspace file missing: ${workspaceFile}\n` +
+        `  Create it via plan 01-06 task 1 before running tool-use-builtin.`
+      );
+      process.exit(1);
+    }
+  }
+
   // Build env for child: process.env + scenario overrides
   const envForChild = { ...process.env, ...(scenario.env || {}) };
 
@@ -284,6 +311,24 @@ async function runScenario(slug) {
   // In OAuth mode, GEMINI_API_KEY may not be set; the prefix check is skipped in that case.
   const realKey = envForChild.GEMINI_API_KEY || '';
   const realKeyPrefix = realKey.slice(0, 10);
+
+  // Pre-flight asset checks for multimodal scenarios
+  if (slug === 'multimodal-image') {
+    const assetPath = path.join(REPO_ROOT, 'spec', 'fixtures', '_assets', 'sample-image.png');
+    if (!existsSync(assetPath)) {
+      console.error(`FAIL: multimodal-image requires spec/fixtures/_assets/sample-image.png — run plan 01-07 task 1 first`);
+      process.exit(2);
+    }
+    console.error(`INFO: asset verified: spec/fixtures/_assets/sample-image.png`);
+  }
+  if (slug === 'multimodal-pdf') {
+    const assetPath = path.join(REPO_ROOT, 'spec', 'fixtures', '_assets', 'sample-document.pdf');
+    if (!existsSync(assetPath)) {
+      console.error(`FAIL: multimodal-pdf requires spec/fixtures/_assets/sample-document.pdf — run plan 01-07 task 1 first`);
+      process.exit(2);
+    }
+    console.error(`INFO: asset verified: spec/fixtures/_assets/sample-document.pdf`);
+  }
 
   mkdirSync('spec/fixtures', { recursive: true });
   const ndjsonPath = path.join('spec', 'fixtures', `${slug}.ndjson`);
@@ -381,11 +426,19 @@ async function runScenario(slug) {
   });
 
   // Optional abort timer (abort-midstream scenario)
+  // On Windows, proc.kill('SIGTERM') only terminates the top-level cmd.exe/node process
+  // but may leave gemini's child processes (MCP grandchildren etc.) alive. Use taskkill
+  // /T /F to terminate the entire process tree. On POSIX, send SIGTERM then SIGKILL after 5s.
   let abortTimer;
   if (scenario.abortAtMs) {
     abortTimer = setTimeout(() => {
-      console.error(`INFO: sending SIGTERM to child after ${scenario.abortAtMs}ms`);
-      proc.kill('SIGTERM');
+      console.error(`INFO: aborting child after ${scenario.abortAtMs}ms (pid=${proc.pid})`);
+      if (process.platform === 'win32') {
+        try { execSync(`taskkill /T /F /PID ${proc.pid}`); } catch { /* may already be dead */ }
+      } else {
+        proc.kill('SIGTERM');
+        setTimeout(() => { if (!proc.killed) proc.kill('SIGKILL'); }, 5000);
+      }
     }, scenario.abortAtMs);
   }
 

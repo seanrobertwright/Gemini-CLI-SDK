@@ -125,9 +125,10 @@ function _walk(node) {
 import { fileURLToPath } from 'node:url';
 import assert from 'node:assert/strict';
 
-const isMain = import.meta.url === `file://${process.argv[1]}` ||
+const isMain = (process.argv[1] != null) && (
+               import.meta.url === `file://${process.argv[1]}` ||
                import.meta.url === `file:///${process.argv[1].replace(/\\/g, '/')}` ||
-               process.argv[1]?.endsWith('_redactor.mjs');
+               process.argv[1].endsWith('_redactor.mjs'));
 
 if (isMain) {
   // Test 1: specific API key pattern
