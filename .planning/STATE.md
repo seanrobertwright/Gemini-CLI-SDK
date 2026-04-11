@@ -3,9 +3,9 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Completed 01-03-PLAN.md
-last_updated: "2026-04-11T22:26:00.867Z"
-last_activity: "2026-04-11 — Completed plan 01-02: validation toolchain (validate-fixtures.mjs, validate-schema-ts.mjs, validate-schema-py.sh, audit-fixtures.sh)"
+stopped_at: Completed 01-04-PLAN.md
+last_updated: "2026-04-11T22:40:00.000Z"
+last_activity: "2026-04-11 — Completed plan 01-04: gemini-cli install + simple-text fixture capture (first real NDJSON end-to-end)"
 progress:
   total_phases: 11
   completed_phases: 0
@@ -26,11 +26,11 @@ See: .planning/PROJECT.md (updated 2026-04-11)
 ## Current Position
 
 Phase: 1 of 11 (Feasibility Spike + Fixture Capture)
-Plan: 2 of 10 in current phase
-Status: Executing — plan 01-02 complete
-Last activity: 2026-04-11 — Completed plan 01-02: validation toolchain (validate-fixtures.mjs, validate-schema-ts.mjs, validate-schema-py.sh, audit-fixtures.sh)
+Plan: 4 of 10 in current phase
+Status: Executing — plan 01-04 complete
+Last activity: 2026-04-11 — Completed plan 01-04: gemini-cli install + simple-text fixture capture (first real NDJSON end-to-end)
 
-Progress: [░░░░░░░░░░] 2% (2/10 plans complete in Phase 1)
+Progress: [█░░░░░░░░░] 4% (4/10 plans complete in Phase 1)
 
 ## Performance Metrics
 
@@ -51,6 +51,7 @@ Progress: [░░░░░░░░░░] 2% (2/10 plans complete in Phase 1)
 
 *Updated after each plan completion*
 | Phase 01 P03 | 25 | 3 tasks | 4 files |
+| Phase 01 P04 | 35 | 3 tasks | 7 files |
 
 ## Accumulated Context
 
@@ -69,6 +70,10 @@ Recent decisions affecting current work:
 - Plan 01-02: feasibility subcommand skips body checks when all verdicts are pending (W0 seed state tolerance)
 - Plan 01-02: audit-fixtures.sh exits 0 with INFO when spec/fixtures/ is empty — no-op until W3 populates
 - [Phase 01]: Windows path regex in REDACTORS corrected to /C:\Users\/ (double-escape) since JS regex literal \U silently drops the backslash; double-backslash form needed for JSON-escaped path strings
+- Plan 01-04: Windows spawn requires shell:true with gemini.cmd; args must be baked into command string (cmd.exe concatenates args improperly when args contain quotes)
+- Plan 01-04: capture host uses OAuth (oauth_creds.json) not GEMINI_API_KEY; preflight check updated to accept either auth method
+- Plan 01-04: gemini-cli 0.37.1 prepends non-JSON policy warnings to stdout JSON event lines; capture script must strip prefix before first `{` character
+- Plan 01-04: stderr.txt written as diagnostic artifact for all scenarios with stderr output; not a required fixture but useful for debugging capture-host issues
 
 ### Pending Todos
 
@@ -82,6 +87,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-04-11T22:26:00.864Z
-Stopped at: Completed 01-03-PLAN.md
+Last session: 2026-04-11T22:40:00.000Z
+Stopped at: Completed 01-04-PLAN.md
 Resume file: None

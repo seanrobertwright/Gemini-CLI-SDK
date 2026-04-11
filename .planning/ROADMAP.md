@@ -37,10 +37,10 @@ Decimal phases appear between their surrounding integers in numeric order.
   4. `spec/protocol.md` draft and `spec/errors.md` draft exist and cite fixture filenames as evidence for every normative claim
 **Plans**: 10 plans
 Plans:
-- [ ] 01-01-PLAN.md — Wave 0: repo-root manifest + spec/ skeleton (package.json, .gitattributes, fixtures.manifest.json, seeded placeholders)
-- [ ] 01-02-PLAN.md — Wave 0: validation scripts (validate-fixtures.mjs + validate-schema-ts/py + audit-fixtures)
-- [ ] 01-03-PLAN.md — Wave 0: capture engine scaffold + redactor module + platform wrappers
-- [ ] 01-04-PLAN.md — Wave 1: install gemini-cli 0.37.1, pin version, npm install, capture first simple-text fixture
+- [x] 01-01-PLAN.md — Wave 0: repo-root manifest + spec/ skeleton (package.json, .gitattributes, fixtures.manifest.json, seeded placeholders)
+- [x] 01-02-PLAN.md — Wave 0: validation scripts (validate-fixtures.mjs + validate-schema-ts/py + audit-fixtures)
+- [x] 01-03-PLAN.md — Wave 0: capture engine scaffold + redactor module + platform wrappers
+- [x] 01-04-PLAN.md — Wave 1: install gemini-cli 0.37.1, pin version, npm install, capture first simple-text fixture
 - [ ] 01-05-PLAN.md — Wave 2: three feasibility smoke tests → spec/feasibility.md verdicts
 - [ ] 01-06-PLAN.md — Wave 3: capture tool-use-builtin, error-rate-limit, error-auth, event-unknown
 - [ ] 01-07-PLAN.md — Wave 3: capture thinking, multimodal-image, multimodal-pdf, large-output, abort-midstream + binary assets
