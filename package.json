@@ -1,0 +1,16 @@
+{
+  "name": "gemini-sdk-spec",
+  "private": true,
+  "type": "module",
+  "description": "Phase 1 specification and fixture infrastructure for the Gemini CLI SDK. Not published.",
+  "scripts": {
+    "validate": "node scripts/validate-fixtures.mjs",
+    "validate:all": "node scripts/validate-fixtures.mjs && node scripts/validate-schema-ts.mjs && bash scripts/validate-schema-py.sh && bash scripts/audit-fixtures.sh"
+  },
+  "devDependencies": {
+    "ajv": "^8.17.1",
+    "ajv-formats": "^3.0.1",
+    "json-schema-to-typescript": "15.0.4",
+    "typescript": "^5.6.3"
+  }
+}

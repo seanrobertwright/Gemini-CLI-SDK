@@ -1,0 +1,4 @@
+# Disable git CRLF normalization for captured fixtures so byte-exact NDJSON survives round-trip on Windows.
+# See Pitfall 5 in .planning/research/PITFALLS.md and Phase 1 CONTEXT.md "Secrets sanitization" section.
+spec/fixtures/** -text
+spec/fixtures/_assets/** -text binary
