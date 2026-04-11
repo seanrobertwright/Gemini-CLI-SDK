@@ -1,0 +1,18 @@
+{
+  "fixture": "event-unknown.ndjson",
+  "captured_against": "SYNTHETIC — derived from simple-text.ndjson by type-mutation",
+  "captured_at": "2026-04-11T00:00:00Z",
+  "description": "Synthetic fixture: a captured init event with its type field mutated to an invented value (cosmic_ray_hit). Used by Phase 3 PRS-03 to verify the parser's lenient fallback yields {type:'unknown', raw: <original>} without throwing.",
+  "chunks": [
+    {
+      "type": "unknown",
+      "raw": {
+        "_comment": "The raw field should hold the full original JSON object from event-unknown.ndjson. Phase 3's parser test asserts this shape: {type:'unknown', raw:{type:'cosmic_ray_hit', ...rest}}."
+      }
+    }
+  ],
+  "exit_code": 0,
+  "stderr_patterns": [],
+  "synthetic": true,
+  "derived_from": "simple-text.ndjson line 1"
+}

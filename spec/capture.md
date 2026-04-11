@@ -213,3 +213,36 @@ All must exit 0 before any Phase 1 plan can be marked complete.
 
 *See `spec/feasibility.md` for current verdict values.*
 *See `scripts/capture-fixtures.mjs` for the exact prompt text used per scenario (`SCENARIOS[<slug>].args`).*
+
+---
+
+## Synthetic fixtures
+
+Not all fixtures are captured from a live `gemini-cli` run. The following fixture(s) are **constructed synthetically** and committed as-is:
+
+### `event-unknown.ndjson`
+
+**Purpose:** Provide a fixture with an invented `type` value that no real `gemini-cli` version will ever emit naturally. Used by Phase 3 PRS-03 to verify the parser's lenient fallback: it must yield `{type: 'unknown', raw: <original object>}` without throwing.
+
+**Construction procedure:**
+
+```bash
+node -e '
+const fs = require("node:fs");
+const src = fs.readFileSync("spec/fixtures/simple-text.ndjson", "utf8");
+const firstLine = src.split(/\r?\n/).find(l => l.trim().length > 0);
+const obj = JSON.parse(firstLine);
+obj.type = "cosmic_ray_hit";
+obj._synthetic = true;
+obj._derived_from = "simple-text.ndjson line 1";
+obj._note = "Mutated from a real captured init event by replacing type with an invented value.";
+fs.writeFileSync("spec/fixtures/event-unknown.ndjson", JSON.stringify(obj) + "\n");
+console.log("OK: event-unknown.ndjson written");
+'
+```
+
+**Source line:** The first line of `spec/fixtures/simple-text.ndjson` (an `init` event). Only the `type` field is mutated; all other fields are preserved verbatim from the real capture.
+
+**Invariant:** If `simple-text.ndjson` is re-captured, `event-unknown.ndjson` should be regenerated using the same procedure so the two fixtures remain structurally consistent.
+
+**Never capture synthetically:** All other fixtures in `spec/fixtures/` are captured from real `gemini-cli` runs. Do not manufacture them — always use `node scripts/capture-fixtures.mjs <slug>`.
