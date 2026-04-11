@@ -165,7 +165,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8 →
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Feasibility Spike + Fixture Capture | 0/10 | Not started | - |
+| 1. Feasibility Spike + Fixture Capture | 2/10 | In Progress|  |
 | 2. Process Foundation + Workspace + CI Matrix | 0/TBD | Not started | - |
 | 3. NDJSON Parser + EventDispatcher + MessageChunk Types | 0/TBD | Not started | - |
 | 4. Public query() + ArgvBuilder + systemPrompt + Workspace + Model | 0/TBD | Not started | - |
