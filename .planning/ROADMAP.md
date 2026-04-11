@@ -46,7 +46,7 @@ Plans:
 - [ ] 01-07-PLAN.md — Wave 3: capture thinking, multimodal-image, multimodal-pdf, large-output, abort-midstream + binary assets
 - [ ] 01-08-PLAN.md — Wave 3: capture resume-session pair with verdict-aware branching
 - [ ] 01-09-PLAN.md — Wave 4: derive spec/events.schema.json from fixtures + run both codegen smoke tests
-- [ ] 01-10-PLAN.md — Wave 4: draft spec/protocol.md + spec/errors.md with fixture citations
+- [ ] 01-10-PLAN.md — Wave 5: draft spec/protocol.md + spec/errors.md with fixture citations (depends on 01-09 schema)
 
 ### Phase 2: Process Foundation + Workspace Scaffolding + CI Matrix
 **Goal**: Stand up the polyglot monorepo layout (`spec/`, `ts/`, `python/`, `adapter-archon/`), bring up `BinaryResolver`, `EnvBuilder`, and `ProcessManager` with a pluggable `ProcessStrategy` interface shipping `SpawnPerCallStrategy`, and turn on the full `{ubuntu, macos, windows} × {node 18/20/22} × {python 3.10–3.13}` CI matrix with a non-en-US Windows runner. This is where every hard Windows/subprocess gotcha gets retired at the source, and where TS ↔ Python lock-step begins. A "hello world" spawn test passes on all three OSes in both languages by the end of this phase.
