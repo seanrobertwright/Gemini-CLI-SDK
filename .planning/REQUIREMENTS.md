@@ -28,8 +28,8 @@ Requirements for initial release. Each maps to a roadmap phase.
 - [ ] **PRS-05**: `EventDispatcher` maps parsed events into a normalized `MessageChunk` discriminated union
 - [ ] **PRS-06**: SDK emits shapes compatible with Archon's `MessageChunk` type (8 variants: `assistant | system | thinking | result | rate_limit | tool | tool_result | workflow_dispatch`)
 - [ ] **PRS-07**: SDK guarantees `tool_use` and `tool_result` chunks are always paired (per Archon's `claude.ts` correctness bar)
-- [ ] **PRS-08**: Shared JSON Schema at `spec/events.schema.json` generates TS types (via `json-schema-to-typescript`) and Pydantic models (via `datamodel-code-generator`)
-- [ ] **PRS-09**: Shared fixture corpus at `spec/fixtures/*.ndjson` with sibling `.expected.json` files; TS and Python suites both run it in CI
+- [x] **PRS-08**: Shared JSON Schema at `spec/events.schema.json` generates TS types (via `json-schema-to-typescript`) and Pydantic models (via `datamodel-code-generator`)
+- [x] **PRS-09**: Shared fixture corpus at `spec/fixtures/*.ndjson` with sibling `.expected.json` files; TS and Python suites both run it in CI
 
 ### Query API
 
@@ -243,8 +243,8 @@ All v1 requirements map to exactly one phase. Coverage: 102/102.
 | PRS-05 | Phase 3 | Pending |
 | PRS-06 | Phase 3 | Pending |
 | PRS-07 | Phase 3 | Pending |
-| PRS-08 | Phase 1 | Pending |
-| PRS-09 | Phase 1 | Pending |
+| PRS-08 | Phase 1 | Complete |
+| PRS-09 | Phase 1 | Complete |
 | API-01 | Phase 4 | Pending |
 | API-02 | Phase 4 | Pending |
 | API-03 | Phase 4 | Pending |

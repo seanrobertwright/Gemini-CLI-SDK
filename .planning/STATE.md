@@ -2,10 +2,10 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: planning
-stopped_at: Phase-1-context-gathered
-last_updated: "2026-04-11T21:09:39.091Z"
-last_activity: 2026-04-11 — Roadmap created; 102 v1 requirements mapped across 11 phases
+status: executing
+stopped_at: 01-01-PLAN.md complete
+last_updated: "2026-04-11T22:15:00.000Z"
+last_activity: 2026-04-11 — Completed plan 01-01: repo-root scaffold and spec/ skeleton
 progress:
   total_phases: 11
   completed_phases: 0
@@ -26,11 +26,11 @@ See: .planning/PROJECT.md (updated 2026-04-11)
 ## Current Position
 
 Phase: 1 of 11 (Feasibility Spike + Fixture Capture)
-Plan: 0 of TBD in current phase
-Status: Ready to plan
-Last activity: 2026-04-11 — Roadmap created; 102 v1 requirements mapped across 11 phases
+Plan: 1 of 10 in current phase
+Status: Executing — plan 01-01 complete
+Last activity: 2026-04-11 — Completed plan 01-01: repo-root scaffold and spec/ skeleton
 
-Progress: [░░░░░░░░░░] 0%
+Progress: [░░░░░░░░░░] 1% (1/10 plans complete in Phase 1)
 
 ## Performance Metrics
 
@@ -62,6 +62,8 @@ Recent decisions affecting current work:
 - Architecture: stateless SDK, single public `query()` async generator, pluggable `ProcessStrategy` (ships `SpawnPerCallStrategy`), shared `spec/fixtures/*.ndjson` as the parity enforcement mechanism
 - Auth: `GEMINI_API_KEY` is canonical default; OAuth auto-login is explicitly forbidden (discussion #22970, ToS risk)
 - Errors: single YAML source (`spec/errors.yaml`) generates both language implementations; 1:1 map to Archon's 5 retry buckets
+- Plan 01-01: resume-session split into turn1+turn2 (12 slugs total); spec/events.schema.json intentionally starts with empty oneOf array (plan-09 populates after empirical capture)
+- Plan 01-01: .gemini-cli-compat seeded empty; plan-04 writes pinned version after host verification of gemini --version
 
 ### Pending Todos
 
@@ -75,6 +77,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-04-11T21:09:39.088Z
-Stopped at: Phase-1-context-gathered
-Resume file: .planning/phases/01-feasibility-spike-fixture-capture/01-CONTEXT.md
+Last session: 2026-04-11T22:15:00.000Z
+Stopped at: Completed 01-01-PLAN.md
+Resume file: .planning/phases/01-feasibility-spike-fixture-capture/01-02-PLAN.md
