@@ -1,0 +1,32 @@
+{
+  "fixture": "resume-session-turn2.ndjson",
+  "captured_against": "gemini-cli@0.37.1",
+  "captured_at": "2026-04-12T12:33:11.745Z",
+  "description": "Turn 2 of resume pair: uses --resume <id> -p to continue the session from turn 1. The assistant response should reference the number 47 from turn 1 context.",
+  "chunks": [
+    {
+      "type": "system",
+      "subtype": "init",
+      "sessionId": "<REDACTED_SESSION_ID>",
+      "model": "auto-gemini-3"
+    },
+    {
+      "type": "user",
+      "content": "What number did I just say?"
+    },
+    {
+      "type": "assistant",
+      "content": "You just said that your favorite number is **47**."
+    },
+    {
+      "type": "result",
+      "sessionId": "<REDACTED_SESSION_ID>",
+      "stopReason": "end_turn"
+    }
+  ],
+  "exit_code": 0,
+  "stderr_patterns": [],
+  "verdict_at_capture": "pass",
+  "pair_role": "turn2",
+  "turn1_session_id_redacted": "<REDACTED_SESSION_ID>"
+}

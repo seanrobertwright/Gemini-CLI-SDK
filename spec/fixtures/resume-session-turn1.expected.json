@@ -1,0 +1,62 @@
+{
+  "fixture": "resume-session-turn1.ndjson",
+  "captured_against": "gemini-cli@0.37.1",
+  "captured_at": "2026-04-12T12:33:03.267Z",
+  "description": "Turn 1 of resume pair: establishes session, captures session_id from init event. Turn 2 resumes using that ID.",
+  "chunks": [
+    {
+      "type": "system",
+      "subtype": "init",
+      "sessionId": "<REDACTED_SESSION_ID>",
+      "model": "auto-gemini-3"
+    },
+    {
+      "type": "user",
+      "content": "My favorite number is 47. Remember it exactly."
+    },
+    {
+      "type": "assistant",
+      "content": "I will remember that your favorite number is 47.\n\n"
+    },
+    {
+      "type": "unknown",
+      "raw": {
+        "type": "tool_use",
+        "timestamp": "2026-04-12T12:32:55.536Z",
+        "tool_name": "save_memory",
+        "tool_id": "save_memory_1775997175536_0",
+        "parameters": {
+          "scope": "global",
+          "content": "Favorite number: 47"
+        }
+      }
+    },
+    {
+      "type": "unknown",
+      "raw": {
+        "type": "tool_result",
+        "timestamp": "2026-04-12T12:32:55.592Z",
+        "tool_id": "save_memory_1775997175536_0",
+        "status": "error",
+        "output": "Tool \"save_memory\" not found. Did you mean one of: \"list_directory\", \"grep_search\", \"web_fetch\"?",
+        "error": {
+          "type": "tool_not_registered",
+          "message": "Tool \"save_memory\" not found. Did you mean one of: \"list_directory\", \"grep_search\", \"web_fetch\"?"
+        }
+      }
+    },
+    {
+      "type": "assistant",
+      "content": "Understood. I have noted that your favorite number is exactly 47."
+    },
+    {
+      "type": "result",
+      "sessionId": "<REDACTED_SESSION_ID>",
+      "stopReason": "end_turn"
+    }
+  ],
+  "exit_code": 0,
+  "stderr_patterns": [],
+  "verdict_at_capture": "pass",
+  "pair_role": "turn1"
+}
