@@ -1,0 +1,116 @@
+name: CI
+
+on:
+  push:
+    branches: [main, dev]
+  pull_request:
+    branches: [main, dev]
+
+jobs:
+  test:
+    name: "${{ matrix.os }} / Node ${{ matrix.node }} / Python ${{ matrix.python }}${{ matrix.locale && ' / ' || '' }}${{ matrix.locale || '' }}"
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          # Each OS: latest Node + latest Python
+          - { os: ubuntu-latest,  node: "22", python: "3.13" }
+          - { os: macos-latest,   node: "22", python: "3.13" }
+          - { os: windows-latest, node: "22", python: "3.13" }
+          # Oldest Node (18) on Linux
+          - { os: ubuntu-latest,  node: "18", python: "3.13" }
+          # Node 20 on Linux
+          - { os: ubuntu-latest,  node: "20", python: "3.13" }
+          # Oldest Python (3.10) on Linux
+          - { os: ubuntu-latest,  node: "22", python: "3.10" }
+          # Windows non-en-US: simulated ja-JP via chcp 932 (PLT-05)
+          - { os: windows-latest, node: "22", python: "3.13", locale: "ja-JP" }
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - name: Setup Node.js ${{ matrix.node }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+          cache: pnpm
+          cache-dependency-path: ts/pnpm-lock.yaml
+
+      - name: Setup Python ${{ matrix.python }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+
+      - name: Set Japanese code page (Windows ja-JP only)
+        if: matrix.locale == 'ja-JP'
+        shell: pwsh
+        run: |
+          # Force code page 932 (Shift_JIS) to exercise CJK mojibake vectors
+          # Full locale change requires reboot (not CI-viable)
+          # PYTHONUTF8=1 below ensures Python subprocess UTF-8 despite cp932
+          chcp.com 932
+          Write-Host "Active code page: $(chcp.com)"
+
+      - name: Install TS dependencies
+        run: cd ts && pnpm install --frozen-lockfile
+
+      - name: Run TS tests
+        env:
+          PYTHONUTF8: "1"
+        run: cd ts && pnpm test
+
+      - name: Install Python dependencies
+        run: cd python && uv sync
+
+      - name: Run Python tests
+        env:
+          PYTHONUTF8: "1"
+          PYTHONIOENCODING: "utf-8"
+        run: cd python && uv run pytest --tb=short
+
+  parity:
+    name: "Parity (TS <-> Python test names)"
+    runs-on: ubuntu-latest
+    needs: []  # Runs independently of test matrix; blocks merge via branch protection rules
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Python (for AST parsing)
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      - name: Check test name parity
+        run: bash scripts/diff-test-names.sh
+
+  version-sync:
+    name: "Version sync check"
+    runs-on: ubuntu-latest
+    needs: []
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Run sync-version and check for drift
+        run: |
+          bash scripts/sync-version.sh
+          # If sync-version.sh changed any files, there's version drift
+          if ! git diff --quiet ts/package.json python/pyproject.toml; then
+            echo "ERROR: Version drift detected. Run 'bash scripts/sync-version.sh' and commit."
+            git diff ts/package.json python/pyproject.toml
+            exit 1
+          fi
+          echo "OK: Versions in sync."
