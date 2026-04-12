@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Completed 01-07-PLAN.md
-last_updated: "2026-04-12T13:05:00.000Z"
-last_activity: "2026-04-12 — Completed plan 01-07: five remaining fixtures (thinking, multimodal-image, multimodal-pdf, large-output, abort-midstream) + PNG fix + audit fix"
+stopped_at: Completed 01-09-PLAN.md
+last_updated: "2026-04-12T13:04:34.806Z"
+last_activity: "2026-04-12 — Completed plan 01-07: five remaining fixtures (thinking, multimodal-image, multimodal-pdf, large-output, abort-midstream), PNG regenerated, audit fixed"
 progress:
   total_phases: 11
   completed_phases: 0
   total_plans: 10
-  completed_plans: 8
+  completed_plans: 9
   percent: 8
 ---
 
@@ -55,6 +55,7 @@ Progress: [████░░░░░░] 8% (8/10 plans complete in Phase 1)
 | Phase 01 P08 | 10 | 3 tasks | 4 files |
 | Phase 01 P06 | 45 | 3 tasks | 13 files |
 | Phase 01 P07 | 35 | 4 tasks | 19 files |
+| Phase 01 P09 | 45 | 3 tasks | 5 files |
 
 ## Accumulated Context
 
@@ -89,6 +90,10 @@ Recent decisions affecting current work:
 - Plan 01-07: large-output target (128KB) not reachable via single model response on current host (10001-token cap, 93KB achieved); threshold is nice-to-have; fixture adequate for streaming tests
 - Plan 01-07: abort-midstream at 2000ms kills process before first JSON event on Windows+OAuth; empty NDJSON (1 byte) with aborted=true+exit_code=1 is valid input for Phase 5 "stream ended without terminal result" tests
 - Plan 01-07: audit-fixtures.sh Docker on Windows/MSYS2: MSYS_NO_PATHCONV=1 + //work avoids path translation; trufflehog clean (0 secrets in 62 chunks, 424KB)
+- [Phase 01]: error-auth and error-rate-limit synthetic fixtures included in schema derivation (real error shapes); only type-mutation fixtures excluded (cosmic_ray_hit)
+- [Phase 01]: validate-schema-ts.mjs: shell:true + local node_modules/.bin/tsc (npx -y typescript@5 fails on npm11 Windows)
+- [Phase 01]: validate-schema-py.sh: cygpath -w for Windows path translation before Python import-smoke-test
+- [Phase 01]: Schema is a FLOOR: additionalProperties:true on all  entries so Phase 3 parser tolerates upstream field additions
 
 ### Pending Todos
 
@@ -102,6 +107,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-04-12T13:05:00.000Z
-Stopped at: Completed 01-07-PLAN.md
+Last session: 2026-04-12T13:04:34.803Z
+Stopped at: Completed 01-09-PLAN.md
 Resume file: None
