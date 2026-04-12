@@ -111,7 +111,11 @@ export const SCENARIOS = {
     slug: 'error-auth',
     description: 'Invalid API key; capture error event + stderr + non-zero exit.',
     args: ['-p', 'hello', '--output-format', 'stream-json'],
+    // isolateOAuth: true causes runScenario to set GEMINI_CONFIG_DIR to an empty
+    // temp dir so that oauth_creds.json is not found by gemini-cli, forcing the
+    // GEMINI_API_KEY (invalid-key-12345) to be the only auth path.
     env: { GEMINI_API_KEY: 'invalid-key-12345' },
+    isolateOAuth: true,
     captureStderr: true,
     expectNonZeroExit: true
     // stubbed removed: W3 plan 01-06 implements this scenario
@@ -292,16 +296,28 @@ async function runScenario(slug) {
   // Build env for child: process.env + scenario overrides
   const envForChild = { ...process.env, ...(scenario.env || {}) };
 
+  // isolateOAuth: create a temp GEMINI_CONFIG_DIR that has no oauth_creds.json,
+  // forcing gemini-cli to fall back to GEMINI_API_KEY only. Used by error-auth
+  // to ensure the deliberately-invalid API key is the only auth path available
+  // even when the host machine has a valid OAuth session.
+  let tempConfigDir;
+  if (scenario.isolateOAuth) {
+    tempConfigDir = mkdtempSync(path.join(os.tmpdir(), 'gemini-isolated-'));
+    envForChild.GEMINI_CONFIG_DIR = tempConfigDir;
+    console.error(`INFO: isolateOAuth=true — using empty GEMINI_CONFIG_DIR: ${tempConfigDir}`);
+  }
+
   // Safety: pre-flight check — require either GEMINI_API_KEY or OAuth credentials.
   // OAuth credentials live at ~/.gemini/oauth_creds.json and are used by gemini-cli
   // automatically; we don't need to pass them explicitly.
   // error-auth intentionally overrides with a bad key, so the env override satisfies this check.
+  // When isolateOAuth is set, skip the OAuth check since the scenario owns its own auth.
   const hasApiKey = Boolean(envForChild.GEMINI_API_KEY);
   const oauthPath = path.join(
     process.env.HOME || process.env.USERPROFILE || '',
     '.gemini', 'oauth_creds.json'
   );
-  const hasOAuth = existsSync(oauthPath);
+  const hasOAuth = !scenario.isolateOAuth && existsSync(oauthPath);
   if (!hasApiKey && !hasOAuth) {
     console.error('FAIL: no auth found — set GEMINI_API_KEY or run `gemini auth login` first');
     process.exit(4);

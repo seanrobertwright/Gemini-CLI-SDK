@@ -1,0 +1,11 @@
+SYNTHETIC STDERR — not captured from a real gemini-cli run.
+
+The host machine uses a generous OAuth quota that absorbs rapid-fire requests
+without triggering a 429 RESOURCE_EXHAUSTED error. A real rate-limit failure
+would produce stderr output similar to:
+
+  Error: You have exceeded your quota. Please try again later. [HTTP 429]
+  Status: RESOURCE_EXHAUSTED
+
+Phase 5 error taxonomy will validate the real stderr format against a
+free-tier API key with quota limits.

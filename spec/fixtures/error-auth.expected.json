@@ -1,0 +1,29 @@
+{
+  "fixture": "error-auth.ndjson",
+  "captured_against": "SYNTHETIC — derived from simple-text.ndjson init event + constructed 401 error",
+  "captured_at": "2026-04-12T00:00:00.000Z",
+  "description": "Synthetic fixture: auth failure scenario. The host machine uses OAuth auth (selectedType: oauth-personal), making it impossible to force a real API key auth failure without removing production credentials. The error event shape is derived from the known gemini-cli UNAUTHENTICATED error format (HTTP 401, status UNAUTHENTICATED). Phase 5 error taxonomy will validate the real format when it runs against a host with GEMINI_API_KEY configured.",
+  "chunks": [
+    {
+      "type": "system",
+      "subtype": "init",
+      "sessionId": "<REDACTED_SESSION_ID>",
+      "model": "auto-gemini-3"
+    },
+    {
+      "type": "error",
+      "code": 401,
+      "message": "API key not valid. Please pass a valid API key.",
+      "status": "UNAUTHENTICATED"
+    }
+  ],
+  "exit_code": 1,
+  "stderr_patterns": [
+    "API key not valid",
+    "UNAUTHENTICATED",
+    "401"
+  ],
+  "synthetic": true,
+  "derived_from": "simple-text.ndjson line 1 (init event) + constructed error event",
+  "capture_limitation": "Host uses OAuth; GEMINI_API_KEY override does not override OAuth auth path in gemini-cli 0.37.1. Real capture deferred to Phase 5 validation on an API-key-only host."
+}

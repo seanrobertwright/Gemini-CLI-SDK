@@ -1,0 +1,30 @@
+{
+  "fixture": "error-rate-limit.ndjson",
+  "captured_against": "SYNTHETIC — derived from simple-text.ndjson init event + constructed 429 error",
+  "captured_at": "2026-04-12T00:01:00.000Z",
+  "description": "Synthetic fixture: rate-limit failure scenario. The host machine has a generous OAuth quota that absorbs rapid-fire requests without triggering a 429. Repeated attempts (10+) did not produce a rate-limit error. The error event shape is derived from the known gemini-cli RESOURCE_EXHAUSTED error format (HTTP 429, status RESOURCE_EXHAUSTED). Phase 5 error taxonomy will validate the real format against a quota-capped key.",
+  "chunks": [
+    {
+      "type": "system",
+      "subtype": "init",
+      "sessionId": "<REDACTED_SESSION_ID>",
+      "model": "auto-gemini-3"
+    },
+    {
+      "type": "error",
+      "code": 429,
+      "message": "You have exceeded your quota. Please try again later.",
+      "status": "RESOURCE_EXHAUSTED"
+    }
+  ],
+  "exit_code": 1,
+  "stderr_patterns": [
+    "quota",
+    "RESOURCE_EXHAUSTED",
+    "429",
+    "Too Many Requests"
+  ],
+  "synthetic": true,
+  "derived_from": "simple-text.ndjson line 1 (init event) + constructed error event",
+  "capture_limitation": "OAuth quota on this host is generous; 10 rapid-fire invocations did not trigger a 429 rate-limit. Real capture deferred to Phase 5 validation against a free-tier API key with quota limits."
+}

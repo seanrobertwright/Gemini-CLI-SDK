@@ -1,0 +1,2 @@
+{"type":"init","timestamp":"2026-04-12T00:00:00.000Z","session_id":"<REDACTED_SESSION_ID>","model":"auto-gemini-3","_synthetic":true,"_note":"Synthetic: init event derived from simple-text.ndjson. Error event constructed from known gemini-cli 401 auth-failure format."}
+{"type":"error","timestamp":"2026-04-12T00:00:01.234Z","error":{"message":"API key not valid. Please pass a valid API key.","code":401,"status":"UNAUTHENTICATED"}}

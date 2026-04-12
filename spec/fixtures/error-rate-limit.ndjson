@@ -1,0 +1,2 @@
+{"type":"init","timestamp":"2026-04-12T00:01:00.000Z","session_id":"<REDACTED_SESSION_ID>","model":"auto-gemini-3","_synthetic":true,"_note":"Synthetic: init event derived from simple-text.ndjson. Error event constructed from known gemini-cli 429 rate-limit format."}
+{"type":"error","timestamp":"2026-04-12T00:01:01.456Z","error":{"message":"You have exceeded your quota. Please try again later.","code":429,"status":"RESOURCE_EXHAUSTED"}}

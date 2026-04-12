@@ -1,0 +1,63 @@
+{
+  "fixture": "tool-use-builtin.ndjson",
+  "captured_against": "gemini-cli@0.37.1",
+  "captured_at": "2026-04-12T00:18:07.350Z",
+  "description": "Built-in tool call (read_file) on a fixture workspace file.",
+  "chunks": [
+    {
+      "type": "system",
+      "subtype": "init",
+      "sessionId": "<REDACTED_SESSION_ID>",
+      "model": "auto-gemini-3"
+    },
+    {
+      "type": "user",
+      "content": "Read the file test.txt in the current directory and show its contents."
+    },
+    {
+      "type": "assistant",
+      "content": "I will read the contents of `test.txt`.\n"
+    },
+    {
+      "type": "unknown",
+      "raw": {
+        "type": "tool_use",
+        "timestamp": "2026-04-12T00:18:06.139Z",
+        "tool_name": "read_file",
+        "tool_id": "read_file_1775953086139_0",
+        "parameters": {
+          "file_path": "test.txt"
+        }
+      }
+    },
+    {
+      "type": "unknown",
+      "raw": {
+        "type": "tool_result",
+        "timestamp": "2026-04-12T00:18:06.217Z",
+        "tool_id": "read_file_1775953086139_0",
+        "status": "success",
+        "output": ""
+      }
+    },
+    {
+      "type": "assistant",
+      "content": "The contents of `test.txt` are:\n\n```text\nThis"
+    },
+    {
+      "type": "assistant",
+      "content": " is a fixture file used by the tool-use-builtin scenario. Phase "
+    },
+    {
+      "type": "assistant",
+      "content": "1 of the Gemini SDK.\nThe gemini-cli read_file tool should return this content verbatim.\n```"
+    },
+    {
+      "type": "result",
+      "sessionId": "<REDACTED_SESSION_ID>",
+      "stopReason": "end_turn"
+    }
+  ],
+  "exit_code": 0,
+  "stderr_patterns": []
+}

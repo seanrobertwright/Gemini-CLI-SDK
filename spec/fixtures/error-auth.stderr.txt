@@ -1,0 +1,11 @@
+SYNTHETIC STDERR — not captured from a real gemini-cli run.
+
+The host machine uses OAuth (selectedType: oauth-personal) and the GEMINI_API_KEY override
+does not disable the OAuth path in gemini-cli 0.37.1. A real auth failure would produce
+stderr output similar to:
+
+  Error: API key not valid. Please pass a valid API key. [HTTP 401]
+  Status: UNAUTHENTICATED
+
+Phase 5 error taxonomy will validate the real stderr format against a host with
+GEMINI_API_KEY configured (no OAuth credentials).
