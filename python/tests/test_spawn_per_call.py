@@ -16,7 +16,7 @@ class TestSpawnPerCallStrategy:
     """Tests for SpawnPerCallStrategy — mirrors TS describe('SpawnPerCallStrategy')."""
 
     def test_implements_process_strategy_protocol(self) -> None:
-        """implements ProcessStrategy protocol"""
+        """satisfies the ProcessStrategy interface (type check)"""
         strategy = SpawnPerCallStrategy()
         # Protocol structural check: must have an async spawn method
         assert hasattr(strategy, "spawn")
@@ -24,7 +24,7 @@ class TestSpawnPerCallStrategy:
 
     @pytest.mark.anyio
     async def test_sets_create_no_window_on_windows(self) -> None:
-        """sets CREATE_NO_WINDOW on Windows (FDN-05)"""
+        """sets windowsHide:true on Windows (FDN-05)"""
         captured_kwargs: dict = {}
 
         async def mock_open_process(command, **kwargs):  # type: ignore[no-untyped-def]
@@ -44,7 +44,7 @@ class TestSpawnPerCallStrategy:
 
     @pytest.mark.anyio
     async def test_uses_shell_on_windows_with_pre_built_command_string(self) -> None:
-        """uses shell on Windows with pre-built command string"""
+        """uses shell:true with a pre-built command string on Windows"""
         captured_command = None
 
         async def mock_open_process(command, **kwargs):  # type: ignore[no-untyped-def]
@@ -68,7 +68,7 @@ class TestSpawnPerCallStrategy:
 
     @pytest.mark.anyio
     async def test_uses_direct_exec_on_non_windows(self) -> None:
-        """uses direct exec on non-Windows"""
+        """uses shell:false with array args on non-Windows"""
         captured_command = None
 
         async def mock_open_process(command, **kwargs):  # type: ignore[no-untyped-def]
@@ -91,7 +91,7 @@ class TestSpawnPerCallStrategy:
 
     @pytest.mark.anyio
     async def test_returns_an_anyio_process(self) -> None:
-        """returns an anyio Process"""
+        """returns a ChildProcess that emits a close event (integration)"""
         # Use real anyio.open_process to spawn a short-lived process
         strategy = SpawnPerCallStrategy()
         env = {"PATH": "/usr/bin:/bin"}

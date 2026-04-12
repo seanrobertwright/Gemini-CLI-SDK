@@ -39,8 +39,38 @@ class TestProcessManager:
         assert argv_arg[1] == "--version"
 
     @pytest.mark.anyio
+    async def test_spawn_calls_resolve_binary_and_build_env(self) -> None:
+        """spawn() calls resolveBinary and buildEnv before invoking strategy"""
+        mock_proc = MagicMock()
+        mock_strategy = MagicMock(spec=ProcessStrategy)
+        mock_strategy.spawn = AsyncMock(return_value=mock_proc)
+
+        manager = ProcessManager(strategy=mock_strategy)
+        result = await manager.spawn(
+            cli_path="/my/gemini", argv=["--debug"], env={"MY_VAR": "test"}
+        )
+
+        mock_strategy.spawn.assert_called_once()
+        call_args = mock_strategy.spawn.call_args
+        argv_arg = call_args.args[0]
+        env_arg = call_args.args[1]
+        assert argv_arg[0] == "/my/gemini"
+        assert argv_arg[1] == "--debug"
+        assert env_arg["MY_VAR"] == "test"
+
+    @pytest.mark.anyio
+    async def test_throws_gemini_not_found_error(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        """throws GeminiNotFoundError when gemini not on PATH and no cliPath"""
+        monkeypatch.delenv("GEMINI_BIN_PATH", raising=False)
+        monkeypatch.setenv("PATH", "/nonexistent/path/that/does/not/exist")
+
+        manager = ProcessManager()
+        with pytest.raises(GeminiNotFoundError):
+            await manager.spawn(argv=["--version"])
+
+    @pytest.mark.anyio
     async def test_spawns_gemini_version_and_captures_non_empty_output(self) -> None:
-        """spawns gemini --version and captures non-empty output"""
+        """spawn gemini --version and capture non-empty stdout (integration)"""
         # Skip if gemini not on PATH
         from gemini_sdk.process.binary_resolver import resolve_binary
         try:
@@ -68,7 +98,7 @@ class TestProcessManager:
 
     @pytest.mark.anyio
     async def test_kill_tree_terminates_subprocess_within_grace_period(self) -> None:
-        """kill_tree terminates subprocess within grace period (integration)"""
+        """terminates a long-running subprocess within grace period (integration)"""
         # Spawn a long-running process
         proc = await anyio.open_process(
             [sys.executable, "-c", "import time; time.sleep(60)"],
@@ -108,7 +138,7 @@ class TestProcessManager:
 
     @pytest.mark.anyio
     async def test_kill_tree_uses_taskkill_on_windows(self) -> None:
-        """kill_tree uses taskkill on Windows"""
+        """uses taskkill /T /F on Windows (mock)"""
         import asyncio
 
         captured_args: list = []
@@ -134,7 +164,7 @@ class TestProcessManager:
 
     @pytest.mark.anyio
     async def test_kill_tree_sends_sigterm_then_sigkill_on_unix(self) -> None:
-        """kill_tree sends SIGTERM then SIGKILL after grace on Unix"""
+        """sends SIGTERM on Unix (mock)"""
         signals_sent: list[int] = []
 
         def mock_kill(pid: int, sig: int) -> None:
