@@ -12,7 +12,7 @@ This project ships a TypeScript + Python SDK that wraps Google's `gemini-cli` as
 
 Decimal phases appear between their surrounding integers in numeric order.
 
-- [ ] **Phase 1: Feasibility Spike + Fixture Capture** - Empirically validate three load-bearing unknowns against a pinned `gemini-cli`, capture real NDJSON output into `spec/fixtures/`, and freeze the shared event schema before any SDK code is written
+- [x] **Phase 1: Feasibility Spike + Fixture Capture** - Empirically validate three load-bearing unknowns against a pinned `gemini-cli`, capture real NDJSON output into `spec/fixtures/`, and freeze the shared event schema before any SDK code is written
 - [ ] **Phase 2: Process Foundation + Workspace Scaffolding + CI Matrix** - Stand up the polyglot monorepo (TS + Python), bring up `BinaryResolver` + `ProcessManager` (spawn-per-call) + `EnvBuilder` behind a pluggable strategy interface, and turn on the `{ubuntu, macos, windows} × {node, python}` CI matrix with a non-en-US Windows runner
 - [ ] **Phase 3: NDJSON Parser + EventDispatcher + MessageChunk Types** - Build the line-buffered, lenient, CRLF-tolerant NDJSON parser and the `EventDispatcher` that normalizes CLI events into Archon's 8-variant `MessageChunk` union, with both TS and Python test suites running the shared fixture corpus
 - [ ] **Phase 4: Public query() + ArgvBuilder + systemPrompt + Workspace + Model Selection** - Ship the public `query()` async generator, the pure-function `buildArgv`, temp-file `GEMINI_SYSTEM_MD` for system prompts, `cwd` + `--include-directories`, and the typed model enum with downgrade-warning detection
@@ -45,8 +45,8 @@ Plans:
 - [x] 01-06-PLAN.md — Wave 3: capture tool-use-builtin, error-rate-limit, error-auth, event-unknown
 - [x] 01-07-PLAN.md — Wave 3: capture thinking, multimodal-image, multimodal-pdf, large-output, abort-midstream + binary assets
 - [x] 01-08-PLAN.md — Wave 3: capture resume-session pair with verdict-aware branching
-- [ ] 01-09-PLAN.md — Wave 4: derive spec/events.schema.json from fixtures + run both codegen smoke tests
-- [ ] 01-10-PLAN.md — Wave 5: draft spec/protocol.md + spec/errors.md with fixture citations (depends on 01-09 schema)
+- [x] 01-09-PLAN.md — Wave 4: derive spec/events.schema.json from fixtures + run both codegen smoke tests
+- [x] 01-10-PLAN.md — Wave 5: draft spec/protocol.md + spec/errors.md with fixture citations (depends on 01-09 schema)
 
 ### Phase 2: Process Foundation + Workspace Scaffolding + CI Matrix
 **Goal**: Stand up the polyglot monorepo layout (`spec/`, `ts/`, `python/`, `adapter-archon/`), bring up `BinaryResolver`, `EnvBuilder`, and `ProcessManager` with a pluggable `ProcessStrategy` interface shipping `SpawnPerCallStrategy`, and turn on the full `{ubuntu, macos, windows} × {node 18/20/22} × {python 3.10–3.13}` CI matrix with a non-en-US Windows runner. This is where every hard Windows/subprocess gotcha gets retired at the source, and where TS ↔ Python lock-step begins. A "hello world" spawn test passes on all three OSes in both languages by the end of this phase.

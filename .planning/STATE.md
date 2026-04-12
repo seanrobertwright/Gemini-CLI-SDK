@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: executing
-stopped_at: Completed 01-09-PLAN.md
-last_updated: "2026-04-12T13:04:34.806Z"
-last_activity: "2026-04-12 — Completed plan 01-07: five remaining fixtures (thinking, multimodal-image, multimodal-pdf, large-output, abort-midstream), PNG regenerated, audit fixed"
+status: phase-complete
+stopped_at: Completed 01-10-PLAN.md (Phase 1 complete — ready for /gsd:verify-work)
+last_updated: "2026-04-11T22:00:00.000Z"
+last_activity: "2026-04-11 — Completed plan 01-10: spec/protocol.md + spec/errors.md drafted with fixture citations; all 8 Phase 1 validators pass"
 progress:
   total_phases: 11
-  completed_phases: 0
+  completed_phases: 1
   total_plans: 10
-  completed_plans: 9
-  percent: 8
+  completed_plans: 10
+  percent: 9
 ---
 
 # Project State
@@ -25,12 +25,12 @@ See: .planning/PROJECT.md (updated 2026-04-11)
 
 ## Current Position
 
-Phase: 1 of 11 (Feasibility Spike + Fixture Capture)
-Plan: 8 of 10 in current phase
-Status: Executing — plan 01-07 complete
-Last activity: 2026-04-12 — Completed plan 01-07: five remaining fixtures (thinking, multimodal-image, multimodal-pdf, large-output, abort-midstream), PNG regenerated, audit fixed
+Phase: 1 of 11 (Feasibility Spike + Fixture Capture) — COMPLETE
+Plan: 10 of 10 in Phase 1 (all plans complete)
+Status: Phase 1 complete — ready for /gsd:verify-work sign-off
+Last activity: 2026-04-11 — Completed plan 01-10: spec/protocol.md + spec/errors.md drafted with fixture citations; all 8 Phase 1 validators pass
 
-Progress: [████░░░░░░] 8% (8/10 plans complete in Phase 1)
+Progress: [█░░░░░░░░░] 9% (Phase 1 of 11 complete)
 
 ## Performance Metrics
 
@@ -56,6 +56,7 @@ Progress: [████░░░░░░] 8% (8/10 plans complete in Phase 1)
 | Phase 01 P06 | 45 | 3 tasks | 13 files |
 | Phase 01 P07 | 35 | 4 tasks | 19 files |
 | Phase 01 P09 | 45 | 3 tasks | 5 files |
+| Phase 01 P10 | 20 | 3 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -91,6 +92,10 @@ Recent decisions affecting current work:
 - Plan 01-07: abort-midstream at 2000ms kills process before first JSON event on Windows+OAuth; empty NDJSON (1 byte) with aborted=true+exit_code=1 is valid input for Phase 5 "stream ended without terminal result" tests
 - Plan 01-07: audit-fixtures.sh Docker on Windows/MSYS2: MSYS_NO_PATHCONV=1 + //work avoids path translation; trufflehog clean (0 secrets in 62 chunks, 424KB)
 - [Phase 01]: error-auth and error-rate-limit synthetic fixtures included in schema derivation (real error shapes); only type-mutation fixtures excluded (cosmic_ray_hit)
+- Plan 01-10: tool_use/tool_result pairing is by tool_id identity (format {tool_name}_{unix_ms}_{counter}), not positional — confirmed from tool-use-builtin.ndjson lines 4–5; Phase 3 PRS-07 must use tool_id map not array index
+- Plan 01-10: thinking events absent in gemini-cli headless mode even with gemini-2.5-pro; Phase 3 must synthesize thinking-variant fixture from structural knowledge
+- Plan 01-10: error-auth and error-rate-limit remain synthetic — Phase 5 must re-capture on API-key-only host; real stderr format not yet validated
+- Plan 01-10: multimodal @path syntax is embedded in user message content field, not a separate event type; SDK needs no special attachment handling in v1
 - [Phase 01]: validate-schema-ts.mjs: shell:true + local node_modules/.bin/tsc (npx -y typescript@5 fails on npm11 Windows)
 - [Phase 01]: validate-schema-py.sh: cygpath -w for Windows path translation before Python import-smoke-test
 - [Phase 01]: Schema is a FLOOR: additionalProperties:true on all  entries so Phase 3 parser tolerates upstream field additions
@@ -107,6 +112,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-04-12T13:04:34.803Z
-Stopped at: Completed 01-09-PLAN.md
+Last session: 2026-04-11T22:00:00.000Z
+Stopped at: Completed 01-10-PLAN.md (Phase 1 complete)
 Resume file: None
