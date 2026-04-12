@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Completed 01-06-PLAN.md
-last_updated: "2026-04-12T12:37:17.744Z"
-last_activity: "2026-04-11 — Completed plan 01-05: feasibility smoke tests — resume=pass, config_dir=pass, flush=partial"
+stopped_at: Completed 01-07-PLAN.md
+last_updated: "2026-04-12T13:05:00.000Z"
+last_activity: "2026-04-12 — Completed plan 01-07: five remaining fixtures (thinking, multimodal-image, multimodal-pdf, large-output, abort-midstream) + PNG fix + audit fix"
 progress:
   total_phases: 11
   completed_phases: 0
   total_plans: 10
-  completed_plans: 7
-  percent: 5
+  completed_plans: 8
+  percent: 8
 ---
 
 # Project State
@@ -26,11 +26,11 @@ See: .planning/PROJECT.md (updated 2026-04-11)
 ## Current Position
 
 Phase: 1 of 11 (Feasibility Spike + Fixture Capture)
-Plan: 5 of 10 in current phase
-Status: Executing — plan 01-05 complete
-Last activity: 2026-04-11 — Completed plan 01-05: feasibility smoke tests — resume=pass, config_dir=pass, flush=partial
+Plan: 8 of 10 in current phase
+Status: Executing — plan 01-07 complete
+Last activity: 2026-04-12 — Completed plan 01-07: five remaining fixtures (thinking, multimodal-image, multimodal-pdf, large-output, abort-midstream), PNG regenerated, audit fixed
 
-Progress: [██░░░░░░░░] 5% (5/10 plans complete in Phase 1)
+Progress: [████░░░░░░] 8% (8/10 plans complete in Phase 1)
 
 ## Performance Metrics
 
@@ -54,6 +54,7 @@ Progress: [██░░░░░░░░] 5% (5/10 plans complete in Phase 1)
 | Phase 01 P04 | 35 | 3 tasks | 7 files |
 | Phase 01 P08 | 10 | 3 tasks | 4 files |
 | Phase 01 P06 | 45 | 3 tasks | 13 files |
+| Phase 01 P07 | 35 | 4 tasks | 19 files |
 
 ## Accumulated Context
 
@@ -83,6 +84,11 @@ Recent decisions affecting current work:
 - [Phase 01]: Turn 1 save_memory tool_use failure is expected (tool not registered); session context still propagated correctly to turn 2
 - [Phase 01]: error-auth and error-rate-limit are SYNTHETIC: host uses OAuth auth; GEMINI_API_KEY override does not disable OAuth path in gemini-cli 0.37.1; Phase 5 will validate real format on API-key-only host
 - [Phase 01]: tool_use/tool_result events appear as type='unknown' in deriveChunks skeleton; Phase 3 PRS-07 expected.json must explicitly model these event types
+- Plan 01-07: hand-crafted PNG bytes had malformed IDAT; valid PNG requires zlib.deflateSync on scanlines (filter_byte + RGB*width) with CRC32 per chunk; Gemini API accepted regenerated 73-byte PNG
+- Plan 01-07: thinking events do not appear in gemini-cli headless mode even with gemini-2.5-pro; Phase 3 must synthesize thinking-variant fixture from structural knowledge
+- Plan 01-07: large-output target (128KB) not reachable via single model response on current host (10001-token cap, 93KB achieved); threshold is nice-to-have; fixture adequate for streaming tests
+- Plan 01-07: abort-midstream at 2000ms kills process before first JSON event on Windows+OAuth; empty NDJSON (1 byte) with aborted=true+exit_code=1 is valid input for Phase 5 "stream ended without terminal result" tests
+- Plan 01-07: audit-fixtures.sh Docker on Windows/MSYS2: MSYS_NO_PATHCONV=1 + //work avoids path translation; trufflehog clean (0 secrets in 62 chunks, 424KB)
 
 ### Pending Todos
 
@@ -96,6 +102,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-04-12T12:37:17.742Z
-Stopped at: Completed 01-06-PLAN.md
+Last session: 2026-04-12T13:05:00.000Z
+Stopped at: Completed 01-07-PLAN.md
 Resume file: None

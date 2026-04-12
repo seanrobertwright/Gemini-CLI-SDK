@@ -42,9 +42,9 @@ Plans:
 - [x] 01-03-PLAN.md — Wave 0: capture engine scaffold + redactor module + platform wrappers
 - [x] 01-04-PLAN.md — Wave 1: install gemini-cli 0.37.1, pin version, npm install, capture first simple-text fixture
 - [x] 01-05-PLAN.md — Wave 2: three feasibility smoke tests → spec/feasibility.md verdicts (resume=pass, config_dir=pass, flush=partial)
-- [ ] 01-06-PLAN.md — Wave 3: capture tool-use-builtin, error-rate-limit, error-auth, event-unknown
-- [ ] 01-07-PLAN.md — Wave 3: capture thinking, multimodal-image, multimodal-pdf, large-output, abort-midstream + binary assets
-- [ ] 01-08-PLAN.md — Wave 3: capture resume-session pair with verdict-aware branching
+- [x] 01-06-PLAN.md — Wave 3: capture tool-use-builtin, error-rate-limit, error-auth, event-unknown
+- [x] 01-07-PLAN.md — Wave 3: capture thinking, multimodal-image, multimodal-pdf, large-output, abort-midstream + binary assets
+- [x] 01-08-PLAN.md — Wave 3: capture resume-session pair with verdict-aware branching
 - [ ] 01-09-PLAN.md — Wave 4: derive spec/events.schema.json from fixtures + run both codegen smoke tests
 - [ ] 01-10-PLAN.md — Wave 5: draft spec/protocol.md + spec/errors.md with fixture citations (depends on 01-09 schema)
 
