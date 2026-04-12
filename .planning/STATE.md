@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Completed 01-08-PLAN.md
-last_updated: "2026-04-12T12:35:15.194Z"
+stopped_at: Completed 01-06-PLAN.md
+last_updated: "2026-04-12T12:37:17.744Z"
 last_activity: "2026-04-11 — Completed plan 01-05: feasibility smoke tests — resume=pass, config_dir=pass, flush=partial"
 progress:
   total_phases: 11
   completed_phases: 0
   total_plans: 10
-  completed_plans: 6
+  completed_plans: 7
   percent: 5
 ---
 
@@ -53,6 +53,7 @@ Progress: [██░░░░░░░░] 5% (5/10 plans complete in Phase 1)
 | Phase 01 P03 | 25 | 3 tasks | 4 files |
 | Phase 01 P04 | 35 | 3 tasks | 7 files |
 | Phase 01 P08 | 10 | 3 tasks | 4 files |
+| Phase 01 P06 | 45 | 3 tasks | 13 files |
 
 ## Accumulated Context
 
@@ -80,6 +81,8 @@ Recent decisions affecting current work:
 - Plan 01-04: stderr.txt written as diagnostic artifact for all scenarios with stderr output; not a required fixture but useful for debugging capture-host issues
 - [Phase 01]: resume_verdict=pass confirmed at capture time; Phase 7 primary path is --resume <id> -p without fallback needed
 - [Phase 01]: Turn 1 save_memory tool_use failure is expected (tool not registered); session context still propagated correctly to turn 2
+- [Phase 01]: error-auth and error-rate-limit are SYNTHETIC: host uses OAuth auth; GEMINI_API_KEY override does not disable OAuth path in gemini-cli 0.37.1; Phase 5 will validate real format on API-key-only host
+- [Phase 01]: tool_use/tool_result events appear as type='unknown' in deriveChunks skeleton; Phase 3 PRS-07 expected.json must explicitly model these event types
 
 ### Pending Todos
 
@@ -93,6 +96,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-04-12T12:35:15.192Z
-Stopped at: Completed 01-08-PLAN.md
+Last session: 2026-04-12T12:37:17.742Z
+Stopped at: Completed 01-06-PLAN.md
 Resume file: None
