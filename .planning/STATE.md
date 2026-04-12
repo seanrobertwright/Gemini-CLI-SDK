@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Completed 01-05-PLAN.md
-last_updated: "2026-04-11T23:00:00.000Z"
+stopped_at: Completed 01-08-PLAN.md
+last_updated: "2026-04-12T12:35:15.194Z"
 last_activity: "2026-04-11 — Completed plan 01-05: feasibility smoke tests — resume=pass, config_dir=pass, flush=partial"
 progress:
   total_phases: 11
   completed_phases: 0
   total_plans: 10
-  completed_plans: 4
-  percent: 4
+  completed_plans: 6
+  percent: 5
 ---
 
 # Project State
@@ -52,6 +52,7 @@ Progress: [██░░░░░░░░] 5% (5/10 plans complete in Phase 1)
 *Updated after each plan completion*
 | Phase 01 P03 | 25 | 3 tasks | 4 files |
 | Phase 01 P04 | 35 | 3 tasks | 7 files |
+| Phase 01 P08 | 10 | 3 tasks | 4 files |
 
 ## Accumulated Context
 
@@ -77,6 +78,8 @@ Recent decisions affecting current work:
 - Plan 01-05: config_dir_verdict=pass — GEMINI_CONFIG_DIR respected on Windows; real ~/.gemini/settings.json mtime unchanged; Phase 9 uses GEMINI_CONFIG_DIR for MCP isolation
 - Plan 01-05: flush_verdict=partial — long run produced only 24 KB (inconclusive; below 64 KB threshold); Phase 4 defaults forcePty:false with user opt-in
 - Plan 01-04: stderr.txt written as diagnostic artifact for all scenarios with stderr output; not a required fixture but useful for debugging capture-host issues
+- [Phase 01]: resume_verdict=pass confirmed at capture time; Phase 7 primary path is --resume <id> -p without fallback needed
+- [Phase 01]: Turn 1 save_memory tool_use failure is expected (tool not registered); session context still propagated correctly to turn 2
 
 ### Pending Todos
 
@@ -90,6 +93,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-04-11T22:40:00.000Z
-Stopped at: Completed 01-04-PLAN.md
+Last session: 2026-04-12T12:35:15.192Z
+Stopped at: Completed 01-08-PLAN.md
 Resume file: None
