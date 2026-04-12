@@ -38,11 +38,18 @@ if [ ! -s "$OUT" ]; then
   exit 1
 fi
 
+# On Windows (MSYS2/Git Bash), POSIX paths like /tmp/... need to be converted
+# to native Windows paths for Python to locate the file.
+if command -v cygpath >/dev/null 2>&1; then
+  PYTHON_OUT="$(cygpath -w "$OUT")"
+else
+  PYTHON_OUT="$OUT"
+fi
+
 # Import-smoke-test the generated module with Pydantic available
-# Note: single-quoted heredoc; OUT is expanded by the outer shell via double-quotes
 uvx --with "pydantic==2.*" python -c "
 import importlib.util
-spec = importlib.util.spec_from_file_location('events', '$OUT')
+spec = importlib.util.spec_from_file_location('events', r'$PYTHON_OUT')
 m = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(m)
 print('ok')

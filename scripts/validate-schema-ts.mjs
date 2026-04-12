@@ -68,11 +68,11 @@ async function main() {
 
     // 5. Run tsc --noEmit --strict against the generated .d.ts
     const exitCode = await new Promise((resolve, reject) => {
-      // Use npx to locate the pinned typescript installed in node_modules
+      // Use the locally installed tsc from node_modules (pinned via package.json devDependencies)
+      // Fall back to npx tsc if local binary not found.
+      const localTsc = path.join(repoRoot, 'node_modules', '.bin', 'tsc');
+      const tscCmd = fs.existsSync(localTsc) ? localTsc : 'tsc';
       const tscArgs = [
-        '-y',
-        `typescript@5`,
-        'tsc',
         '--noEmit',
         '--strict',
         '--target',
@@ -87,8 +87,8 @@ async function main() {
         tmpFile,
       ];
 
-      const proc = spawn('npx', tscArgs, {
-        shell: false,
+      const proc = spawn(tscCmd, tscArgs, {
+        shell: true,
         windowsHide: true,
         stdio: 'inherit',
       });
