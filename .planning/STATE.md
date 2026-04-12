@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: verifying
-stopped_at: Completed 02-01-PLAN.md
-last_updated: "2026-04-12T21:43:35.646Z"
+stopped_at: Completed 02-02-PLAN.md
+last_updated: "2026-04-12T21:51:07.060Z"
 last_activity: "2026-04-11 — Completed plan 01-10: spec/protocol.md + spec/errors.md drafted with fixture citations; all 8 Phase 1 validators pass"
 progress:
   total_phases: 11
   completed_phases: 1
   total_plans: 14
-  completed_plans: 11
+  completed_plans: 12
   percent: 9
 ---
 
@@ -58,6 +58,7 @@ Progress: [█░░░░░░░░░] 9% (Phase 1 of 11 complete)
 | Phase 01 P09 | 45 | 3 tasks | 5 files |
 | Phase 01 P10 | 20 | 3 tasks | 2 files |
 | Phase 02 P01 | 15 | 3 tasks | 15 files |
+| Phase 02 P02 | 10 | 2 tasks | 13 files |
 
 ## Accumulated Context
 
@@ -103,6 +104,9 @@ Recent decisions affecting current work:
 - [Phase 02-01]: vitest pinned to ^3.2 (not ^4.x): Vitest 4 drops Node 18 support; PLT-03 requires Node 18 in CI matrix
 - [Phase 02-01]: vitest run uses --passWithNoTests: exits code 0 with 0 test files for CI-safe scaffolding phase
 - [Phase 02-01]: python/ excluded from pnpm-workspace.yaml: Python uses uv toolchain, not pnpm; mixing toolchains would break both
+- [Phase 02-02]: vi.spyOn() cannot spy on ESM named exports — use vi.mock() factory with _actualSpawn escape hatch for integration tests
+- [Phase 02-02]: @types/node was missing from ts/package.json devDependencies — added ^20 to fix tsc --noEmit
+- [Phase 02-02]: BinaryResolver uses path.delimiter for PATH splitting (OS-native separator) not hardcoded colon
 
 ### Pending Todos
 
@@ -116,6 +120,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-04-12T21:43:35.643Z
-Stopped at: Completed 02-01-PLAN.md
+Last session: 2026-04-12T21:51:07.056Z
+Stopped at: Completed 02-02-PLAN.md
 Resume file: None

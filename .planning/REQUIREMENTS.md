@@ -9,15 +9,15 @@ Requirements for initial release. Each maps to a roadmap phase.
 
 ### Foundation
 
-- [ ] **FDN-01**: SDK locates the `gemini` binary via `cliPath` option → `GEMINI_BIN_PATH` env var → `PATH` → known install locations
-- [ ] **FDN-02**: SDK spawns `gemini-cli` using `child_process.spawn` (TS) / `anyio.open_process` (Python), never `exec`/`run`
-- [ ] **FDN-03**: SDK handles Windows `.cmd`/`.bat` shims safely (CVE-2024-27980) with array argv and selective `shell: true`
-- [ ] **FDN-04**: SDK forces UTF-8 at subprocess spawn and decodes stderr/stdout with replacement on error
-- [ ] **FDN-05**: SDK hides subprocess windows on Windows (`windowsHide: true` / `CREATE_NO_WINDOW`)
-- [ ] **FDN-06**: SDK escalates SIGTERM → 5s grace → SIGKILL on Unix; uses `taskkill /T /F` or `psutil` tree-kill on Windows
-- [ ] **FDN-07**: SDK builds a clean subprocess env dict via allowlist (mirrors Archon's `buildCleanSubprocessEnv` pattern)
-- [ ] **FDN-08**: SDK ships `SpawnPerCallStrategy` behind a pluggable `ProcessStrategy` interface so pool/long-lived variants are non-breaking swaps
-- [ ] **FDN-09**: `ProcessManager` detects orphan MCP grandchildren and cleans them up on parent exit
+- [x] **FDN-01**: SDK locates the `gemini` binary via `cliPath` option → `GEMINI_BIN_PATH` env var → `PATH` → known install locations
+- [x] **FDN-02**: SDK spawns `gemini-cli` using `child_process.spawn` (TS) / `anyio.open_process` (Python), never `exec`/`run`
+- [x] **FDN-03**: SDK handles Windows `.cmd`/`.bat` shims safely (CVE-2024-27980) with array argv and selective `shell: true`
+- [x] **FDN-04**: SDK forces UTF-8 at subprocess spawn and decodes stderr/stdout with replacement on error
+- [x] **FDN-05**: SDK hides subprocess windows on Windows (`windowsHide: true` / `CREATE_NO_WINDOW`)
+- [x] **FDN-06**: SDK escalates SIGTERM → 5s grace → SIGKILL on Unix; uses `taskkill /T /F` or `psutil` tree-kill on Windows
+- [x] **FDN-07**: SDK builds a clean subprocess env dict via allowlist (mirrors Archon's `buildCleanSubprocessEnv` pattern)
+- [x] **FDN-08**: SDK ships `SpawnPerCallStrategy` behind a pluggable `ProcessStrategy` interface so pool/long-lived variants are non-breaking swaps
+- [x] **FDN-09**: `ProcessManager` detects orphan MCP grandchildren and cleans them up on parent exit
 
 ### Parsing
 
@@ -129,7 +129,7 @@ Requirements for initial release. Each maps to a roadmap phase.
 
 ### Parity (TS ↔ Python)
 
-- [ ] **PAR-01**: TypeScript is the canonical implementation; Python is a mechanical port with matching file layout
+- [x] **PAR-01**: TypeScript is the canonical implementation; Python is a mechanical port with matching file layout
 - [ ] **PAR-02**: Both language suites consume the same `spec/fixtures/*.ndjson` in CI
 - [ ] **PAR-03**: Parity CI job diffs test names across TS and Python and blocks merge on divergence
 - [x] **PAR-04**: Both SDKs ship with a single shared version number
@@ -227,15 +227,15 @@ All v1 requirements map to exactly one phase. Coverage: 102/102.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| FDN-01 | Phase 2 | Pending |
-| FDN-02 | Phase 2 | Pending |
-| FDN-03 | Phase 2 | Pending |
-| FDN-04 | Phase 2 | Pending |
-| FDN-05 | Phase 2 | Pending |
-| FDN-06 | Phase 2 | Pending |
-| FDN-07 | Phase 2 | Pending |
-| FDN-08 | Phase 2 | Pending |
-| FDN-09 | Phase 2 | Pending |
+| FDN-01 | Phase 2 | Complete |
+| FDN-02 | Phase 2 | Complete |
+| FDN-03 | Phase 2 | Complete |
+| FDN-04 | Phase 2 | Complete |
+| FDN-05 | Phase 2 | Complete |
+| FDN-06 | Phase 2 | Complete |
+| FDN-07 | Phase 2 | Complete |
+| FDN-08 | Phase 2 | Complete |
+| FDN-09 | Phase 2 | Complete |
 | PRS-01 | Phase 3 | Pending |
 | PRS-02 | Phase 3 | Pending |
 | PRS-03 | Phase 3 | Pending |
@@ -305,7 +305,7 @@ All v1 requirements map to exactly one phase. Coverage: 102/102.
 | ARC-07 | Phase 10 | Pending |
 | ARC-08 | Phase 10 | Pending |
 | ARC-09 | Phase 10 | Pending |
-| PAR-01 | Phase 2 | Pending |
+| PAR-01 | Phase 2 | Complete |
 | PAR-02 | Phase 3 | Pending |
 | PAR-03 | Phase 2 | Pending |
 | PAR-04 | Phase 2 | Complete |
