@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: verifying
-stopped_at: Completed 02-03-PLAN.md
-last_updated: "2026-04-12T21:57:30.684Z"
+stopped_at: Completed 02-04-PLAN.md
+last_updated: "2026-04-12T22:04:22.194Z"
 last_activity: "2026-04-11 — Completed plan 01-10: spec/protocol.md + spec/errors.md drafted with fixture citations; all 8 Phase 1 validators pass"
 progress:
   total_phases: 11
-  completed_phases: 1
+  completed_phases: 2
   total_plans: 14
-  completed_plans: 13
+  completed_plans: 14
   percent: 9
 ---
 
@@ -60,6 +60,7 @@ Progress: [█░░░░░░░░░] 9% (Phase 1 of 11 complete)
 | Phase 02 P01 | 15 | 3 tasks | 15 files |
 | Phase 02 P02 | 10 | 2 tasks | 13 files |
 | Phase 02 P03 | 22 | 2 tasks | 13 files |
+| Phase 02 P04 | 4 | 2 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -111,6 +112,9 @@ Recent decisions affecting current work:
 - [Phase 02]: anyio.open_process does not accept shell=True — pass command as a string on Windows to trigger cmd.exe shell behavior
 - [Phase 02]: [Phase 02-03]: kill_tree() uses psutil for recursive child cleanup before SIGTERM/SIGKILL on Unix (FDN-09 orphan detection)
 - [Phase 02]: [Phase 02-03]: anyio Process.stdout is already ByteReceiveStream — do not wrap with anyio.wrap_file()
+- [Phase 02-04]: grep -oE (ERE) used instead of -oP (PCRE): Git Bash grep 3.0 on Windows returns exit 2 for -oP due to locale constraints; ERE covers the needed pattern adequately
+- [Phase 02-04]: Node path in sync-version.sh passed via REPO_ROOT env var: avoids Windows backslash escaping in -e string; uses process.env.REPO_ROOT + path.join() inside node
+- [Phase 02-04]: Python detector in diff-test-names.sh loops python3/python/py with execution verification: Windows Store stub passes command -v but exits 49 on execution
 
 ### Pending Todos
 
@@ -124,6 +128,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-04-12T21:57:30.673Z
-Stopped at: Completed 02-03-PLAN.md
+Last session: 2026-04-12T22:04:22.191Z
+Stopped at: Completed 02-04-PLAN.md
 Resume file: None
