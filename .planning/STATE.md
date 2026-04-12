@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: verifying
-stopped_at: Completed 02-02-PLAN.md
-last_updated: "2026-04-12T21:51:07.060Z"
+stopped_at: Completed 02-03-PLAN.md
+last_updated: "2026-04-12T21:57:30.684Z"
 last_activity: "2026-04-11 — Completed plan 01-10: spec/protocol.md + spec/errors.md drafted with fixture citations; all 8 Phase 1 validators pass"
 progress:
   total_phases: 11
   completed_phases: 1
   total_plans: 14
-  completed_plans: 12
+  completed_plans: 13
   percent: 9
 ---
 
@@ -59,6 +59,7 @@ Progress: [█░░░░░░░░░] 9% (Phase 1 of 11 complete)
 | Phase 01 P10 | 20 | 3 tasks | 2 files |
 | Phase 02 P01 | 15 | 3 tasks | 15 files |
 | Phase 02 P02 | 10 | 2 tasks | 13 files |
+| Phase 02 P03 | 22 | 2 tasks | 13 files |
 
 ## Accumulated Context
 
@@ -107,6 +108,9 @@ Recent decisions affecting current work:
 - [Phase 02-02]: vi.spyOn() cannot spy on ESM named exports — use vi.mock() factory with _actualSpawn escape hatch for integration tests
 - [Phase 02-02]: @types/node was missing from ts/package.json devDependencies — added ^20 to fix tsc --noEmit
 - [Phase 02-02]: BinaryResolver uses path.delimiter for PATH splitting (OS-native separator) not hardcoded colon
+- [Phase 02]: anyio.open_process does not accept shell=True — pass command as a string on Windows to trigger cmd.exe shell behavior
+- [Phase 02]: [Phase 02-03]: kill_tree() uses psutil for recursive child cleanup before SIGTERM/SIGKILL on Unix (FDN-09 orphan detection)
+- [Phase 02]: [Phase 02-03]: anyio Process.stdout is already ByteReceiveStream — do not wrap with anyio.wrap_file()
 
 ### Pending Todos
 
@@ -120,6 +124,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-04-12T21:51:07.056Z
-Stopped at: Completed 02-02-PLAN.md
+Last session: 2026-04-12T21:57:30.673Z
+Stopped at: Completed 02-03-PLAN.md
 Resume file: None
