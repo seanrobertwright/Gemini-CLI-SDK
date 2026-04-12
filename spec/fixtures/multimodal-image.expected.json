@@ -1,0 +1,33 @@
+{
+  "fixture": "multimodal-image.ndjson",
+  "captured_against": "gemini-cli@0.37.1",
+  "captured_at": "2026-04-12T12:33:25.992Z",
+  "description": "Prompt with @-reference to a small committed PNG.",
+  "chunks": [
+    {
+      "type": "system",
+      "subtype": "init",
+      "sessionId": "<REDACTED_SESSION_ID>",
+      "model": "auto-gemini-3"
+    },
+    {
+      "type": "user",
+      "content": "Describe @spec/fixtures/_assets/sample-image.png in one sentence."
+    },
+    {
+      "type": "assistant",
+      "content": "The image is"
+    },
+    {
+      "type": "assistant",
+      "content": " a solid, vibrant red square."
+    },
+    {
+      "type": "result",
+      "sessionId": "<REDACTED_SESSION_ID>",
+      "stopReason": "end_turn"
+    }
+  ],
+  "exit_code": 0,
+  "stderr_patterns": []
+}

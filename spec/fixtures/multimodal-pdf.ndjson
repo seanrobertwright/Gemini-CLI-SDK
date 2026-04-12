@@ -1,0 +1,5 @@
+{"type":"init","timestamp":"2026-04-12T12:33:35.387Z","session_id":"<REDACTED_SESSION_ID>","model":"auto-gemini-3"}
+{"type":"message","timestamp":"2026-04-12T12:33:35.396Z","role":"user","content":"Summarize @spec/fixtures/_assets/sample-document.pdf in one sentence."}
+{"type":"message","timestamp":"2026-04-12T12:33:40.596Z","role":"assistant","content":"The document contains a simple greeting","delta":true}
+{"type":"message","timestamp":"2026-04-12T12:33:40.614Z","role":"assistant","content":" addressed to the Gemini SDK.","delta":true}
+{"type":"result","timestamp":"2026-04-12T12:33:40.668Z","status":"success","stats":{"total_tokens":12854,"input_tokens":12549,"output_tokens":59,"cached":0,"input":12549,"duration_ms":5282,"tool_calls":0,"models":{"gemini-2.5-flash-lite":{"total_tokens":3244,"input_tokens":3015,"output_tokens":47,"cached":0,"input":3015},"gemini-3-flash-preview":{"total_tokens":9610,"input_tokens":9534,"output_tokens":12,"cached":0,"input":9534}}}}

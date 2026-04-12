@@ -1,0 +1,33 @@
+{
+  "fixture": "multimodal-pdf.ndjson",
+  "captured_against": "gemini-cli@0.37.1",
+  "captured_at": "2026-04-12T12:33:40.738Z",
+  "description": "Prompt with @-reference to a small committed PDF.",
+  "chunks": [
+    {
+      "type": "system",
+      "subtype": "init",
+      "sessionId": "<REDACTED_SESSION_ID>",
+      "model": "auto-gemini-3"
+    },
+    {
+      "type": "user",
+      "content": "Summarize @spec/fixtures/_assets/sample-document.pdf in one sentence."
+    },
+    {
+      "type": "assistant",
+      "content": "The document contains a simple greeting"
+    },
+    {
+      "type": "assistant",
+      "content": " addressed to the Gemini SDK."
+    },
+    {
+      "type": "result",
+      "sessionId": "<REDACTED_SESSION_ID>",
+      "stopReason": "end_turn"
+    }
+  ],
+  "exit_code": 0,
+  "stderr_patterns": []
+}

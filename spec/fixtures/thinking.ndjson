@@ -1,0 +1,6 @@
+{"type":"init","timestamp":"2026-04-12T00:18:20.718Z","session_id":"<REDACTED_SESSION_ID>","model":"gemini-2.5-pro"}
+{"type":"message","timestamp":"2026-04-12T00:18:20.720Z","role":"user","content":"What is 23*17? Think step by step."}
+{"type":"message","timestamp":"2026-04-12T00:18:24.853Z","role":"assistant","content":"23 * 17","delta":true}
+{"type":"message","timestamp":"2026-04-12T00:18:24.877Z","role":"assistant","content":" = 391.\n\nHere's the step-by-step calculation:\n\n*   **Step 1:** Multiply 23 by 10 (which is 23 * 10 = 230).\n*   **Step 2:** Multiply 23 by 7","delta":true}
+{"type":"message","timestamp":"2026-04-12T00:18:25.241Z","role":"assistant","content":" (which is 23 * 7 = 161).\n*   **Step 3:** Add the results from Step 1 and Step 2 (230 + 161 = 391).","delta":true}
+{"type":"result","timestamp":"2026-04-12T00:18:25.297Z","status":"success","stats":{"total_tokens":8343,"input_tokens":7901,"output_tokens":120,"cached":0,"input":7901,"duration_ms":4579,"tool_calls":0,"models":{"gemini-2.5-pro":{"total_tokens":8343,"input_tokens":7901,"output_tokens":120,"cached":0,"input":7901}}}}

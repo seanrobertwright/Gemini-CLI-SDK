@@ -1,0 +1,39 @@
+{
+  "fixture": "thinking.ndjson",
+  "captured_against": "gemini-cli@0.37.1",
+  "captured_at": "2026-04-12T00:18:25.373Z",
+  "description": "gemini-2.5-pro extended reasoning; may or may not expose thinking events in headless mode.",
+  "chunks": [
+    {
+      "type": "system",
+      "subtype": "init",
+      "sessionId": "<REDACTED_SESSION_ID>",
+      "model": "gemini-2.5-pro"
+    },
+    {
+      "type": "user",
+      "content": "What is 23*17? Think step by step."
+    },
+    {
+      "type": "assistant",
+      "content": "23 * 17"
+    },
+    {
+      "type": "assistant",
+      "content": " = 391.\n\nHere's the step-by-step calculation:\n\n*   **Step 1:** Multiply 23 by 10 (which is 23 * 10 = 230).\n*   **Step 2:** Multiply 23 by 7"
+    },
+    {
+      "type": "assistant",
+      "content": " (which is 23 * 7 = 161).\n*   **Step 3:** Add the results from Step 1 and Step 2 (230 + 161 = 391)."
+    },
+    {
+      "type": "result",
+      "sessionId": "<REDACTED_SESSION_ID>",
+      "stopReason": "end_turn"
+    }
+  ],
+  "exit_code": 0,
+  "stderr_patterns": [],
+  "thinking_events_present": false,
+  "note": "Captured but no thinking events appeared in headless mode; Phase 3 synthesizes the variant from structural knowledge per RESEARCH.md §Open Questions #4."
+}

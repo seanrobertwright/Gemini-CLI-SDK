@@ -1,0 +1,5 @@
+{"type":"init","timestamp":"2026-04-12T12:33:21.479Z","session_id":"<REDACTED_SESSION_ID>","model":"auto-gemini-3"}
+{"type":"message","timestamp":"2026-04-12T12:33:21.487Z","role":"user","content":"Describe @spec/fixtures/_assets/sample-image.png in one sentence."}
+{"type":"message","timestamp":"2026-04-12T12:33:25.867Z","role":"assistant","content":"The image is","delta":true}
+{"type":"message","timestamp":"2026-04-12T12:33:25.882Z","role":"assistant","content":" a solid, vibrant red square.","delta":true}
+{"type":"result","timestamp":"2026-04-12T12:33:25.937Z","status":"success","stats":{"total_tokens":12293,"input_tokens":12084,"output_tokens":57,"cached":0,"input":12084,"duration_ms":4458,"tool_calls":0,"models":{"gemini-2.5-flash-lite":{"total_tokens":2114,"input_tokens":1982,"output_tokens":47,"cached":0,"input":1982},"gemini-3-flash-preview":{"total_tokens":10179,"input_tokens":10102,"output_tokens":10,"cached":0,"input":10102}}}}

@@ -149,8 +149,8 @@ export const SCENARIOS = {
   'large-output': {
     slug: 'large-output',
     description: 'Long output (>128 KB) to exceed Node pipe buffer and expose block-buffering.',
-    args: ['-p', 'List 200 distinct facts about octopuses, one per line, numbered.', '--output-format', 'stream-json'],
-    timeoutMs: 180000
+    args: ['--approval-mode', 'plan', '-p', 'Write a numbered list of exactly 200 facts about marine biology, one per line. Each entry must be a single sentence of exactly 40-50 words covering specific scientific details. Do not use any tools, do not write to files, output only the numbered list. Format: "N. [sentence]". Start with 1.', '--output-format', 'stream-json'],
+    timeoutMs: 300000
     // stubbed removed: W3 plan 01-07 implements this scenario
   },
   'abort-midstream': {

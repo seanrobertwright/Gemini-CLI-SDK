@@ -1,0 +1,12 @@
+{
+  "fixture": "abort-midstream.ndjson",
+  "captured_against": "gemini-cli@0.37.1",
+  "captured_at": "2026-04-12T12:50:53.625Z",
+  "description": "Start a long prompt but SIGTERM the child at ~2s; truncated NDJSON expected.",
+  "chunks": [],
+  "exit_code": 1,
+  "stderr_patterns": [],
+  "aborted": true,
+  "abort_after_ms": 2000,
+  "note": "Truncated capture — child terminated mid-stream; partial/missing final line expected. Phase 5 tests \"stream ended without terminal result event\" path."
+}
