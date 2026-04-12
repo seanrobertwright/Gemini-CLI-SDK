@@ -31,9 +31,19 @@ if command -v trufflehog >/dev/null 2>&1; then
   trufflehog filesystem "$FIXTURE_DIR" --fail --no-update --only-verified=false
 elif command -v docker >/dev/null 2>&1; then
   # Fallback: docker image (cross-platform, no PATH install needed)
-  docker run --rm -v "$PWD:/work" -w /work \
-    trufflesecurity/trufflehog:latest \
-    filesystem spec/fixtures --fail --no-update --only-verified=false
+  # On Windows/MSYS2, path translation rewrites -w /work to a Windows path.
+  # Use MSYS2_ARG_CONV_EXCL or pass WORKDIR via env to avoid translation.
+  if [ "${MSYSTEM:-}" != "" ] || [ "${OS:-}" = "Windows_NT" ]; then
+    # Windows: convert PWD to a Windows path for Docker volume mount
+    WIN_PWD=$(cd "$PWD" && pwd -W 2>/dev/null || cygpath -w "$PWD" 2>/dev/null || echo "$PWD")
+    MSYS_NO_PATHCONV=1 docker run --rm -v "${WIN_PWD}:/work" -w "//work" \
+      trufflesecurity/trufflehog:latest \
+      filesystem spec/fixtures --fail --no-update --only-verified=false
+  else
+    docker run --rm -v "$PWD:/work" -w /work \
+      trufflesecurity/trufflehog:latest \
+      filesystem spec/fixtures --fail --no-update --only-verified=false
+  fi
 else
   echo "FAIL: trufflehog not on PATH and docker unavailable" >&2
   echo "Install trufflehog: https://github.com/trufflesecurity/trufflehog#installation" >&2
