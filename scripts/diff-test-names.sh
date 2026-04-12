@@ -35,13 +35,15 @@ fi
 # Handles both single and double quotes.
 # Uses -oE (ERE) for portability — avoids -oP (PCRE) which requires special locale
 # support in some grep builds (e.g. Git Bash on Windows with grep 3.0).
-grep -rh --include="*.spec.ts" --include="*.test.ts" \
-  -oE "(test|it)\(['\"][^'\"]+['\"]" "$TS_DIR" 2>/dev/null \
+grep -rhn --include="*.spec.ts" --include="*.test.ts" \
+  -E "^[[:space:]]*(test|it)\(['\"]" "$TS_DIR" 2>/dev/null \
+  | grep -oE "(test|it)\(['\"][^'\"]+['\"]" \
   | sed "s/^\\(test\\|it\\)(['\"]//;s/['\"]$//" \
+  | tr -d '\r' \
   | sort > "$TS_TESTS" || true  # grep exits 1 when no matches; || true prevents pipefail abort
 
 # Extract Python test docstrings (first line of each test function's docstring)
-"$PYTHON" - "$PY_DIR" <<'PYEOF' | sort > "$PY_TESTS"
+"$PYTHON" - "$PY_DIR" <<'PYEOF' | tr -d '\r' | sort > "$PY_TESTS"
 import ast
 import pathlib
 import sys
