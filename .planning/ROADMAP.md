@@ -73,12 +73,7 @@ Plans:
   2. Fuzz tests feeding the parser random bytes, CRLF line endings, split UTF-8 code points across chunk boundaries, lines over 1 MiB, and unknown event `type` values all complete without throwing — degraded output is yielded as `{type:'unknown'|'cli_log', raw}` events instead
   3. A unit test verifies that every `tool_use` chunk in the fixture corpus is followed by a paired `tool_result` chunk (Archon's `claude.ts` correctness bar), and that the `EventDispatcher` refuses to yield an unpaired tool use
   4. The generated TS `MessageChunk` type and Python `MessageChunk` TypedDict/dataclass both have all 8 variants (`assistant | system | thinking | result | rate_limit | tool | tool_result | workflow_dispatch`) and import cleanly into a small smoke script in each language
-**Plans**: 4 plans
-Plans:
-- [ ] 02-01-PLAN.md — Wave 1: Workspace scaffolding (VERSION, pnpm workspace, ts/package.json, python/pyproject.toml, adapter-archon stub)
-- [ ] 02-02-PLAN.md — Wave 2: TS process modules (BinaryResolver, EnvBuilder, ProcessStrategy, SpawnPerCallStrategy, ProcessManager + tests)
-- [ ] 02-03-PLAN.md — Wave 3: Python process modules (mechanical port of TS canonical + tests with parity docstrings)
-- [ ] 02-04-PLAN.md — Wave 4: CI matrix + parity scripts (sync-version.sh, diff-test-names.sh, GitHub Actions workflow)
+**Plans**: TBD
 
 ### Phase 4: Public query() + ArgvBuilder + systemPrompt + Workspace + Model Selection
 **Goal**: Ship the public `query(options): AsyncIterable<MessageChunk>` async generator — the SDK's only public entry point — wired to the pure-function `buildArgv(options): string[]`, cancellation via `abortSignal`/`cancel_scope`, temp-file `GEMINI_SYSTEM_MD` (cleaned up in `finally`), `cwd` + `--include-directories` for workspace context, and the typed model enum with `@deprecated` 2.5-series markings + string escape hatch + silent-downgrade detection via the `init` event. First real `gemini-cli` round-trip happens here. Non-streaming helper is a thin wrapper. Raw-event API is exposed alongside the mapped generator.
@@ -89,12 +84,7 @@ Plans:
   2. `buildArgv(options)` is a pure function with 100% branch coverage under unit tests that never spawn a process, and a fuzz test confirms it produces a non-empty `string[]` argv for every combinatoric option input without throwing
   3. Aborting a query mid-stream (TS `AbortController.abort()` / Python `cancel_scope.cancel()`) kills the subprocess within the SIGTERM grace window, the generator throws `AbortError` at the caller's next `await`, and the temp system-prompt file is deleted (verified by a post-abort `fs.stat` assertion)
   4. Passing `model: "2.5-pro"` when the CLI downgrades to Flash produces a non-fatal `ModelDowngradeWarning` on the terminal `result` chunk (no throw), and the default model is `latest`/`auto` (never a pinned 2.5 string)
-**Plans**: 4 plans
-Plans:
-- [ ] 02-01-PLAN.md — Wave 1: Workspace scaffolding (VERSION, pnpm workspace, ts/package.json, python/pyproject.toml, adapter-archon stub)
-- [ ] 02-02-PLAN.md — Wave 2: TS process modules (BinaryResolver, EnvBuilder, ProcessStrategy, SpawnPerCallStrategy, ProcessManager + tests)
-- [ ] 02-03-PLAN.md — Wave 3: Python process modules (mechanical port of TS canonical + tests with parity docstrings)
-- [ ] 02-04-PLAN.md — Wave 4: CI matrix + parity scripts (sync-version.sh, diff-test-names.sh, GitHub Actions workflow)
+**Plans**: TBD
 
 ### Phase 5: Error Taxonomy + Archon 5-Bucket Mapping
 **Goal**: Define the typed `GeminiError` hierarchy (base + `RateLimitError`, `AuthError` with subtypes, `ModelAccessError`, `InvalidPromptError`, `ProcessError`, `ProcessCrashError`, `ParseError`, `AbortError`, `UnsupportedFeatureError`, `GeminiNotFoundError`), generate both language implementations from a **single YAML source file** (`spec/errors.yaml`), and build the `ErrorMapper` that pattern-matches `(exit code, stderr tail, last events)` into typed errors. Both the exit-code path and stream-json `error`-event path must produce identical typed errors. Every error carries `.retryable: boolean` and optional `.retryAfterMs?: number`. A CI linter cross-checks the YAML against both language implementations. Error classes map 1:1 to Archon's 5 retry buckets.
@@ -105,12 +95,7 @@ Plans:
   2. A stream ending without a terminal `result` event always raises `ProcessError` — even on exit code 0 — verified by a fixture where the subprocess is SIGKILL'd mid-stream
   3. `scripts/lint-errors-yaml.sh` runs in CI and fails merge if any class in `spec/errors.yaml` is missing from either `ts/src/errors.ts` or `python/src/gemini_sdk/errors.py`, and vice versa
   4. A stream-json `{"type":"error"}` event and an exit-code+stderr match for the same underlying failure both produce the identical typed error instance (verified by a test that feeds both paths the same rate-limit scenario and `assertEquals` on the resulting error class)
-**Plans**: 4 plans
-Plans:
-- [ ] 02-01-PLAN.md — Wave 1: Workspace scaffolding (VERSION, pnpm workspace, ts/package.json, python/pyproject.toml, adapter-archon stub)
-- [ ] 02-02-PLAN.md — Wave 2: TS process modules (BinaryResolver, EnvBuilder, ProcessStrategy, SpawnPerCallStrategy, ProcessManager + tests)
-- [ ] 02-03-PLAN.md — Wave 3: Python process modules (mechanical port of TS canonical + tests with parity docstrings)
-- [ ] 02-04-PLAN.md — Wave 4: CI matrix + parity scripts (sync-version.sh, diff-test-names.sh, GitHub Actions workflow)
+**Plans**: TBD
 
 ### Phase 6: Auth Environment
 **Goal**: Wire all auth modes into `EnvBuilder`: `GEMINI_API_KEY` is the canonical default, Vertex AI via `GOOGLE_APPLICATION_CREDENTIALS` (service account JSON) or `GOOGLE_API_KEY` (alternative Vertex path) is supported when explicitly selected, `GOOGLE_CLOUD_PROJECT` / `GOOGLE_CLOUD_PROJECT_ID` / `GOOGLE_CLOUD_LOCATION` pass through for Vertex project+region scoping, and ADC/Sign-in-with-Google is picked up transparently if already configured — but the SDK **never automates interactive OAuth login**. A runtime warning fires if multiple auth modes are configured, and the documented precedence is `GEMINI_API_KEY` > `GOOGLE_APPLICATION_CREDENTIALS` > `GOOGLE_API_KEY` > ADC/OAuth fallback. Documentation captures why API key is the default (discussion #22970, ToS warning) and that no `GOOGLE_AUTH_TOKEN` bearer-token passthrough exists.
@@ -121,12 +106,7 @@ Plans:
   2. Setting two auth modes simultaneously (e.g. `GEMINI_API_KEY` + `GOOGLE_APPLICATION_CREDENTIALS`) emits a runtime warning naming the precedence winner, and a test asserts the warning text matches the documented precedence chain
   3. An auth-failure integration test (invalid API key) surfaces an `AuthError` subclass (`NotConfigured` / `Forbidden403` / `Expired` / `ToSViolation`) distinct from the generic `GeminiError` base, with `.retryable = false` and Archon bucket `auth`
   4. The SDK never calls `gemini auth login` or any interactive OAuth entrypoint — verified by a grep-based CI linter that fails if `auth login` appears anywhere in the source tree
-**Plans**: 4 plans
-Plans:
-- [ ] 02-01-PLAN.md — Wave 1: Workspace scaffolding (VERSION, pnpm workspace, ts/package.json, python/pyproject.toml, adapter-archon stub)
-- [ ] 02-02-PLAN.md — Wave 2: TS process modules (BinaryResolver, EnvBuilder, ProcessStrategy, SpawnPerCallStrategy, ProcessManager + tests)
-- [ ] 02-03-PLAN.md — Wave 3: Python process modules (mechanical port of TS canonical + tests with parity docstrings)
-- [ ] 02-04-PLAN.md — Wave 4: CI matrix + parity scripts (sync-version.sh, diff-test-names.sh, GitHub Actions workflow)
+**Plans**: TBD
 
 ### Phase 7: Session Resume + Multi-Turn
 **Goal**: Ship the `Session` value object (immutable, identifier-based, NOT process-bound), capture session IDs from the `init` event, wire `--resume <id>` into `ArgvBuilder`, and land the transcript-prepend fallback inside `Session` + `ArgvBuilder` **gated by the Phase-1 verdict on gemini-cli issue #14180**. If `--resume` + `-p` works, `Session` is trivial and the fallback is dark-shipped. If it's broken, the fallback becomes the default path.
@@ -137,12 +117,7 @@ Plans:
   2. The `Session` value object has no open process handles, no file descriptors, and is trivially serializable (JSON round-trip returns an equivalent `Session`) — verified by a unit test
   3. The transcript-prepend fallback activates when a config flag (set by Phase 1's verdict) is `true`, and a unit test asserts that `buildArgv` with the fallback produces a single `-p` invocation whose prompt contains both the previous turn and the new turn in order
   4. Killing a session mid-stream and resuming it in a new `query()` call works on all three OSes (kill-mid-session integration test per OS)
-**Plans**: 4 plans
-Plans:
-- [ ] 02-01-PLAN.md — Wave 1: Workspace scaffolding (VERSION, pnpm workspace, ts/package.json, python/pyproject.toml, adapter-archon stub)
-- [ ] 02-02-PLAN.md — Wave 2: TS process modules (BinaryResolver, EnvBuilder, ProcessStrategy, SpawnPerCallStrategy, ProcessManager + tests)
-- [ ] 02-03-PLAN.md — Wave 3: Python process modules (mechanical port of TS canonical + tests with parity docstrings)
-- [ ] 02-04-PLAN.md — Wave 4: CI matrix + parity scripts (sync-version.sh, diff-test-names.sh, GitHub Actions workflow)
+**Plans**: TBD
 
 ### Phase 8: Tools + Approval Mode + Structured Output (Best-Effort)
 **Goal**: Pass `options.allowedTools` through to `--allowed-tools` / Policy Engine (runtime compat check to handle the migration gracefully), pass `options.approvalMode` through to `--approval-mode` (`default` | `auto_edit` | `yolo` | `plan`), explicitly document that caller-defined custom tool definitions are NOT supported in v1.0, and ship best-effort structured output: `options.outputSchema` injects schema guidance into the system prompt + runtime-validates output with Zod (TS) / Pydantic (Python) + retries ONCE on validation failure with feedback, then raises `SchemaValidationError`. Structured output is marked `@experimental` in types and docs with a clear limitation note linking upstream issue #13388.
@@ -153,12 +128,7 @@ Plans:
   2. Passing `approvalMode: 'yolo'` successfully executes a file-write tool call end-to-end in a fixture-sandboxed workspace without prompting, and `approvalMode: 'plan'` produces a plan-only event stream with no filesystem mutations (verified via post-run `fs.stat`)
   3. A `outputSchema` test with a prompt that returns non-conformant JSON triggers exactly one retry with validation feedback, and a second failure raises `SchemaValidationError` (extends `GeminiError`, `.retryable = false`, bucket `unknown`)
   4. The TS public API marks `outputSchema` and the `tools.customDefinitions` absence with `@experimental` / `@deprecated`-style JSDoc, and the docs site "Known Limitations" section links gemini-cli #13388
-**Plans**: 4 plans
-Plans:
-- [ ] 02-01-PLAN.md — Wave 1: Workspace scaffolding (VERSION, pnpm workspace, ts/package.json, python/pyproject.toml, adapter-archon stub)
-- [ ] 02-02-PLAN.md — Wave 2: TS process modules (BinaryResolver, EnvBuilder, ProcessStrategy, SpawnPerCallStrategy, ProcessManager + tests)
-- [ ] 02-03-PLAN.md — Wave 3: Python process modules (mechanical port of TS canonical + tests with parity docstrings)
-- [ ] 02-04-PLAN.md — Wave 4: CI matrix + parity scripts (sync-version.sh, diff-test-names.sh, GitHub Actions workflow)
+**Plans**: TBD
 
 ### Phase 9: MCP Passthrough + Isolated Config Dir
 **Goal**: Accept `options.mcpServers` (map of server name → config), write a temp `settings.json` fragment into an isolated `GEMINI_CONFIG_DIR` per query, gate which servers `gemini-cli` can use via `--allowed-mcp-server-names`, and clean up the temp dir in `finally` (even on error or cancel). The SDK **must never mutate the user's real `~/.gemini/settings.json`** — this is a hard invariant verified by a test. The phase starts with a short research spike to pin the smallest reliable MCP configuration window against the known-fragile upstream (#2654, #3406, #20694, #13604).
@@ -169,12 +139,7 @@ Plans:
   2. A test that records the `mtime` of `~/.gemini/settings.json` before and after running a full `query()` with `mcpServers` asserts `mtime` is unchanged — the user's real settings file is never touched
   3. After a `query()` call with `mcpServers` completes (or is aborted mid-stream, or raises an error), the temp `GEMINI_CONFIG_DIR` is removed from disk — verified by a `fs.stat` assertion in the test's `finally` block
   4. The CI job runs the MCP passthrough test on all three OSes and it passes on Windows (the highest-risk platform for MCP child-process cleanup per pitfall #4)
-**Plans**: 4 plans
-Plans:
-- [ ] 02-01-PLAN.md — Wave 1: Workspace scaffolding (VERSION, pnpm workspace, ts/package.json, python/pyproject.toml, adapter-archon stub)
-- [ ] 02-02-PLAN.md — Wave 2: TS process modules (BinaryResolver, EnvBuilder, ProcessStrategy, SpawnPerCallStrategy, ProcessManager + tests)
-- [ ] 02-03-PLAN.md — Wave 3: Python process modules (mechanical port of TS canonical + tests with parity docstrings)
-- [ ] 02-04-PLAN.md — Wave 4: CI matrix + parity scripts (sync-version.sh, diff-test-names.sh, GitHub Actions workflow)
+**Plans**: TBD
 
 ### Phase 10: Archon Adapter (TS only)
 **Goal**: Implement `GeminiClient implements IAssistantClient` in the `adapter-archon/` subpackage as a thin shim (~200 LOC target, business logic stays in the SDK), source-published `.ts` to match Archon's Bun-based monorepo convention. The adapter translates Archon's `AssistantRequestOptions` to SDK options (11 fully honored, 4 partially, 4 deferred, 5 silently ignored per Claude/Codex precedent), uses only `GEMINI_*` and `GEMINI_SDK_*` env vars (no collisions with Claude/Codex), and proves `DEFAULT_AI_ASSISTANT=gemini` works end-to-end in a real Archon checkout via contract tests. Then opens a PR against `coleam00/Archon` adding `packages/core/src/clients/gemini.ts` + a 3-line `factory.ts` edit + `.env.example` entries. **This is the only TS-only phase — no Python work.** If the adapter is hard to write, the SDK's shape is wrong and we loop back to an earlier phase.
@@ -185,12 +150,7 @@ Plans:
   2. `adapter-archon/gemini.ts` is ≤ 250 LOC (stretch: ≤ 200), `getType()` returns `'gemini'`, `sendQuery` signature exactly matches Archon's `IAssistantClient.sendQuery`, and the subpackage source-publishes `.ts` (no compiled artifacts in the Archon import path)
   3. `gh pr list --repo coleam00/Archon --head gemini-sdk-integration` shows an open PR adding `packages/core/src/clients/gemini.ts`, the 3-line `factory.ts` edit, and `.env.example` entries for `GEMINI_API_KEY` + `GEMINI_BIN_PATH`
   4. A grep-based CI linter fails merge if any env var outside the `GEMINI_*` / `GEMINI_SDK_*` namespaces appears in the adapter source
-**Plans**: 4 plans
-Plans:
-- [ ] 02-01-PLAN.md — Wave 1: Workspace scaffolding (VERSION, pnpm workspace, ts/package.json, python/pyproject.toml, adapter-archon stub)
-- [ ] 02-02-PLAN.md — Wave 2: TS process modules (BinaryResolver, EnvBuilder, ProcessStrategy, SpawnPerCallStrategy, ProcessManager + tests)
-- [ ] 02-03-PLAN.md — Wave 3: Python process modules (mechanical port of TS canonical + tests with parity docstrings)
-- [ ] 02-04-PLAN.md — Wave 4: CI matrix + parity scripts (sync-version.sh, diff-test-names.sh, GitHub Actions workflow)
+**Plans**: TBD
 
 ### Phase 11: Docs Site + Compat Matrix + Release
 **Goal**: Publish the hosted doc site (VitePress for TS + mkdocs-material for Python, single site with two sections), auto-generate API reference via typedoc (TS) and mkdocstrings (Python), ship the compat matrix page with a runtime `gemini --version` warning probe, write the quickstart + migration + Archon integration guides, add the known-issues appendix with live upstream bug links, declare `gemini-cli` as a runtime prerequisite (not bundled, not auto-installed), dual-publish to npm via changesets and PyPI via `uv publish` with trusted publishing, write MIT `LICENSE`, maintain `CHANGELOG.md` via changesets mirrored into Python release notes, and **tag v1.0.0 only after the Phase-10 Archon PR merges and `DEFAULT_AI_ASSISTANT=gemini` is confirmed working**.
@@ -201,12 +161,7 @@ Plans:
   2. `npm install @gemini-sdk/gemini` on Windows/macOS/Linux and `uv add gemini-sdk` on Windows/macOS/Linux both succeed from clean machines, the installed packages import and run their smoke tests, and the runtime `gemini --version` probe emits a warning (not an error) when the detected CLI version is outside the tested range
   3. `git tag` shows `v1.0.0` exists, `npm view @gemini-sdk/gemini version` and `pip index versions gemini-sdk` both report `1.0.0`, and the Archon PR from Phase 10 is in `merged` state — the tag was cut **after** the merge
   4. The compat matrix page lists the tested `gemini-cli` version range and links every upstream issue the SDK defends against (#14180, #13388, #3485, #22970, #4945 et al.), and the migration guide covers translating Claude Agent SDK / Codex SDK call sites to `query()`
-**Plans**: 4 plans
-Plans:
-- [ ] 02-01-PLAN.md — Wave 1: Workspace scaffolding (VERSION, pnpm workspace, ts/package.json, python/pyproject.toml, adapter-archon stub)
-- [ ] 02-02-PLAN.md — Wave 2: TS process modules (BinaryResolver, EnvBuilder, ProcessStrategy, SpawnPerCallStrategy, ProcessManager + tests)
-- [ ] 02-03-PLAN.md — Wave 3: Python process modules (mechanical port of TS canonical + tests with parity docstrings)
-- [ ] 02-04-PLAN.md — Wave 4: CI matrix + parity scripts (sync-version.sh, diff-test-names.sh, GitHub Actions workflow)
+**Plans**: TBD
 
 ## Progress
 
