@@ -57,12 +57,13 @@ Plans:
   2. A kill-mid-stream integration test on each OS verifies that sending an abort signal terminates `gemini-cli` plus its MCP grandchildren within the 5-second SIGTERM grace window (no orphans detectable by `psutil` / `ps`)
   3. The GitHub Actions matrix job `{ubuntu, macos, windows} × {node 18/20/22} × {python 3.10–3.13}` is green with Windows as a hard-required job (not `continue-on-error`), and at least one Windows runner uses a non-en-US locale
   4. The parity CI job runs `scripts/diff-test-names.sh` comparing TS `*.spec.ts` test names to Python `test_*.py` test names and fails merge on divergence; the shared-version source is a single file consumed by both `ts/package.json` and `python/pyproject.toml`
-**Plans**: 4 plans
+**Plans**: 5 plans
 Plans:
 - [ ] 02-01-PLAN.md — Wave 1: Workspace scaffolding (VERSION, pnpm workspace, ts/package.json, python/pyproject.toml, adapter-archon stub)
 - [ ] 02-02-PLAN.md — Wave 2: TS process modules (BinaryResolver, EnvBuilder, ProcessStrategy, SpawnPerCallStrategy, ProcessManager + tests)
 - [ ] 02-03-PLAN.md — Wave 3: Python process modules (mechanical port of TS canonical + tests with parity docstrings)
 - [ ] 02-04-PLAN.md — Wave 4: CI matrix + parity scripts (sync-version.sh, diff-test-names.sh, GitHub Actions workflow)
+- [ ] 02-05-PLAN.md — Gap closure: Python test parity alignment + CI lockfile path fix
 
 ### Phase 3: NDJSON Parser + EventDispatcher + MessageChunk Types
 **Goal**: Build the line-buffered NDJSON reader with a stateful UTF-8 decoder, 1 MiB line limit, CRLF tolerance, and lenient fallback (unknown types become `{type:'unknown', raw}`, non-JSON lines become `{type:'cli_log'}`), plus the `EventDispatcher` that maps parsed events into the 8-variant `MessageChunk` discriminated union that matches Archon's contract. TS types come from `json-schema-to-typescript` against `spec/events.schema.json`; Pydantic models come from `datamodel-code-generator` against the same file. Both language test suites consume identical `spec/fixtures/*.ndjson` and assert identical `.expected.json` outputs.
@@ -171,7 +172,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8 →
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Feasibility Spike + Fixture Capture | 9/10 | In Progress|  |
-| 2. Process Foundation + Workspace + CI Matrix | 3/4 | In Progress|  |
+| 2. Process Foundation + Workspace + CI Matrix | 4/5 | In Progress|  |
 | 3. NDJSON Parser + EventDispatcher + MessageChunk Types | 0/TBD | Not started | - |
 | 4. Public query() + ArgvBuilder + systemPrompt + Workspace + Model | 0/TBD | Not started | - |
 | 5. Error Taxonomy + Archon 5-Bucket Mapping | 0/TBD | Not started | - |
