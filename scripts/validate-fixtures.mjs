@@ -99,7 +99,26 @@ async function cmdParse() {
 }
 
 /**
+ * Returns true if this fixture's sibling .expected.json has synthetic:true.
+ * Synthetic fixtures contain artificially-constructed events (type-mutations,
+ * hand-crafted error shapes) that may not match the schema by design.
+ */
+function isSyntheticFixture(ndjsonPath) {
+  const stem = ndjsonPath.replace(/\.ndjson$/, '');
+  const expectedPath = stem + '.expected.json';
+  if (!fs.existsSync(expectedPath)) return false;
+  try {
+    const meta = JSON.parse(fs.readFileSync(expectedPath, 'utf8'));
+    return meta.synthetic === true;
+  } catch {
+    return false;
+  }
+}
+
+/**
  * schema — Validate every event in every fixture against spec/events.schema.json via Ajv 2020.
+ * Fixtures marked synthetic:true in their .expected.json sidecar are skipped.
+ * Individual events with REDACTED-type placeholders are skipped with a warning.
  */
 async function cmdSchema() {
   const schemaPath = 'spec/events.schema.json';
@@ -158,7 +177,19 @@ async function cmdSchema() {
 
   const messages = [];
   let failed = 0;
+  let skippedFiles = 0;
+  let skippedEvents = 0;
+  let validatedFiles = 0;
+
   for (const f of fixtures) {
+    // Skip synthetic fixtures — they contain artificial event types (e.g., cosmic_ray_hit)
+    // or hand-crafted error shapes that may not match the schema by design.
+    if (isSyntheticFixture(f)) {
+      messages.push(`INFO: SKIP ${f} (synthetic — skipping schema validation)`);
+      skippedFiles++;
+      continue;
+    }
+
     let rows;
     try {
       rows = parseNdjson(f);
@@ -167,7 +198,20 @@ async function cmdSchema() {
       failed++;
       continue;
     }
+
+    validatedFiles++;
     for (const { lineNo, obj } of rows) {
+      // Skip events with REDACTED-type placeholders (redaction artifacts in captured fixtures)
+      if (
+        obj &&
+        typeof obj.type === 'string' &&
+        (obj.type.startsWith('<REDACTED') || obj.type.startsWith('[REDACTED'))
+      ) {
+        messages.push(`INFO: SKIP ${f}:${lineNo} (redacted type=${JSON.stringify(obj.type)} — redaction artifact)`);
+        skippedEvents++;
+        continue;
+      }
+
       const valid = validate(obj);
       if (!valid) {
         const errs = validate.errors.map((e) => `${e.instancePath} ${e.message}`).join('; ');
@@ -178,7 +222,13 @@ async function cmdSchema() {
   }
 
   if (failed === 0) {
-    messages.push(`PASS: schema (${fixtures.length} fixtures validated)`);
+    const summary = [
+      `PASS: schema (${validatedFiles} fixtures validated`,
+      skippedFiles > 0 ? `, ${skippedFiles} synthetic skipped` : '',
+      skippedEvents > 0 ? `, ${skippedEvents} redacted events skipped` : '',
+      ')',
+    ].join('');
+    messages.push(summary);
     return { ok: true, messages };
   }
   messages.push(`FAIL: schema (${failed} validation error(s))`);
