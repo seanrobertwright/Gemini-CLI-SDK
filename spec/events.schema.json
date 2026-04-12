@@ -2,6 +2,191 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://gemini-sdk.dev/spec/events.schema.json",
   "title": "Gemini CLI stream-json event",
-  "description": "Discriminated union of all event types emitted by gemini --output-format stream-json. Field schemas derived empirically from spec/fixtures/*.ndjson captured against the version pinned in .gemini-cli-compat. Populated in Phase 1 Wave 4.",
-  "oneOf": []
+  "description": "Discriminated union of all event types observed in spec/fixtures/ captured against gemini-cli@0.37.1. Each $defs entry represents ONE observed event type. Every entry sets additionalProperties:true so the parser tolerates upstream field additions. The schema is a FLOOR of known fields, not a ceiling. Unknown types are handled by the parser's lenient fallback (PRS-03), not by this schema.",
+  "oneOf": [
+    {
+      "$ref": "#/$defs/ErrorEvent"
+    },
+    {
+      "$ref": "#/$defs/InitEvent"
+    },
+    {
+      "$ref": "#/$defs/MessageEvent"
+    },
+    {
+      "$ref": "#/$defs/ResultEvent"
+    },
+    {
+      "$ref": "#/$defs/ToolResultEvent"
+    },
+    {
+      "$ref": "#/$defs/ToolUseEvent"
+    }
+  ],
+  "$defs": {
+    "ErrorEvent": {
+      "type": "object",
+      "required": [
+        "type",
+        "timestamp",
+        "error"
+      ],
+      "properties": {
+        "type": {
+          "const": "error"
+        },
+        "timestamp": {
+          "type": "string"
+        },
+        "error": {
+          "type": "object",
+          "additionalProperties": true
+        }
+      },
+      "additionalProperties": true
+    },
+    "InitEvent": {
+      "type": "object",
+      "required": [
+        "type",
+        "timestamp",
+        "session_id",
+        "model"
+      ],
+      "properties": {
+        "type": {
+          "const": "init"
+        },
+        "timestamp": {
+          "type": "string"
+        },
+        "session_id": {
+          "type": "string"
+        },
+        "model": {
+          "type": "string"
+        },
+        "_synthetic": {
+          "type": "boolean"
+        },
+        "_note": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": true
+    },
+    "MessageEvent": {
+      "type": "object",
+      "required": [
+        "type",
+        "timestamp",
+        "role",
+        "content"
+      ],
+      "properties": {
+        "type": {
+          "const": "message"
+        },
+        "timestamp": {
+          "type": "string"
+        },
+        "role": {
+          "type": "string"
+        },
+        "content": {
+          "type": "string"
+        },
+        "delta": {
+          "type": "boolean"
+        }
+      },
+      "additionalProperties": true
+    },
+    "ResultEvent": {
+      "type": "object",
+      "required": [
+        "type",
+        "timestamp",
+        "status",
+        "stats"
+      ],
+      "properties": {
+        "type": {
+          "const": "result"
+        },
+        "timestamp": {
+          "type": "string"
+        },
+        "status": {
+          "type": "string"
+        },
+        "stats": {
+          "type": "object",
+          "additionalProperties": true
+        }
+      },
+      "additionalProperties": true
+    },
+    "ToolResultEvent": {
+      "type": "object",
+      "required": [
+        "type",
+        "timestamp",
+        "tool_id",
+        "status",
+        "output"
+      ],
+      "properties": {
+        "type": {
+          "const": "tool_result"
+        },
+        "timestamp": {
+          "type": "string"
+        },
+        "tool_id": {
+          "type": "string"
+        },
+        "status": {
+          "type": "string"
+        },
+        "output": {
+          "type": "string"
+        },
+        "error": {
+          "type": "object",
+          "additionalProperties": true
+        }
+      },
+      "additionalProperties": true
+    },
+    "ToolUseEvent": {
+      "type": "object",
+      "required": [
+        "type",
+        "timestamp",
+        "tool_name",
+        "tool_id",
+        "parameters"
+      ],
+      "properties": {
+        "type": {
+          "const": "tool_use"
+        },
+        "timestamp": {
+          "type": "string"
+        },
+        "tool_name": {
+          "type": "string"
+        },
+        "tool_id": {
+          "type": "string"
+        },
+        "parameters": {
+          "type": "object",
+          "additionalProperties": true
+        }
+      },
+      "additionalProperties": true
+    }
+  }
 }
