@@ -74,7 +74,12 @@ Plans:
   2. Fuzz tests feeding the parser random bytes, CRLF line endings, split UTF-8 code points across chunk boundaries, lines over 1 MiB, and unknown event `type` values all complete without throwing — degraded output is yielded as `{type:'unknown'|'cli_log', raw}` events instead
   3. A unit test verifies that every `tool_use` chunk in the fixture corpus is followed by a paired `tool_result` chunk (Archon's `claude.ts` correctness bar), and that the `EventDispatcher` refuses to yield an unpaired tool use
   4. The generated TS `MessageChunk` type and Python `MessageChunk` TypedDict/dataclass both have all 8 variants (`assistant | system | thinking | result | rate_limit | tool | tool_result | workflow_dispatch`) and import cleanly into a small smoke script in each language
-**Plans**: TBD
+**Plans**: 4 plans
+Plans:
+- [ ] 03-01-PLAN.md — Wave 1: Types generation + expected.json ground truth + synthetic fixtures
+- [ ] 03-02-PLAN.md — Wave 2: TS parseNdjson implementation + unit tests (PRS-01/02/03/04)
+- [ ] 03-03-PLAN.md — Wave 2: TS dispatch (EventDispatcher) + fixture corpus tests (PRS-05/07)
+- [ ] 03-04-PLAN.md — Wave 3: Python mechanical port + parity validation (PAR-02)
 
 ### Phase 4: Public query() + ArgvBuilder + systemPrompt + Workspace + Model Selection
 **Goal**: Ship the public `query(options): AsyncIterable<MessageChunk>` async generator — the SDK's only public entry point — wired to the pure-function `buildArgv(options): string[]`, cancellation via `abortSignal`/`cancel_scope`, temp-file `GEMINI_SYSTEM_MD` (cleaned up in `finally`), `cwd` + `--include-directories` for workspace context, and the typed model enum with `@deprecated` 2.5-series markings + string escape hatch + silent-downgrade detection via the `init` event. First real `gemini-cli` round-trip happens here. Non-streaming helper is a thin wrapper. Raw-event API is exposed alongside the mapped generator.
@@ -173,7 +178,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8 →
 |-------|----------------|--------|-----------|
 | 1. Feasibility Spike + Fixture Capture | 9/10 | In Progress|  |
 | 2. Process Foundation + Workspace + CI Matrix | 5/5 | Complete   | 2026-04-13 |
-| 3. NDJSON Parser + EventDispatcher + MessageChunk Types | 0/TBD | Not started | - |
+| 3. NDJSON Parser + EventDispatcher + MessageChunk Types | 0/4 | In Progress | - |
 | 4. Public query() + ArgvBuilder + systemPrompt + Workspace + Model | 0/TBD | Not started | - |
 | 5. Error Taxonomy + Archon 5-Bucket Mapping | 0/TBD | Not started | - |
 | 6. Auth Environment | 0/TBD | Not started | - |
