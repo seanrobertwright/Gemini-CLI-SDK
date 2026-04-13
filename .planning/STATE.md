@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: verifying
-stopped_at: Phase 3 context gathered
-last_updated: "2026-04-13T01:18:27.232Z"
+stopped_at: Completed 03-01-PLAN.md
+last_updated: "2026-04-13T14:34:48.869Z"
 last_activity: "2026-04-11 — Completed plan 01-10: spec/protocol.md + spec/errors.md drafted with fixture citations; all 8 Phase 1 validators pass"
 progress:
   total_phases: 11
   completed_phases: 2
-  total_plans: 15
-  completed_plans: 15
+  total_plans: 19
+  completed_plans: 16
   percent: 9
 ---
 
@@ -62,6 +62,7 @@ Progress: [█░░░░░░░░░] 9% (Phase 1 of 11 complete)
 | Phase 02 P03 | 22 | 2 tasks | 13 files |
 | Phase 02 P04 | 4 | 2 tasks | 3 files |
 | Phase 02 P05 | 30 | 2 tasks | 4 files |
+| Phase 03 P01 | 4 | 3 tasks | 18 files |
 
 ## Accumulated Context
 
@@ -118,6 +119,9 @@ Recent decisions affecting current work:
 - [Phase 02-04]: Python detector in diff-test-names.sh loops python3/python/py with execution verification: Windows Store stub passes command -v but exits 49 on execution
 - [Phase 02]: Two-pass grep added tr -d '\r' to both TS and Python pipelines: Python subprocess on Windows emits CRLF output even inside bash heredoc; tr normalization makes diff byte-identical
 - [Phase 02]: CI cache-dependency-path fixed from ts/pnpm-lock.yaml to pnpm-lock.yaml: pnpm workspace lockfile lives at repo root
+- [Phase 03-01]: Python types use typing_extensions.Required for required fields in total=False TypedDicts
+- [Phase 03-01]: error-auth.expected.json uses _throws:true sentinel — non-rate-limit errors throw GeminiError, not yield a chunk
+- [Phase 03-01]: event-unknown.expected.json raw field now contains full cosmic_ray_hit object from ndjson (not placeholder comment)
 
 ### Pending Todos
 
@@ -131,6 +135,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-04-13T01:18:27.225Z
-Stopped at: Phase 3 context gathered
-Resume file: .planning/phases/03-ndjson-parser-eventdispatcher-messagechunk-types/03-CONTEXT.md
+Last session: 2026-04-13T14:34:48.866Z
+Stopped at: Completed 03-01-PLAN.md
+Resume file: None
