@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: verifying
-stopped_at: Completed 03-02-PLAN.md
-last_updated: "2026-04-13T14:38:39.970Z"
-last_activity: "2026-04-11 — Completed plan 01-10: spec/protocol.md + spec/errors.md drafted with fixture citations; all 8 Phase 1 validators pass"
+stopped_at: Completed 03-03-PLAN.md
+last_updated: "2026-04-13T10:42:00.000Z"
+last_activity: "2026-04-13 — Completed plan 03-03: dispatch async generator + fixture corpus tests; 23 tests pass; parser barrel export wired into package root"
 progress:
   total_phases: 11
   completed_phases: 2
   total_plans: 19
-  completed_plans: 17
+  completed_plans: 18
   percent: 9
 ---
 
@@ -25,10 +25,10 @@ See: .planning/PROJECT.md (updated 2026-04-11)
 
 ## Current Position
 
-Phase: 1 of 11 (Feasibility Spike + Fixture Capture) — COMPLETE
-Plan: 10 of 10 in Phase 1 (all plans complete)
-Status: Phase 1 complete — ready for /gsd:verify-work sign-off
-Last activity: 2026-04-11 — Completed plan 01-10: spec/protocol.md + spec/errors.md drafted with fixture citations; all 8 Phase 1 validators pass
+Phase: 3 of 11 (NDJSON Parser + EventDispatcher + MessageChunk Types)
+Plan: 3 of 3 in Phase 3 (all plans complete)
+Status: Phase 3 complete
+Last activity: 2026-04-13 — Completed plan 03-03: dispatch async generator + fixture corpus tests; 23 tests pass; parser barrel export wired into package root
 
 Progress: [█░░░░░░░░░] 9% (Phase 1 of 11 complete)
 
@@ -124,6 +124,9 @@ Recent decisions affecting current work:
 - [Phase 03-01]: error-auth.expected.json uses _throws:true sentinel — non-rate-limit errors throw GeminiError, not yield a chunk
 - [Phase 03-01]: event-unknown.expected.json raw field now contains full cosmic_ray_hit object from ndjson (not placeholder comment)
 - [Phase 03]: KNOWN_RAW_TYPES.includes type cast uses (typeof KNOWN_RAW_TYPES)[number] to satisfy strict TS compilation — as const tuple's includes() requires literal union, not plain string
+- [Phase 03-03]: dispatch silently skips unknown and cli_log RawEvents — event-unknown.expected.json and large-output.expected.json corrected to reflect 0/175 dispatch chunks (not 1/176)
+- [Phase 03-03]: Phase 3 throws generic Error for non-rate-limit errors; Phase 5 replaces with GeminiError from error taxonomy
+- [Phase 03-03]: parser barrel export uses aliased re-exports (MessageEvent as RawMessageEvent, ResultEvent as RawResultEvent) to avoid name collision
 
 ### Pending Todos
 
@@ -137,6 +140,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-04-13T14:38:39.967Z
-Stopped at: Completed 03-02-PLAN.md
+Last session: 2026-04-13T10:42:00.000Z
+Stopped at: Completed 03-03-PLAN.md
 Resume file: None
