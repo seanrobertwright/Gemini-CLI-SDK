@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: completed
-stopped_at: Completed 04-02-PLAN.md
-last_updated: "2026-04-13T21:02:20.129Z"
+stopped_at: Completed 04-03-PLAN.md
+last_updated: "2026-04-13T21:12:38.605Z"
 last_activity: "2026-04-13 — Completed plan 03-03: dispatch async generator + fixture corpus tests; 23 tests pass; parser barrel export wired into package root"
 progress:
   total_phases: 11
-  completed_phases: 3
+  completed_phases: 4
   total_plans: 22
-  completed_plans: 21
+  completed_plans: 22
   percent: 9
 ---
 
@@ -67,6 +67,7 @@ Progress: [█░░░░░░░░░] 9% (Phase 1 of 11 complete)
 | Phase 03 P04 | 25 | 2 tasks | 6 files |
 | Phase 04 P01 | 12 | 3 tasks | 6 files |
 | Phase 04 P02 | 25 | 3 tasks | 5 files |
+| Phase 04 P03 | 7 | 3 tasks | 9 files |
 
 ## Accumulated Context
 
@@ -136,6 +137,9 @@ Recent decisions affecting current work:
 - [Phase 04]: Model uses const-object + type alias pattern (not const enum) for runtime iteration and bundler compatibility
 - [Phase 04]: vi.hoisted() required for mock variables in vi.mock() factory in Vitest ESM — TDZ prevents plain const from being accessible in hoisted factory closures
 - [Phase 04]: vi.clearAllMocks() resets mockResolvedValue implementations — must re-apply in beforeEach after clearAllMocks
+- [Phase 04]: Python Model str enum: str(Model.AUTO) returns 'Model.AUTO' not 'auto'; use .value for comparison in build_argv and query
+- [Phase 04]: query() cancellation check must occur AFTER yield - outer consumer sets cancel flag after receiving chunk before requesting next
+- [Phase 04]: Parity script grep [^'"]+  truncates TS it() descriptions at inner quotes; remove inner quotes from TS test names for 84:84 parity
 
 ### Pending Todos
 
@@ -149,6 +153,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-04-13T21:02:20.125Z
-Stopped at: Completed 04-02-PLAN.md
+Last session: 2026-04-13T21:12:38.601Z
+Stopped at: Completed 04-03-PLAN.md
 Resume file: None
