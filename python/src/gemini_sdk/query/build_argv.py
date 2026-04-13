@@ -26,9 +26,13 @@ def build_argv(options: QueryOptions) -> list[str]:
     ]
 
     # MDL-03: omit --model when None or 'auto'
+    # Use .value for Model enum instances (str(Model.AUTO) gives "Model.AUTO", not "auto")
     model = options.get("model")
-    if model is not None and str(model) != "auto":
-        argv.extend(["--model", str(model)])
+    if model is not None:
+        import enum
+        model_str = model.value if isinstance(model, enum.Enum) else str(model)
+        if model_str != "auto":
+            argv.extend(["--model", model_str])
 
     # CWD-02: one --include-directories flag per directory
     dirs = options.get("additional_directories")

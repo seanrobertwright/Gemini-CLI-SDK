@@ -94,10 +94,13 @@ async def query(options: QueryOptions) -> AsyncIterator[MessageChunk]:
     )
 
     # Step 5: Track model for mismatch detection (MDL-04)
+    import enum as _enum
     model_opt = options.get("model")
     requested_model: Optional[str] = None
-    if model_opt is not None and str(model_opt) != "auto":
-        requested_model = str(model_opt)
+    if model_opt is not None:
+        _model_str = model_opt.value if isinstance(model_opt, _enum.Enum) else str(model_opt)
+        if _model_str != "auto":
+            requested_model = _model_str
     actual_model: Optional[str] = None
 
     # Step 6: Tool chunk buffering — unpaired tool_use chunks accumulate here
@@ -111,11 +114,6 @@ async def query(options: QueryOptions) -> AsyncIterator[MessageChunk]:
         chunks_iter = dispatch(raw_events)
 
         async for chunk in chunks_iter:
-            # Check cancellation on each chunk
-            if cancel_scope is not None and getattr(cancel_scope, "cancel_called", False):
-                cancelled = True
-                break
-
             # Capture model from init event (MDL-04)
             if chunk.get("type") == "system" and chunk.get("subtype") == "init":  # type: ignore[union-attr]
                 actual_model = chunk.get("model")  # type: ignore[union-attr]
@@ -131,6 +129,10 @@ async def query(options: QueryOptions) -> AsyncIterator[MessageChunk]:
                     # Result chunk ends the stream, clear pending
                     pending_tool_chunks.clear()
                     yield enriched  # type: ignore[misc]
+                    # Check cancel after yield (outer consumer may have set it)
+                    if cancel_scope is not None and getattr(cancel_scope, "cancel_called", False):
+                        cancelled = True
+                        break
                     continue
                 # No mismatch — clear pending and yield as-is
                 pending_tool_chunks.clear()
@@ -145,7 +147,16 @@ async def query(options: QueryOptions) -> AsyncIterator[MessageChunk]:
 
             yield chunk
 
-        # After loop: if cancelled, perform abort flush then raise AbortError
+            # Check cancellation AFTER yielding — the outer consumer may have set the flag
+            # while processing this chunk before asking for the next one
+            if cancel_scope is not None and getattr(cancel_scope, "cancel_called", False):
+                cancelled = True
+                break
+
+        # After loop: also check cancel in case stream ended right after cancel was set
+        if not cancelled and cancel_scope is not None and getattr(cancel_scope, "cancel_called", False):
+            cancelled = True
+
         if cancelled:
             # Abort flush: yield pending tool_use chunks with incomplete=True (Phase 3 contract)
             for pending in pending_tool_chunks:
