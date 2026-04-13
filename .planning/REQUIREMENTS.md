@@ -130,7 +130,7 @@ Requirements for initial release. Each maps to a roadmap phase.
 ### Parity (TS ↔ Python)
 
 - [x] **PAR-01**: TypeScript is the canonical implementation; Python is a mechanical port with matching file layout
-- [ ] **PAR-02**: Both language suites consume the same `spec/fixtures/*.ndjson` in CI
+- [x] **PAR-02**: Both language suites consume the same `spec/fixtures/*.ndjson` in CI
 - [x] **PAR-03**: Parity CI job diffs test names across TS and Python and blocks merge on divergence
 - [x] **PAR-04**: Both SDKs ship with a single shared version number
 - [ ] **PAR-05**: Error taxonomy is generated from one YAML source consumed by both SDKs
@@ -306,7 +306,7 @@ All v1 requirements map to exactly one phase. Coverage: 102/102.
 | ARC-08 | Phase 10 | Pending |
 | ARC-09 | Phase 10 | Pending |
 | PAR-01 | Phase 2 | Complete |
-| PAR-02 | Phase 3 | Pending |
+| PAR-02 | Phase 3 | Complete |
 | PAR-03 | Phase 2 | Complete |
 | PAR-04 | Phase 2 | Complete |
 | PAR-05 | Phase 5 | Pending |

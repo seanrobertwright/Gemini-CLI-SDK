@@ -2,15 +2,15 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: verifying
-stopped_at: Completed 03-03-PLAN.md
-last_updated: "2026-04-13T10:42:00.000Z"
+status: completed
+stopped_at: Completed 03-04-PLAN.md
+last_updated: "2026-04-13T14:52:20.986Z"
 last_activity: "2026-04-13 — Completed plan 03-03: dispatch async generator + fixture corpus tests; 23 tests pass; parser barrel export wired into package root"
 progress:
   total_phases: 11
-  completed_phases: 2
+  completed_phases: 3
   total_plans: 19
-  completed_plans: 18
+  completed_plans: 19
   percent: 9
 ---
 
@@ -64,6 +64,7 @@ Progress: [█░░░░░░░░░] 9% (Phase 1 of 11 complete)
 | Phase 02 P05 | 30 | 2 tasks | 4 files |
 | Phase 03 P01 | 4 | 3 tasks | 18 files |
 | Phase 03 P02 | 1 | 1 tasks | 2 files |
+| Phase 03 P04 | 25 | 2 tasks | 6 files |
 
 ## Accumulated Context
 
@@ -127,6 +128,8 @@ Recent decisions affecting current work:
 - [Phase 03-03]: dispatch silently skips unknown and cli_log RawEvents — event-unknown.expected.json and large-output.expected.json corrected to reflect 0/175 dispatch chunks (not 1/176)
 - [Phase 03-03]: Phase 3 throws generic Error for non-rate-limit errors; Phase 5 replaces with GeminiError from error taxonomy
 - [Phase 03-03]: parser barrel export uses aliased re-exports (MessageEvent as RawMessageEvent, ResultEvent as RawResultEvent) to avoid name collision
+- [Phase 03-04]: run_* naming for fixture corpus parametrize: TS uses template literal it() calls not captured by diff-test-names.sh grep; Python mirrors by using run_* prefix so AST extractor skips it — parity maintained at 42:42
+- [Phase 03-04]: typing-extensions added as runtime dep (not dev-only): types.py uses Required TypedDict from typing_extensions, imported at module load time; Python 3.10 doesn't have Required in stdlib typing
 
 ### Pending Todos
 
@@ -140,6 +143,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-04-13T10:42:00.000Z
-Stopped at: Completed 03-03-PLAN.md
+Last session: 2026-04-13T14:52:20.983Z
+Stopped at: Completed 03-04-PLAN.md
 Resume file: None
