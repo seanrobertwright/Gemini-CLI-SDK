@@ -86,6 +86,7 @@ source = { editable = "." }
 dependencies = [
     { name = "anyio" },
     { name = "psutil" },
+    { name = "typing-extensions" },
 ]
 
 [package.optional-dependencies]
@@ -102,6 +103,7 @@ requires-dist = [
     { name = "psutil", specifier = ">=6.0" },
     { name = "pytest", marker = "extra == 'dev'", specifier = ">=8.0" },
     { name = "pytest-anyio", marker = "extra == 'dev'", specifier = ">=0.0.0" },
+    { name = "typing-extensions", specifier = ">=4.0" },
 ]
 provides-extras = ["dev"]
 
