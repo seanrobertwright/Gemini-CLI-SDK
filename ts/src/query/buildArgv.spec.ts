@@ -38,7 +38,7 @@ describe('buildArgv: model omission', () => {
     expect(result).not.toContain('--model');
   });
 
-  it("omits --model when model is 'auto'", () => {
+  it('omits --model when model is auto', () => {
     const result = buildArgv({ prompt: 'x', model: 'auto' });
     expect(result).not.toContain('--model');
   });
@@ -142,27 +142,27 @@ describe('buildArgv: additionalDirectories', () => {
 // ── Model enum values ─────────────────────────────────────────────────────────
 
 describe('buildArgv: Model enum values', () => {
-  it('Model.AUTO is the string "auto"', () => {
+  it('Model.AUTO is the string auto', () => {
     expect(Model.AUTO).toBe('auto');
   });
 
-  it('Model.FLASH_25 is the string "gemini-2.5-flash"', () => {
+  it('Model.FLASH_25 is the string gemini-2.5-flash', () => {
     expect(Model.FLASH_25).toBe('gemini-2.5-flash');
   });
 
-  it('Model.PRO_25 is the string "gemini-2.5-pro"', () => {
+  it('Model.PRO_25 is the string gemini-2.5-pro', () => {
     expect(Model.PRO_25).toBe('gemini-2.5-pro');
   });
 
-  it('Model.FLASH_20 is the string "gemini-2.0-flash"', () => {
+  it('Model.FLASH_20 is the string gemini-2.0-flash', () => {
     expect(Model.FLASH_20).toBe('gemini-2.0-flash');
   });
 
-  it('Model.FLASH_3 is the string "gemini-3-flash"', () => {
+  it('Model.FLASH_3 is the string gemini-3-flash', () => {
     expect(Model.FLASH_3).toBe('gemini-3-flash');
   });
 
-  it('Model.PRO_3 is the string "gemini-3-pro"', () => {
+  it('Model.PRO_3 is the string gemini-3-pro', () => {
     expect(Model.PRO_3).toBe('gemini-3-pro');
   });
 

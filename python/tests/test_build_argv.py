@@ -45,7 +45,7 @@ class TestBuildArgvModelOmission:
         assert "--model" not in result
 
     def test_omits_model_when_auto_string(self):
-        """omits --model when model is 'auto'"""
+        """omits --model when model is auto"""
         result = build_argv({"prompt": "x", "model": "auto"})
         assert "--model" not in result
 
@@ -152,27 +152,27 @@ class TestBuildArgvAdditionalDirectories:
 
 class TestBuildArgvModelEnumValues:
     def test_model_auto_is_string(self):
-        """Model.AUTO is the string "auto\""""
+        """Model.AUTO is the string auto"""
         assert Model.AUTO == "auto"
 
     def test_model_flash_25_is_string(self):
-        """Model.FLASH_25 is the string "gemini-2.5-flash\""""
+        """Model.FLASH_25 is the string gemini-2.5-flash"""
         assert Model.FLASH_25 == "gemini-2.5-flash"
 
     def test_model_pro_25_is_string(self):
-        """Model.PRO_25 is the string "gemini-2.5-pro\""""
+        """Model.PRO_25 is the string gemini-2.5-pro"""
         assert Model.PRO_25 == "gemini-2.5-pro"
 
     def test_model_flash_20_is_string(self):
-        """Model.FLASH_20 is the string "gemini-2.0-flash\""""
+        """Model.FLASH_20 is the string gemini-2.0-flash"""
         assert Model.FLASH_20 == "gemini-2.0-flash"
 
     def test_model_flash_3_is_string(self):
-        """Model.FLASH_3 is the string "gemini-3-flash\""""
+        """Model.FLASH_3 is the string gemini-3-flash"""
         assert Model.FLASH_3 == "gemini-3-flash"
 
     def test_model_pro_3_is_string(self):
-        """Model.PRO_3 is the string "gemini-3-pro\""""
+        """Model.PRO_3 is the string gemini-3-pro"""
         assert Model.PRO_3 == "gemini-3-pro"
 
     def test_model_has_6_keys(self):
