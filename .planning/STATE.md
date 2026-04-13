@@ -4,7 +4,7 @@ milestone: v1.0
 milestone_name: milestone
 status: completed
 stopped_at: Completed 03-04-PLAN.md
-last_updated: "2026-04-13T14:52:20.986Z"
+last_updated: "2026-04-13T14:56:22.350Z"
 last_activity: "2026-04-13 — Completed plan 03-03: dispatch async generator + fixture corpus tests; 23 tests pass; parser barrel export wired into package root"
 progress:
   total_phases: 11
