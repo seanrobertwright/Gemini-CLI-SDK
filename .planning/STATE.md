@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: completed
-stopped_at: Phase 4 context gathered
-last_updated: "2026-04-13T18:46:23.706Z"
+stopped_at: Completed 04-01-PLAN.md
+last_updated: "2026-04-13T20:56:01.243Z"
 last_activity: "2026-04-13 — Completed plan 03-03: dispatch async generator + fixture corpus tests; 23 tests pass; parser barrel export wired into package root"
 progress:
   total_phases: 11
   completed_phases: 3
-  total_plans: 19
-  completed_plans: 19
+  total_plans: 22
+  completed_plans: 20
   percent: 9
 ---
 
@@ -65,6 +65,7 @@ Progress: [█░░░░░░░░░] 9% (Phase 1 of 11 complete)
 | Phase 03 P01 | 4 | 3 tasks | 18 files |
 | Phase 03 P02 | 1 | 1 tasks | 2 files |
 | Phase 03 P04 | 25 | 2 tasks | 6 files |
+| Phase 04 P01 | 12 | 3 tasks | 6 files |
 
 ## Accumulated Context
 
@@ -130,6 +131,8 @@ Recent decisions affecting current work:
 - [Phase 03-03]: parser barrel export uses aliased re-exports (MessageEvent as RawMessageEvent, ResultEvent as RawResultEvent) to avoid name collision
 - [Phase 03-04]: run_* naming for fixture corpus parametrize: TS uses template literal it() calls not captured by diff-test-names.sh grep; Python mirrors by using run_* prefix so AST extractor skips it — parity maintained at 42:42
 - [Phase 03-04]: typing-extensions added as runtime dep (not dev-only): types.py uses Required TypedDict from typing_extensions, imported at module load time; Python 3.10 doesn't have Required in stdlib typing
+- [Phase 04]: @fast-check/vitest 0.4.0 requires vitest ^4.1.0; project pins ^3.2 for Node 18 CI — use fast-check directly via fc.assert/fc.property
+- [Phase 04]: Model uses const-object + type alias pattern (not const enum) for runtime iteration and bundler compatibility
 
 ### Pending Todos
 
@@ -143,6 +146,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-04-13T18:46:23.690Z
-Stopped at: Phase 4 context gathered
-Resume file: .planning/phases/04-public-query-argvbuilder-systemprompt-workspace-model-selection/04-CONTEXT.md
+Last session: 2026-04-13T20:56:01.240Z
+Stopped at: Completed 04-01-PLAN.md
+Resume file: None

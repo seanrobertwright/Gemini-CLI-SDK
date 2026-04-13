@@ -34,7 +34,7 @@ Requirements for initial release. Each maps to a roadmap phase.
 ### Query API
 
 - [ ] **API-01**: Public `query(options): AsyncIterable<MessageChunk>` is the only public entry point
-- [ ] **API-02**: Pure-function `buildArgv(options): string[]` translates typed options to argv with no filesystem/env/spawn side effects
+- [x] **API-02**: Pure-function `buildArgv(options): string[]` translates typed options to argv with no filesystem/env/spawn side effects
 - [ ] **API-03**: `query()` owns subprocess lifecycle — spawns on first iteration, kills on early break or cancel
 - [ ] **API-04**: `query()` accepts `options.abortSignal` (TS) / `cancel_scope` (Python) for cancellation
 - [ ] **API-05**: SDK provides a non-streaming helper (accumulates into a single result) as a wrapper over `query()`
@@ -42,9 +42,9 @@ Requirements for initial release. Each maps to a roadmap phase.
 
 ### Model Selection
 
-- [ ] **MDL-01**: SDK exposes a typed model enum with known Gemini models (e.g. `latest`, `auto`, `2.5-flash` `@deprecated`, `2.5-pro` `@deprecated`)
-- [ ] **MDL-02**: SDK accepts a raw string for model selection as an escape hatch for unknown/future models
-- [ ] **MDL-03**: Default model is `latest` / `auto`, NOT a pinned 2.5 string (2.5 series EOL 2026-06-17)
+- [x] **MDL-01**: SDK exposes a typed model enum with known Gemini models (e.g. `latest`, `auto`, `2.5-flash` `@deprecated`, `2.5-pro` `@deprecated`)
+- [x] **MDL-02**: SDK accepts a raw string for model selection as an escape hatch for unknown/future models
+- [x] **MDL-03**: Default model is `latest` / `auto`, NOT a pinned 2.5 string (2.5 series EOL 2026-06-17)
 - [ ] **MDL-04**: SDK inspects the `init` event's `model` field, compares to requested, surfaces a non-fatal `ModelDowngradeWarning` in the `result` chunk on mismatch
 
 ### System Prompt
@@ -55,7 +55,7 @@ Requirements for initial release. Each maps to a roadmap phase.
 ### Workspace Context
 
 - [ ] **CWD-01**: `options.cwd` sets subprocess working directory
-- [ ] **CWD-02**: `options.additionalDirectories` maps to `--include-directories` flag
+- [x] **CWD-02**: `options.additionalDirectories` maps to `--include-directories` flag
 
 ### Sessions / Multi-Turn
 
@@ -246,19 +246,19 @@ All v1 requirements map to exactly one phase. Coverage: 102/102.
 | PRS-08 | Phase 1 | Complete |
 | PRS-09 | Phase 1 | Complete |
 | API-01 | Phase 4 | Pending |
-| API-02 | Phase 4 | Pending |
+| API-02 | Phase 4 | Complete |
 | API-03 | Phase 4 | Pending |
 | API-04 | Phase 4 | Pending |
 | API-05 | Phase 4 | Pending |
 | API-06 | Phase 4 | Pending |
-| MDL-01 | Phase 4 | Pending |
-| MDL-02 | Phase 4 | Pending |
-| MDL-03 | Phase 4 | Pending |
+| MDL-01 | Phase 4 | Complete |
+| MDL-02 | Phase 4 | Complete |
+| MDL-03 | Phase 4 | Complete |
 | MDL-04 | Phase 4 | Pending |
 | SYS-01 | Phase 4 | Pending |
 | SYS-02 | Phase 4 | Pending |
 | CWD-01 | Phase 4 | Pending |
-| CWD-02 | Phase 4 | Pending |
+| CWD-02 | Phase 4 | Complete |
 | SES-01 | Phase 7 | Pending |
 | SES-02 | Phase 7 | Pending |
 | SES-03 | Phase 7 | Pending |
