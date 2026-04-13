@@ -3,3 +3,4 @@
 // Phase 3+: Parser, query(), errors, auth, sessions, tools, MCP
 export * from './process/index.js';
 export * from './errors/index.js';
+export * from './parser/index.js';
