@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: verifying
-stopped_at: Completed 03-01-PLAN.md
-last_updated: "2026-04-13T14:34:48.869Z"
+stopped_at: Completed 03-02-PLAN.md
+last_updated: "2026-04-13T14:38:39.970Z"
 last_activity: "2026-04-11 — Completed plan 01-10: spec/protocol.md + spec/errors.md drafted with fixture citations; all 8 Phase 1 validators pass"
 progress:
   total_phases: 11
   completed_phases: 2
   total_plans: 19
-  completed_plans: 16
+  completed_plans: 17
   percent: 9
 ---
 
@@ -63,6 +63,7 @@ Progress: [█░░░░░░░░░] 9% (Phase 1 of 11 complete)
 | Phase 02 P04 | 4 | 2 tasks | 3 files |
 | Phase 02 P05 | 30 | 2 tasks | 4 files |
 | Phase 03 P01 | 4 | 3 tasks | 18 files |
+| Phase 03 P02 | 1 | 1 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -122,6 +123,7 @@ Recent decisions affecting current work:
 - [Phase 03-01]: Python types use typing_extensions.Required for required fields in total=False TypedDicts
 - [Phase 03-01]: error-auth.expected.json uses _throws:true sentinel — non-rate-limit errors throw GeminiError, not yield a chunk
 - [Phase 03-01]: event-unknown.expected.json raw field now contains full cosmic_ray_hit object from ndjson (not placeholder comment)
+- [Phase 03]: KNOWN_RAW_TYPES.includes type cast uses (typeof KNOWN_RAW_TYPES)[number] to satisfy strict TS compilation — as const tuple's includes() requires literal union, not plain string
 
 ### Pending Todos
 
@@ -135,6 +137,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-04-13T14:34:48.866Z
-Stopped at: Completed 03-01-PLAN.md
+Last session: 2026-04-13T14:38:39.967Z
+Stopped at: Completed 03-02-PLAN.md
 Resume file: None
