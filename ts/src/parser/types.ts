@@ -125,6 +125,8 @@ export interface ResultChunk {
   type: 'result';
   sessionId: string;
   stopReason: string;
+  requestedModel?: string;  // MDL-04: populated only on mismatch
+  actualModel?: string;     // MDL-04: populated only on mismatch
 }
 
 export interface RateLimitChunk {
