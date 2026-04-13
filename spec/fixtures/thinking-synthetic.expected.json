@@ -1,0 +1,16 @@
+{
+  "fixture": "thinking-synthetic.ndjson",
+  "captured_against": "SYNTHETIC — hand-crafted for thinking variant coverage",
+  "captured_at": "2026-04-12T00:00:00.000Z",
+  "description": "Synthetic fixture: thinking variant test. gemini-cli 0.37.1 headless mode does not emit thinking events. This fixture tests the future-proofed thinking code path using thought=true discriminator.",
+  "chunks": [
+    {"type": "system", "subtype": "init", "sessionId": "<REDACTED_SESSION_ID>", "model": "gemini-2.5-pro"},
+    {"type": "system", "subtype": "message", "role": "user", "content": "What is 23*17? Think step by step."},
+    {"type": "thinking", "content": ""},
+    {"type": "assistant", "content": "23 * 17 = 391.\n\nStep 1: 23 * 10 = 230\nStep 2: 23 * 7 = 161\nStep 3: 230 + 161 = 391"},
+    {"type": "result", "sessionId": "<REDACTED_SESSION_ID>", "stopReason": "end_turn"}
+  ],
+  "exit_code": 0,
+  "stderr_patterns": [],
+  "synthetic": true
+}

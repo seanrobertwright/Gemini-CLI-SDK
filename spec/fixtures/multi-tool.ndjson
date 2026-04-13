@@ -1,0 +1,9 @@
+{"type":"init","timestamp":"2026-04-12T00:00:00.000Z","session_id":"<REDACTED_SESSION_ID>","model":"auto-gemini-3","_synthetic":true,"_note":"Synthetic fixture for concurrent tool pairing coverage."}
+{"type":"message","timestamp":"2026-04-12T00:00:01.000Z","role":"user","content":"Read both config.json and readme.md."}
+{"type":"message","timestamp":"2026-04-12T00:00:02.000Z","role":"assistant","content":"I will read both files.","delta":true}
+{"type":"tool_use","timestamp":"2026-04-12T00:00:03.000Z","tool_name":"read_file","tool_id":"read_file_1000000000000_0","parameters":{"file_path":"config.json"}}
+{"type":"tool_use","timestamp":"2026-04-12T00:00:03.100Z","tool_name":"read_file","tool_id":"read_file_1000000000100_1","parameters":{"file_path":"readme.md"}}
+{"type":"tool_result","timestamp":"2026-04-12T00:00:04.000Z","tool_id":"read_file_1000000000000_0","status":"success","output":"{\"key\":\"value\"}"}
+{"type":"tool_result","timestamp":"2026-04-12T00:00:04.100Z","tool_id":"read_file_1000000000100_1","status":"success","output":"# README"}
+{"type":"message","timestamp":"2026-04-12T00:00:05.000Z","role":"assistant","content":"Here are the contents of both files.","delta":true}
+{"type":"result","timestamp":"2026-04-12T00:00:06.000Z","status":"success","stats":{"total_tokens":200,"input_tokens":100,"output_tokens":100}}

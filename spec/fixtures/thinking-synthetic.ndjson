@@ -1,0 +1,5 @@
+{"type":"init","timestamp":"2026-04-12T00:00:00.000Z","session_id":"<REDACTED_SESSION_ID>","model":"gemini-2.5-pro","_synthetic":true,"_note":"Synthetic fixture for thinking variant coverage. Thinking events do not appear in gemini-cli 0.37.1 headless mode; this fixture synthesizes plausible shapes."}
+{"type":"message","timestamp":"2026-04-12T00:00:01.000Z","role":"user","content":"What is 23*17? Think step by step."}
+{"type":"message","timestamp":"2026-04-12T00:00:02.000Z","role":"assistant","content":"","thought":true}
+{"type":"message","timestamp":"2026-04-12T00:00:03.000Z","role":"assistant","content":"23 * 17 = 391.\n\nStep 1: 23 * 10 = 230\nStep 2: 23 * 7 = 161\nStep 3: 230 + 161 = 391"}
+{"type":"result","timestamp":"2026-04-12T00:00:04.000Z","status":"success","stats":{"total_tokens":100,"input_tokens":50,"output_tokens":50}}

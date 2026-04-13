@@ -1,0 +1,20 @@
+{
+  "fixture": "multi-tool.ndjson",
+  "captured_against": "SYNTHETIC — hand-crafted for concurrent tool pairing coverage",
+  "captured_at": "2026-04-12T00:00:00.000Z",
+  "description": "Synthetic fixture: two concurrent tool_use events followed by their tool_results. Tests Map-based tool_id pairing with multiple in-flight tools.",
+  "chunks": [
+    {"type": "system", "subtype": "init", "sessionId": "<REDACTED_SESSION_ID>", "model": "auto-gemini-3"},
+    {"type": "system", "subtype": "message", "role": "user", "content": "Read both config.json and readme.md."},
+    {"type": "assistant", "content": "I will read both files."},
+    {"type": "tool", "toolName": "read_file", "toolId": "read_file_1000000000000_0", "parameters": {"file_path": "config.json"}},
+    {"type": "tool_result", "toolId": "read_file_1000000000000_0", "status": "success", "output": "{\"key\":\"value\"}"},
+    {"type": "tool", "toolName": "read_file", "toolId": "read_file_1000000000100_1", "parameters": {"file_path": "readme.md"}},
+    {"type": "tool_result", "toolId": "read_file_1000000000100_1", "status": "success", "output": "# README"},
+    {"type": "assistant", "content": "Here are the contents of both files."},
+    {"type": "result", "sessionId": "<REDACTED_SESSION_ID>", "stopReason": "end_turn"}
+  ],
+  "exit_code": 0,
+  "stderr_patterns": [],
+  "synthetic": true
+}
