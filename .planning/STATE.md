@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: verifying
-stopped_at: Completed 02-04-PLAN.md
-last_updated: "2026-04-12T22:04:22.194Z"
+stopped_at: Completed 02-05-PLAN.md
+last_updated: "2026-04-13T00:59:11.295Z"
 last_activity: "2026-04-11 — Completed plan 01-10: spec/protocol.md + spec/errors.md drafted with fixture citations; all 8 Phase 1 validators pass"
 progress:
   total_phases: 11
   completed_phases: 2
-  total_plans: 14
-  completed_plans: 14
+  total_plans: 15
+  completed_plans: 15
   percent: 9
 ---
 
@@ -61,6 +61,7 @@ Progress: [█░░░░░░░░░] 9% (Phase 1 of 11 complete)
 | Phase 02 P02 | 10 | 2 tasks | 13 files |
 | Phase 02 P03 | 22 | 2 tasks | 13 files |
 | Phase 02 P04 | 4 | 2 tasks | 3 files |
+| Phase 02 P05 | 30 | 2 tasks | 4 files |
 
 ## Accumulated Context
 
@@ -115,6 +116,8 @@ Recent decisions affecting current work:
 - [Phase 02-04]: grep -oE (ERE) used instead of -oP (PCRE): Git Bash grep 3.0 on Windows returns exit 2 for -oP due to locale constraints; ERE covers the needed pattern adequately
 - [Phase 02-04]: Node path in sync-version.sh passed via REPO_ROOT env var: avoids Windows backslash escaping in -e string; uses process.env.REPO_ROOT + path.join() inside node
 - [Phase 02-04]: Python detector in diff-test-names.sh loops python3/python/py with execution verification: Windows Store stub passes command -v but exits 49 on execution
+- [Phase 02]: Two-pass grep added tr -d '\r' to both TS and Python pipelines: Python subprocess on Windows emits CRLF output even inside bash heredoc; tr normalization makes diff byte-identical
+- [Phase 02]: CI cache-dependency-path fixed from ts/pnpm-lock.yaml to pnpm-lock.yaml: pnpm workspace lockfile lives at repo root
 
 ### Pending Todos
 
@@ -128,6 +131,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-04-12T22:04:22.191Z
-Stopped at: Completed 02-04-PLAN.md
+Last session: 2026-04-13T00:59:11.292Z
+Stopped at: Completed 02-05-PLAN.md
 Resume file: None
