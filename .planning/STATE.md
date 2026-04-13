@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: completed
-stopped_at: Completed 04-01-PLAN.md
-last_updated: "2026-04-13T20:56:01.243Z"
+stopped_at: Completed 04-02-PLAN.md
+last_updated: "2026-04-13T21:02:20.129Z"
 last_activity: "2026-04-13 — Completed plan 03-03: dispatch async generator + fixture corpus tests; 23 tests pass; parser barrel export wired into package root"
 progress:
   total_phases: 11
   completed_phases: 3
   total_plans: 22
-  completed_plans: 20
+  completed_plans: 21
   percent: 9
 ---
 
@@ -66,6 +66,7 @@ Progress: [█░░░░░░░░░] 9% (Phase 1 of 11 complete)
 | Phase 03 P02 | 1 | 1 tasks | 2 files |
 | Phase 03 P04 | 25 | 2 tasks | 6 files |
 | Phase 04 P01 | 12 | 3 tasks | 6 files |
+| Phase 04 P02 | 25 | 3 tasks | 5 files |
 
 ## Accumulated Context
 
@@ -133,6 +134,8 @@ Recent decisions affecting current work:
 - [Phase 03-04]: typing-extensions added as runtime dep (not dev-only): types.py uses Required TypedDict from typing_extensions, imported at module load time; Python 3.10 doesn't have Required in stdlib typing
 - [Phase 04]: @fast-check/vitest 0.4.0 requires vitest ^4.1.0; project pins ^3.2 for Node 18 CI — use fast-check directly via fc.assert/fc.property
 - [Phase 04]: Model uses const-object + type alias pattern (not const enum) for runtime iteration and bundler compatibility
+- [Phase 04]: vi.hoisted() required for mock variables in vi.mock() factory in Vitest ESM — TDZ prevents plain const from being accessible in hoisted factory closures
+- [Phase 04]: vi.clearAllMocks() resets mockResolvedValue implementations — must re-apply in beforeEach after clearAllMocks
 
 ### Pending Todos
 
@@ -146,6 +149,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-04-13T20:56:01.240Z
-Stopped at: Completed 04-01-PLAN.md
+Last session: 2026-04-13T21:02:20.125Z
+Stopped at: Completed 04-02-PLAN.md
 Resume file: None

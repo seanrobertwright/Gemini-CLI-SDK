@@ -183,7 +183,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8 →
 | 1. Feasibility Spike + Fixture Capture | 9/10 | In Progress|  |
 | 2. Process Foundation + Workspace + CI Matrix | 5/5 | Complete   | 2026-04-13 |
 | 3. NDJSON Parser + EventDispatcher + MessageChunk Types | 4/4 | Complete   | 2026-04-13 |
-| 4. Public query() + ArgvBuilder + systemPrompt + Workspace + Model | 1/3 | In Progress|  |
+| 4. Public query() + ArgvBuilder + systemPrompt + Workspace + Model | 2/3 | In Progress|  |
 | 5. Error Taxonomy + Archon 5-Bucket Mapping | 0/TBD | Not started | - |
 | 6. Auth Environment | 0/TBD | Not started | - |
 | 7. Session Resume + Multi-Turn | 0/TBD | Not started | - |
