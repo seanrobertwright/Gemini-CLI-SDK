@@ -11,6 +11,16 @@ from .process import (
     resolve_binary,
     ProcessManager,
 )
+from .query import (
+    build_argv,
+    query,
+    query_full,
+    query_raw,
+    AbortError,
+    Model,
+    QueryOptions,
+    QueryResult,
+)
 
 __all__ = [
     "ProcessStrategy",
@@ -20,4 +30,12 @@ __all__ = [
     "ProcessManager",
     "kill_tree",
     "GeminiNotFoundError",
+    "build_argv",
+    "query",
+    "query_full",
+    "query_raw",
+    "AbortError",
+    "Model",
+    "QueryOptions",
+    "QueryResult",
 ]

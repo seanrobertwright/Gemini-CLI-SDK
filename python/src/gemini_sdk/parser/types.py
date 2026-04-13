@@ -124,10 +124,12 @@ class ThinkingChunk(TypedDict):
     content: str
 
 
-class ResultChunk(TypedDict):
-    type: Literal["result"]
-    sessionId: str
-    stopReason: str
+class ResultChunk(TypedDict, total=False):
+    type: Required[Literal["result"]]
+    sessionId: Required[str]
+    stopReason: Required[str]
+    requestedModel: str  # MDL-04: populated only on mismatch
+    actualModel: str     # MDL-04: populated only on mismatch
 
 
 class RateLimitChunk(TypedDict, total=False):
