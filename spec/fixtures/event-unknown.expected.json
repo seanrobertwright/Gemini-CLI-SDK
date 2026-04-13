@@ -7,7 +7,13 @@
     {
       "type": "unknown",
       "raw": {
-        "_comment": "The raw field should hold the full original JSON object from event-unknown.ndjson. Phase 3's parser test asserts this shape: {type:'unknown', raw:{type:'cosmic_ray_hit', ...rest}}."
+        "type": "cosmic_ray_hit",
+        "timestamp": "2026-04-11T22:35:47.989Z",
+        "session_id": "<REDACTED_SESSION_ID>",
+        "model": "auto-gemini-3",
+        "_synthetic": true,
+        "_derived_from": "simple-text.ndjson line 1",
+        "_note": "Mutated from a real captured init event by replacing type with an invented value. Used by Phase 3 PRS-03 to verify the parser yields {type:\"unknown\", raw} without throwing."
       }
     }
   ],

@@ -11,7 +11,9 @@
       "model": "auto-gemini-3"
     },
     {
-      "type": "user",
+      "type": "system",
+      "subtype": "message",
+      "role": "user",
       "content": "Read the file test.txt in the current directory and show its contents."
     },
     {
@@ -19,26 +21,18 @@
       "content": "I will read the contents of `test.txt`.\n"
     },
     {
-      "type": "unknown",
-      "raw": {
-        "type": "tool_use",
-        "timestamp": "2026-04-12T00:18:06.139Z",
-        "tool_name": "read_file",
-        "tool_id": "read_file_1775953086139_0",
-        "parameters": {
-          "file_path": "test.txt"
-        }
+      "type": "tool",
+      "toolName": "read_file",
+      "toolId": "read_file_1775953086139_0",
+      "parameters": {
+        "file_path": "test.txt"
       }
     },
     {
-      "type": "unknown",
-      "raw": {
-        "type": "tool_result",
-        "timestamp": "2026-04-12T00:18:06.217Z",
-        "tool_id": "read_file_1775953086139_0",
-        "status": "success",
-        "output": ""
-      }
+      "type": "tool_result",
+      "toolId": "read_file_1775953086139_0",
+      "status": "success",
+      "output": ""
     },
     {
       "type": "assistant",

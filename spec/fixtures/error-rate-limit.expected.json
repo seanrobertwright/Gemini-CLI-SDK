@@ -11,7 +11,7 @@
       "model": "auto-gemini-3"
     },
     {
-      "type": "error",
+      "type": "rate_limit",
       "code": 429,
       "message": "You have exceeded your quota. Please try again later.",
       "status": "RESOURCE_EXHAUSTED"

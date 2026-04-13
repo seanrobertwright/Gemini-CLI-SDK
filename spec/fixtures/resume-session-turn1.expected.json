@@ -11,7 +11,9 @@
       "model": "auto-gemini-3"
     },
     {
-      "type": "user",
+      "type": "system",
+      "subtype": "message",
+      "role": "user",
       "content": "My favorite number is 47. Remember it exactly."
     },
     {
@@ -19,30 +21,22 @@
       "content": "I will remember that your favorite number is 47.\n\n"
     },
     {
-      "type": "unknown",
-      "raw": {
-        "type": "tool_use",
-        "timestamp": "2026-04-12T12:32:55.536Z",
-        "tool_name": "save_memory",
-        "tool_id": "save_memory_1775997175536_0",
-        "parameters": {
-          "scope": "global",
-          "content": "Favorite number: 47"
-        }
+      "type": "tool",
+      "toolName": "save_memory",
+      "toolId": "save_memory_1775997175536_0",
+      "parameters": {
+        "scope": "global",
+        "content": "Favorite number: 47"
       }
     },
     {
-      "type": "unknown",
-      "raw": {
-        "type": "tool_result",
-        "timestamp": "2026-04-12T12:32:55.592Z",
-        "tool_id": "save_memory_1775997175536_0",
-        "status": "error",
-        "output": "Tool \"save_memory\" not found. Did you mean one of: \"list_directory\", \"grep_search\", \"web_fetch\"?",
-        "error": {
-          "type": "tool_not_registered",
-          "message": "Tool \"save_memory\" not found. Did you mean one of: \"list_directory\", \"grep_search\", \"web_fetch\"?"
-        }
+      "type": "tool_result",
+      "toolId": "save_memory_1775997175536_0",
+      "status": "error",
+      "output": "Tool \"save_memory\" not found. Did you mean one of: \"list_directory\", \"grep_search\", \"web_fetch\"?",
+      "error": {
+        "type": "tool_not_registered",
+        "message": "Tool \"save_memory\" not found. Did you mean one of: \"list_directory\", \"grep_search\", \"web_fetch\"?"
       }
     },
     {

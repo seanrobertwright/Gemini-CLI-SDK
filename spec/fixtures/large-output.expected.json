@@ -11,7 +11,9 @@
       "model": "auto-gemini-3"
     },
     {
-      "type": "user",
+      "type": "system",
+      "subtype": "message",
+      "role": "user",
       "content": "Write a numbered list of exactly 200 facts about marine biology, one per line. Each entry must be a single sentence of exactly 40-50 words covering specific scientific details. Do not use any tools, do not write to files, output only the numbered list. Format: \"N. [sentence]\". Start with 1."
     },
     {

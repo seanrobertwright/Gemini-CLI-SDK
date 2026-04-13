@@ -11,7 +11,9 @@
       "model": "auto-gemini-3"
     },
     {
-      "type": "user",
+      "type": "system",
+      "subtype": "message",
+      "role": "user",
       "content": "Describe @spec/fixtures/_assets/sample-image.png in one sentence."
     },
     {

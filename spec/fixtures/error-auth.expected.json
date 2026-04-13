@@ -11,10 +11,9 @@
       "model": "auto-gemini-3"
     },
     {
-      "type": "error",
-      "code": 401,
-      "message": "API key not valid. Please pass a valid API key.",
-      "status": "UNAUTHENTICATED"
+      "_throws": true,
+      "errorType": "GeminiError",
+      "errorMessage": "API key not valid. Please pass a valid API key."
     }
   ],
   "exit_code": 1,

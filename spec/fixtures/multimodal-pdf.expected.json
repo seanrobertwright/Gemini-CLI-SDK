@@ -11,7 +11,9 @@
       "model": "auto-gemini-3"
     },
     {
-      "type": "user",
+      "type": "system",
+      "subtype": "message",
+      "role": "user",
       "content": "Summarize @spec/fixtures/_assets/sample-document.pdf in one sentence."
     },
     {
