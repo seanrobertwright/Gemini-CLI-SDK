@@ -68,7 +68,10 @@ class TestFixtureCorpus:
 
         expected = json.loads(expected_path.read_text())
         expected_chunks = expected.get("chunks", [])
-        throws_entry = next((c for c in expected_chunks if c.get("_throws")), None)
+        # Phase 5: _throws at TOP LEVEL (alongside _errorType) takes precedence.
+        # Phase 3 legacy: _throws inside chunks[] is also checked for backward compat.
+        top_level_throws = expected.get("_throws") is True
+        throws_entry = top_level_throws or next((c for c in expected_chunks if c.get("_throws")), None)
         real_chunks = [c for c in expected_chunks if not c.get("_throws")]
 
         if not ndjson_path.exists():
@@ -260,8 +263,11 @@ class TestDispatch:
 
     @pytest.mark.anyio
     async def test_rate_limit(self):
-        """maps code 429 error to rate_limit chunk"""
+        """throws RateLimitError for code 429 error event (Phase 5 contract)"""
+        # Phase 5: rate-limit errors THROW RateLimitError — no rate_limit chunk yielded.
+        # This replaces the old Phase-3 "maps code 429 to rate_limit chunk" test.
         from gemini_sdk.parser import dispatch
+        from gemini_sdk.errors import RateLimitError
 
         events = [
             {"type": "init", "timestamp": "2026-01-01T00:00:00Z", "session_id": "sid1", "model": "test"},
@@ -276,18 +282,14 @@ class TestDispatch:
             },
         ]
 
-        chunks = await _collect(dispatch(_async_from_events(events)))
-
-        assert len(chunks) == 2
-        assert chunks[0]["type"] == "system"
-        assert chunks[1]["type"] == "rate_limit"
-        assert chunks[1]["code"] == 429
-        assert chunks[1]["message"] == "Rate limit exceeded"
+        with pytest.raises(RateLimitError):
+            await _collect(dispatch(_async_from_events(events)))
 
     @pytest.mark.anyio
     async def test_error_throw(self):
         """throws on non-rate-limit error"""
         from gemini_sdk.parser import dispatch
+        from gemini_sdk.errors import GeminiError
 
         events = [
             {"type": "init", "timestamp": "2026-01-01T00:00:00Z", "session_id": "sid1", "model": "test"},
@@ -302,7 +304,7 @@ class TestDispatch:
             },
         ]
 
-        with pytest.raises(RuntimeError):
+        with pytest.raises(GeminiError):
             await _collect(dispatch(_async_from_events(events)))
 
     @pytest.mark.anyio

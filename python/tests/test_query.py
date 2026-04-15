@@ -18,6 +18,7 @@ import pytest
 
 from gemini_sdk.query import AbortError, query, query_full, query_raw
 from gemini_sdk.parser.types import MessageChunk, RawEvent
+from gemini_sdk.process.process_manager import SpawnResult
 
 # ── NDJSON fixture constants ──────────────────────────────────────────────────
 
@@ -51,13 +52,16 @@ class _MockStdout:
         return self._data
 
 
-def _make_mock_proc(lines: list[str]) -> MagicMock:
-    """Return a mock anyio Process with a controllable stdout."""
+def _make_mock_proc(lines: list[str]) -> SpawnResult:
+    """Return a mock SpawnResult with a controllable stdout.
+
+    Phase 5: ProcessManager.spawn() returns SpawnResult, not raw anyio Process.
+    """
     proc = MagicMock()
     proc.pid = 12345
     proc.returncode = 0
     proc.stdout = _MockStdout(lines)
-    return proc
+    return SpawnResult(process=proc, pid=12345, get_stderr_tail=lambda: "")
 
 
 async def _collect_chunks(gen) -> list[MessageChunk]:
@@ -206,10 +210,11 @@ class TestQuery:
                 self._idx += 1
                 return data
 
-        proc = MagicMock()
-        proc.pid = 12345
-        proc.returncode = 0
-        proc.stdout = _ControllableStdout()
+        raw_proc = MagicMock()
+        raw_proc.pid = 12345
+        raw_proc.returncode = 0
+        raw_proc.stdout = _ControllableStdout()
+        proc = SpawnResult(process=raw_proc, pid=12345, get_stderr_tail=lambda: "")
 
         with (
             patch("gemini_sdk.query.query.ProcessManager") as mock_pm_cls,
@@ -293,10 +298,11 @@ class TestQuery:
         cancel_scope = MagicMock()
         cancel_scope.cancel_called = False
 
-        proc = MagicMock()
-        proc.pid = 12345
-        proc.returncode = 0
-        proc.stdout = _SlowStdout(cancel_scope)
+        raw_proc2 = MagicMock()
+        raw_proc2.pid = 12345
+        raw_proc2.returncode = 0
+        raw_proc2.stdout = _SlowStdout(cancel_scope)
+        proc = SpawnResult(process=raw_proc2, pid=12345, get_stderr_tail=lambda: "")
 
         kill_calls = []
 
@@ -380,10 +386,11 @@ class TestQuery:
                 self._idx += 1
                 return data
 
-        proc = MagicMock()
-        proc.pid = 12345
-        proc.returncode = 0
-        proc.stdout = _ControlledStdout()
+        raw_proc3 = MagicMock()
+        raw_proc3.pid = 12345
+        raw_proc3.returncode = 0
+        raw_proc3.stdout = _ControlledStdout()
+        proc = SpawnResult(process=raw_proc3, pid=12345, get_stderr_tail=lambda: "")
 
         with (
             patch("gemini_sdk.query.query.ProcessManager") as mock_pm_cls,

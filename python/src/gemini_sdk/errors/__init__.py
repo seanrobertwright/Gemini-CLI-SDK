@@ -18,6 +18,7 @@ from .errors import (
     UnsupportedFeatureError,
     GeminiNotFoundError,
 )
+from .error_mapper import ErrorMapper
 
 __all__ = [
     "ArchonBucket",
@@ -36,4 +37,5 @@ __all__ = [
     "ParseError",
     "UnsupportedFeatureError",
     "GeminiNotFoundError",
+    "ErrorMapper",
 ]

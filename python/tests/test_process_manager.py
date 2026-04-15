@@ -30,7 +30,9 @@ class TestProcessManager:
         result = await manager.spawn(cli_path="/fake/gemini", argv=["--version"])
 
         mock_strategy.spawn.assert_called_once()
-        assert result is mock_proc
+        # Phase 5: ProcessManager.spawn() wraps the process in a SpawnResult
+        assert result.process is mock_proc
+        assert callable(result.get_stderr_tail)
 
         # Verify the strategy was called with binary as first element
         call_args = mock_strategy.spawn.call_args
@@ -79,11 +81,11 @@ class TestProcessManager:
             pytest.skip("Skipping integration test: gemini not found on PATH")
 
         manager = ProcessManager()
-        proc = await manager.spawn(argv=["--version"])
+        spawn_result = await manager.spawn(argv=["--version"])
 
         output = b""
-        # proc.stdout is already an anyio ByteReceiveStream — read from it directly
-        stdout = proc.stdout
+        # spawn_result.process.stdout is already an anyio ByteReceiveStream
+        stdout = spawn_result.process.stdout
         if stdout is not None:
             try:
                 with anyio.fail_after(15):
@@ -93,7 +95,7 @@ class TestProcessManager:
             except (anyio.EndOfStream, Exception):
                 pass
 
-        await proc.aclose()
+        await spawn_result.process.aclose()
         assert len(output.strip()) > 0
 
     @pytest.mark.anyio

@@ -16,6 +16,7 @@ Requirements satisfied:
   SYS-02 — Temp system-prompt file deleted in finally
   CWD-01 — cwd option passed to subprocess
   MDL-04 — Model mismatch surfaced on ResultChunk
+  ERR-06 — saw_result tracking: stream ending without terminal result raises via ErrorMapper
 """
 
 from __future__ import annotations
@@ -28,6 +29,7 @@ from typing import AsyncIterator, Optional
 import anyio
 import anyio.abc
 
+from ..errors import ErrorMapper, GeminiError
 from ..parser.dispatch import dispatch
 from ..parser.parse_ndjson import parse_ndjson
 from ..parser.types import MessageChunk, RawEvent, ResultChunk
@@ -68,7 +70,8 @@ async def query(options: QueryOptions) -> AsyncIterator[MessageChunk]:
       4. Pipe stdout through parse_ndjson -> dispatch
       5. Yield chunks; detect model mismatch; buffer pending tool_use chunks
       6. On cancel: flush pending tool_use as incomplete, raise AbortError
-      7. Finally: kill subprocess, delete temp file
+      7. ERR-06: if stream ends without result chunk AND not cancelled AND non-zero exit, raise
+      8. Finally: kill subprocess, delete temp file
     """
     # Step 1: Pre-cancel check
     cancel_scope = options.get("cancel_scope")
@@ -86,7 +89,7 @@ async def query(options: QueryOptions) -> AsyncIterator[MessageChunk]:
     # Step 4: Build argv and spawn subprocess
     argv = build_argv(options)
     manager = ProcessManager()
-    proc = await manager.spawn(
+    spawn_result = await manager.spawn(
         argv=argv,
         cli_path=options.get("cli_path"),
         env=env_overrides,
@@ -109,8 +112,11 @@ async def query(options: QueryOptions) -> AsyncIterator[MessageChunk]:
     # Track whether we got cancelled mid-stream
     cancelled = False
 
+    # ERR-06: track whether a terminal result chunk was received
+    saw_result = False
+
     try:
-        raw_events = parse_ndjson(proc.stdout)  # type: ignore[arg-type]
+        raw_events = parse_ndjson(spawn_result.process.stdout)  # type: ignore[arg-type]
         chunks_iter = dispatch(raw_events)
 
         async for chunk in chunks_iter:
@@ -120,6 +126,7 @@ async def query(options: QueryOptions) -> AsyncIterator[MessageChunk]:
 
             # Enrich ResultChunk with model mismatch info (MDL-04)
             if chunk.get("type") == "result":  # type: ignore[union-attr]
+                saw_result = True
                 if requested_model and actual_model and requested_model != actual_model:
                     enriched: ResultChunk = {
                         **chunk,  # type: ignore[misc]
@@ -163,11 +170,30 @@ async def query(options: QueryOptions) -> AsyncIterator[MessageChunk]:
                 yield {**pending, "incomplete": True}  # type: ignore[misc]
             raise AbortError()
 
+        # ERR-06: stream ended without a terminal result chunk AND not cancelled AND non-zero exit.
+        # Exit code 0 with no result is treated as a partial/benign stream (tool-use flush, etc.).
+        if not saw_result and not cancelled:
+            exit_code = spawn_result.process.returncode
+            if exit_code is not None and exit_code != 0:
+                tail = spawn_result.get_stderr_tail()
+                raise ErrorMapper.from_exit(exit_code=exit_code, stderr=tail)
+
+    except GeminiError:
+        raise  # already typed from dispatch or ErrorMapper.from_exit
+    except AbortError:
+        raise
+    except Exception:
+        # Unexpected error during iteration — treat as exit-code path
+        exit_code = spawn_result.process.returncode
+        code = exit_code if exit_code is not None else 1
+        tail = spawn_result.get_stderr_tail()
+        raise ErrorMapper.from_exit(exit_code=code, stderr=tail) from None
+
     finally:
         # Cleanup: kill subprocess, remove temp file
-        if proc.pid is not None:
+        if spawn_result.pid is not None:
             try:
-                await kill_tree(proc.pid)
+                await kill_tree(spawn_result.pid)
             except Exception:
                 pass
         if temp_path:
@@ -200,7 +226,7 @@ async def query_raw(options: QueryOptions) -> AsyncIterator[RawEvent]:
 
     argv = build_argv(options)
     manager = ProcessManager()
-    proc = await manager.spawn(
+    spawn_result = await manager.spawn(
         argv=argv,
         cli_path=options.get("cli_path"),
         env=env_overrides,
@@ -210,7 +236,7 @@ async def query_raw(options: QueryOptions) -> AsyncIterator[RawEvent]:
     cancelled = False
 
     try:
-        raw_events = parse_ndjson(proc.stdout)  # type: ignore[arg-type]
+        raw_events = parse_ndjson(spawn_result.process.stdout)  # type: ignore[arg-type]
 
         async for event in raw_events:
             if cancel_scope is not None and getattr(cancel_scope, "cancel_called", False):
@@ -222,9 +248,9 @@ async def query_raw(options: QueryOptions) -> AsyncIterator[RawEvent]:
             raise AbortError()
 
     finally:
-        if proc.pid is not None:
+        if spawn_result.pid is not None:
             try:
-                await kill_tree(proc.pid)
+                await kill_tree(spawn_result.pid)
             except Exception:
                 pass
         if temp_path:

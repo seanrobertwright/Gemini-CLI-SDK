@@ -7,12 +7,16 @@ Maps RawEvents into MessageChunks.
 Requirements satisfied:
   PRS-05 — EventDispatcher routes all known event types to MessageChunk variants
   PRS-07 — Tool pairing by tool_id with incomplete:true flush on stream end
+
+Phase 5: all stream-json error events route through ErrorMapper.from_stream_event();
+the old rate_limit chunk yield is replaced by a typed raise (ERR-04).
 """
 from __future__ import annotations
 
 from typing import AsyncIterator, Dict
 
 from .types import MessageChunk, RawEvent
+from ..errors import ErrorMapper
 
 
 async def dispatch(
@@ -73,17 +77,8 @@ async def dispatch(
             yield result_chunk  # type: ignore[misc]
 
         elif event_type == "error":
-            if _is_rate_limit_error(event):  # type: ignore[arg-type]
-                err = event["error"]  # type: ignore[index]
-                yield {
-                    "type": "rate_limit",
-                    "code": err.get("code", 429),
-                    "message": err.get("message", ""),
-                    "status": err.get("status"),
-                }
-            else:
-                # Phase 5 will replace this with raise GeminiError(...) from error taxonomy
-                raise RuntimeError(f"Unhandled error event: {event.get('error')}")  # type: ignore[union-attr]
+            # Phase 5: all stream-json error events route through ErrorMapper; no rate_limit chunk yield.
+            raise ErrorMapper.from_stream_event(event)  # type: ignore[arg-type]
 
         elif event_type == "result":
             yield {
@@ -102,12 +97,6 @@ async def dispatch(
 def _is_thinking(event: dict) -> bool:
     """Detect thinking events (thought=True flag or role='thinking')."""
     return event.get("thought") is True or event.get("role") == "thinking"
-
-
-def _is_rate_limit_error(event: dict) -> bool:
-    """Detect rate-limit error events (code 429 or RESOURCE_EXHAUSTED status)."""
-    err = event.get("error", {})
-    return err.get("code") == 429 or err.get("status") == "RESOURCE_EXHAUSTED"
 
 
 def _map_stop_reason(status: str) -> str:
