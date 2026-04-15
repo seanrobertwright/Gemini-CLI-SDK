@@ -1,11 +1,14 @@
-SYNTHETIC STDERR — not captured from a real gemini-cli run.
+SYNTHETIC STDERR (Phase 5 plan 01, explicitly blocked) — not captured from a real gemini-cli run.
 
-The host machine uses OAuth (selectedType: oauth-personal) and the GEMINI_API_KEY override
-does not disable the OAuth path in gemini-cli 0.37.1. A real auth failure would produce
-stderr output similar to:
+Blocker: gemini-cli 0.37.1 auth isolation ineffective on the capture host.
+  - isolateOAuth (temp GEMINI_CONFIG_DIR) + GEMINI_API_KEY=invalid-key-12345 still yielded
+    exit=0 with a successful "Hello" response, indicating an uncovered cached-credential path.
+  - No GOOGLE_APPLICATION_CREDENTIALS set, no ~/.config/gcloud, no ~/AppData/*/gcloud present.
+
+A real auth failure would produce stderr output similar to:
 
   Error: API key not valid. Please pass a valid API key. [HTTP 401]
   Status: UNAUTHENTICATED
 
-Phase 5 error taxonomy will validate the real stderr format against a host with
-GEMINI_API_KEY configured (no OAuth credentials).
+Real-capture hardening deferred to a follow-up gap-closure phase
+(resolution_phase: follow-up-auth-isolation-hardening).

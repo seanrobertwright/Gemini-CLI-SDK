@@ -1,11 +1,17 @@
-SYNTHETIC STDERR — not captured from a real gemini-cli run.
+SYNTHETIC STDERR (Phase 5 plan 01, explicitly blocked) — not captured from a real gemini-cli run.
 
-The host machine uses a generous OAuth quota that absorbs rapid-fire requests
-without triggering a 429 RESOURCE_EXHAUSTED error. A real rate-limit failure
-would produce stderr output similar to:
+Blocker: no free-tier GEMINI_API_KEY available for 429 RESOURCE_EXHAUSTED capture.
+  - Host OAuth quota is generous and does not trigger 429 under rapid-fire requests
+    (10+ parallel attempts).
+  - No quota-capped key on hand to force a real rate-limit.
+
+A real rate-limit failure would produce stderr output similar to:
 
   Error: You have exceeded your quota. Please try again later. [HTTP 429]
   Status: RESOURCE_EXHAUSTED
 
-Phase 5 error taxonomy will validate the real stderr format against a
-free-tier API key with quota limits.
+Real-capture deferred to a follow-up gap-closure phase
+(resolution_phase: follow-up-quota-capped-key).
+
+retryAfter field: NOT OBSERVED (real 429 response not captured). ErrorMapper must
+tolerate absence of retryAfter / retry_after / retryDelay / retry_delay_ms fields.

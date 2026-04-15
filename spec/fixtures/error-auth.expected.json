@@ -1,21 +1,18 @@
 {
   "fixture": "error-auth.ndjson",
-  "captured_against": "SYNTHETIC — derived from simple-text.ndjson init event + constructed 401 error",
+  "captured_against": "SYNTHETIC (Phase 5 plan 01, explicitly blocked) — derived from simple-text.ndjson init event + constructed 401 error",
   "captured_at": "2026-04-12T00:00:00.000Z",
-  "description": "Synthetic fixture: auth failure scenario. The host machine uses OAuth auth (selectedType: oauth-personal), making it impossible to force a real API key auth failure without removing production credentials. The error event shape is derived from the known gemini-cli UNAUTHENTICATED error format (HTTP 401, status UNAUTHENTICATED). Phase 5 error taxonomy will validate the real format when it runs against a host with GEMINI_API_KEY configured.",
+  "description": "Synthetic fixture (Phase 5 plan 01, explicitly blocked): auth failure scenario. gemini-cli 0.37.1 auth isolation was ineffective on the capture host — isolateOAuth (temp GEMINI_CONFIG_DIR) + GEMINI_API_KEY=invalid-key-12345 still yielded exit=0 with a successful response, indicating an uncovered cached-credential path (no GOOGLE_APPLICATION_CREDENTIALS, no ~/.config/gcloud, no ~/AppData/*/gcloud present). The error event shape is derived from the known gemini-cli UNAUTHENTICATED error format (HTTP 401, status UNAUTHENTICATED). Real-capture hardening deferred to a follow-up gap-closure phase.",
   "chunks": [
     {
       "type": "system",
       "subtype": "init",
       "sessionId": "<REDACTED_SESSION_ID>",
       "model": "auto-gemini-3"
-    },
-    {
-      "_throws": true,
-      "errorType": "GeminiError",
-      "errorMessage": "API key not valid. Please pass a valid API key."
     }
   ],
+  "_throws": true,
+  "_errorType": "AuthError",
   "exit_code": 1,
   "stderr_patterns": [
     "API key not valid",
@@ -23,6 +20,8 @@
     "401"
   ],
   "synthetic": true,
+  "synthetic_reason": "gemini-cli 0.37.1 auth isolation ineffective on Windows host: isolateOAuth (temp GEMINI_CONFIG_DIR) + GEMINI_API_KEY=invalid-key-12345 still yielded exit=0 with a successful 'Hello' response; no GOOGLE_APPLICATION_CREDENTIALS, no ~/.config/gcloud, no ~/AppData/*/gcloud present. Uncovered cached-credential path.",
+  "resolution_phase": "follow-up-auth-isolation-hardening",
   "derived_from": "simple-text.ndjson line 1 (init event) + constructed error event",
-  "capture_limitation": "Host uses OAuth; GEMINI_API_KEY override does not override OAuth auth path in gemini-cli 0.37.1. Real capture deferred to Phase 5 validation on an API-key-only host."
+  "capture_limitation": "Phase 5 plan 01 blocked: auth-isolation hardening required before real capture is possible. Tracked in follow-up gap-closure phase."
 }

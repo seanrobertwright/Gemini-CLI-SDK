@@ -1,6 +1,6 @@
 {
-  "version": 1,
-  "description": "Canonical list of fixture slugs required by Phase 1. Each slug <name> must have a <name>.ndjson and <name>.expected.json under spec/fixtures/. resume-session is captured as a PAIR (turn1 + turn2) per CONTEXT.md.",
+  "version": 2,
+  "description": "Canonical list of fixture slugs required by Phase 1. Each slug <name> must have a <name>.ndjson and <name>.expected.json under spec/fixtures/. resume-session is captured as a PAIR (turn1 + turn2) per CONTEXT.md. Version 2 (Phase 5 plan 01) introduces the synthetic block list: entries explicitly marked synthetic:true with a synthetic_reason are tolerated by the CI linter and must eventually be re-captured against a real gemini-cli host.",
   "slugs": [
     "simple-text",
     "tool-use-builtin",
@@ -14,5 +14,15 @@
     "multimodal-pdf",
     "large-output",
     "abort-midstream"
-  ]
+  ],
+  "synthetic_blocked": {
+    "error-auth": {
+      "synthetic_reason": "Phase 5 plan 01: gemini-cli 0.37.1 auth isolation ineffective on Windows host — isolateOAuth (temp GEMINI_CONFIG_DIR) + GEMINI_API_KEY=invalid-key-12345 still yielded exit=0 with a successful response, indicating an uncovered cached-credential path (no GOOGLE_APPLICATION_CREDENTIALS, no ~/.config/gcloud, no ~/AppData/*/gcloud present). Real-capture hardening deferred to a follow-up gap-closure phase.",
+      "resolution_phase": "follow-up-auth-isolation-hardening"
+    },
+    "error-rate-limit": {
+      "synthetic_reason": "Phase 5 plan 01: no free-tier GEMINI_API_KEY available for 429 RESOURCE_EXHAUSTED capture. Host OAuth quota is generous and does not trigger 429 under rapid-fire requests. Real-capture deferred to a follow-up gap-closure phase.",
+      "resolution_phase": "follow-up-quota-capped-key"
+    }
+  }
 }
