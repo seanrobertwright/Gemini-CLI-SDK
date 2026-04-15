@@ -16,7 +16,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 2: Process Foundation + Workspace Scaffolding + CI Matrix** - Stand up the polyglot monorepo (TS + Python), bring up `BinaryResolver` + `ProcessManager` (spawn-per-call) + `EnvBuilder` behind a pluggable strategy interface, and turn on the `{ubuntu, macos, windows} × {node, python}` CI matrix with a non-en-US Windows runner (completed 2026-04-13)
 - [x] **Phase 3: NDJSON Parser + EventDispatcher + MessageChunk Types** - Build the line-buffered, lenient, CRLF-tolerant NDJSON parser and the `EventDispatcher` that normalizes CLI events into Archon's 8-variant `MessageChunk` union, with both TS and Python test suites running the shared fixture corpus (completed 2026-04-13)
 - [x] **Phase 4: Public query() + ArgvBuilder + systemPrompt + Workspace + Model Selection** - Ship the public `query()` async generator, the pure-function `buildArgv`, temp-file `GEMINI_SYSTEM_MD` for system prompts, `cwd` + `--include-directories`, and the typed model enum with downgrade-warning detection (completed 2026-04-13)
-- [ ] **Phase 5: Error Taxonomy + Archon 5-Bucket Mapping** - Define the typed `GeminiError` hierarchy, generate it from a single YAML source consumed by both languages, and classify `(exit code, stderr tail, last events)` → typed error → one of Archon's 5 retry buckets
+- [x] **Phase 5: Error Taxonomy + Archon 5-Bucket Mapping** - Define the typed `GeminiError` hierarchy, generate it from a single YAML source consumed by both languages, and classify `(exit code, stderr tail, last events)` → typed error → one of Archon's 5 retry buckets (completed 2026-04-15)
 - [ ] **Phase 6: Auth Environment** - Wire the canonical `GEMINI_API_KEY` default plus Vertex AI (service account JSON + Google Cloud API key) plus ADC/OAuth fallback, with precedence warnings and typed `AuthError` subtypes
 - [ ] **Phase 7: Session Resume + Multi-Turn** - Ship the `Session` value object, capture session IDs from the `init` event, wire `--resume`, and gate the transcript-prepend fallback on the Phase-1 decision about gemini-cli issue #14180
 - [ ] **Phase 8: Tools + Approval Mode + Structured Output (Best-Effort)** - Pass through `--allowed-tools` / Policy Engine + `--approval-mode`, document that caller-defined custom tools are not in v1, and ship best-effort structured output via system-prompt schema injection + runtime validation + single retry
@@ -189,7 +189,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8 →
 | 2. Process Foundation + Workspace + CI Matrix | 5/5 | Complete   | 2026-04-13 |
 | 3. NDJSON Parser + EventDispatcher + MessageChunk Types | 4/4 | Complete   | 2026-04-13 |
 | 4. Public query() + ArgvBuilder + systemPrompt + Workspace + Model | 3/3 | Complete   | 2026-04-13 |
-| 5. Error Taxonomy + Archon 5-Bucket Mapping | 3/4 | In Progress|  |
+| 5. Error Taxonomy + Archon 5-Bucket Mapping | 4/4 | Complete   | 2026-04-15 |
 | 6. Auth Environment | 0/TBD | Not started | - |
 | 7. Session Resume + Multi-Turn | 0/TBD | Not started | - |
 | 8. Tools + Approval Mode + Structured Output | 0/TBD | Not started | - |
