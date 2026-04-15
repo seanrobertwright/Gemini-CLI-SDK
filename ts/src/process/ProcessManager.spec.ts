@@ -39,7 +39,9 @@ describe('ProcessManager', () => {
     const result = manager.spawn({ cliPath: '/fake/gemini', argv: ['--version'] });
 
     expect(mockStrategy.spawn).toHaveBeenCalledOnce();
-    expect(result).toBe(mockChild);
+    // Phase 5: ProcessManager.spawn() wraps the ChildProcess in a SpawnResult
+    expect(result.child).toBe(mockChild);
+    expect(typeof result.getStderrTail).toBe('function');
 
     // Verify the strategy was called with the binary as first element
     const [argv, env] = (mockStrategy.spawn as ReturnType<typeof vi.fn>).mock.calls[0] as [string[], Record<string, string>, Partial<SpawnOptions>];
@@ -89,15 +91,15 @@ describe('ProcessManager', () => {
     }
 
     const manager = new ProcessManager();
-    const child = manager.spawn({ argv: ['--version'] });
+    const spawnResult = manager.spawn({ argv: ['--version'] });
     let output = '';
 
     await new Promise<void>((resolve, reject) => {
-      child.stdout?.on('data', (chunk: Buffer) => {
+      spawnResult.stdout?.on('data', (chunk: Buffer) => {
         output += chunk.toString();
       });
-      child.on('close', () => resolve());
-      child.on('error', reject);
+      spawnResult.child.on('close', () => resolve());
+      spawnResult.child.on('error', reject);
       setTimeout(() => reject(new Error('Timeout: gemini --version did not complete')), 15000);
     });
 

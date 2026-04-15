@@ -10,6 +10,7 @@ import { readFileSync, readdirSync } from 'node:fs';
 import { parseNdjson } from './parseNdjson.js';
 import { dispatch } from './dispatch.js';
 import type { MessageChunk, RawEvent } from './types.js';
+import { RateLimitError } from '../errors/index.js';
 
 // ── helpers ──────────────────────────────────────────────────────────────────
 
@@ -73,8 +74,10 @@ describe('dispatch', () => {
 
         const expectedChunks = expected.chunks ?? [];
 
-        // Check for _throws sentinel anywhere in chunks
-        const throwsEntry = expectedChunks.find((c) => (c as { _throws?: boolean })._throws === true);
+        // Phase 5: _throws at TOP LEVEL (alongside _errorType) takes precedence.
+        // Phase 3 legacy: _throws inside chunks[] is also checked for backward compat.
+        const topLevelThrows = expected._throws === true;
+        const throwsEntry = topLevelThrows || expectedChunks.find((c) => (c as { _throws?: boolean })._throws === true);
 
         // Read ndjson file — may be empty (abort-midstream)
         let ndjsonContent: string;
@@ -86,7 +89,7 @@ describe('dispatch', () => {
         }
 
         if (throwsEntry) {
-          // This fixture expects dispatch to throw (e.g. error-auth)
+          // This fixture expects dispatch to throw (e.g. error-auth, error-rate-limit)
           await expect(async () => {
             await pipeFixture(ndjsonFile);
           }).rejects.toThrow();
@@ -276,7 +279,9 @@ describe('dispatch', () => {
   // ── error handling ────────────────────────────────────────────────────────────
 
   describe('error handling', () => {
-    it('maps code 429 error to rate_limit chunk', async () => {
+    it('throws RateLimitError for code 429 error event (Phase 5 contract)', async () => {
+      // Phase 5: rate-limit errors THROW RateLimitError — no rate_limit chunk yielded.
+      // This replaces the old Phase-3 "maps code 429 to rate_limit chunk" test.
       const events: RawEvent[] = [
         { type: 'init', timestamp: '2026-01-01T00:00:00Z', session_id: 'sid1', model: 'test' },
         {
@@ -290,13 +295,9 @@ describe('dispatch', () => {
         },
       ];
 
-      const chunks = await collectChunks(dispatch(rawEventsToAsyncIterable(events)));
-
-      expect(chunks).toHaveLength(2);
-      expect(chunks[0].type).toBe('system');
-      expect(chunks[1].type).toBe('rate_limit');
-      expect((chunks[1] as { type: 'rate_limit'; code: number }).code).toBe(429);
-      expect((chunks[1] as { type: 'rate_limit'; message: string }).message).toBe('Rate limit exceeded');
+      await expect(async () => {
+        await collectChunks(dispatch(rawEventsToAsyncIterable(events)));
+      }).rejects.toBeInstanceOf(RateLimitError);
     });
 
     it('throws on non-rate-limit error', async () => {

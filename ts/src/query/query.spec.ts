@@ -52,20 +52,30 @@ import * as fsMod from 'node:fs/promises';
 // ── helpers ─────────────────────────────────────────────────────────────────
 
 /**
- * Creates a mock ChildProcess whose stdout emits the given NDJSON lines.
+ * Creates a mock SpawnResult whose stdout emits the given NDJSON lines.
+ * Phase 5: ProcessManager.spawn() returns SpawnResult (not raw ChildProcess).
  */
-function createMockChild(ndjsonLines: string[]): ChildProcess {
+function createMockChild(ndjsonLines: string[]) {
   const ndjson = ndjsonLines.map((l) => (l.endsWith('\n') ? l : l + '\n')).join('');
   const stdout = Readable.from([Buffer.from(ndjson)]);
   const stderr = Readable.from([]);
 
-  return {
+  const child = {
     pid: 12345,
+    exitCode: null as number | null,
     stdout,
     stderr,
     on: vi.fn(),
     kill: vi.fn(),
   } as unknown as ChildProcess;
+
+  return {
+    child,
+    pid: 12345,
+    stdout,
+    stderr,
+    getStderrTail: () => '',
+  };
 }
 
 async function collectChunks(gen: AsyncGenerator<MessageChunk>): Promise<MessageChunk[]> {
@@ -182,13 +192,21 @@ describe('query()', () => {
         }
       },
     });
-    const mockChild = {
+    const mockRawChild = {
       pid: 12345,
+      exitCode: null as number | null,
       stdout: controllableStream,
       stderr: Readable.from([]),
       on: vi.fn(),
       kill: vi.fn(),
     } as unknown as ChildProcess;
+    const mockChild = {
+      child: mockRawChild,
+      pid: 12345,
+      stdout: controllableStream,
+      stderr: Readable.from([]),
+      getStderrTail: () => '',
+    };
 
     mockSpawn.mockReturnValue(mockChild);
 
@@ -228,15 +246,23 @@ describe('query()', () => {
     const ac = new AbortController();
 
     const controllableStream = new Readable({ read() {} });
-    const mockChild = {
+    const mockRawChild2 = {
       pid: 12345,
+      exitCode: null as number | null,
       stdout: controllableStream,
       stderr: Readable.from([]),
       on: vi.fn(),
       kill: vi.fn(),
     } as unknown as ChildProcess;
+    const mockChild2 = {
+      child: mockRawChild2,
+      pid: 12345,
+      stdout: controllableStream,
+      stderr: Readable.from([]),
+      getStderrTail: () => '',
+    };
 
-    mockSpawn.mockReturnValue(mockChild);
+    mockSpawn.mockReturnValue(mockChild2);
 
     const gen = query({ prompt: 'x', abortSignal: ac.signal });
 
@@ -293,16 +319,24 @@ describe('query()', () => {
 
     // Slow stream: push init, then after collecting it, push tool_use and abort
     const controllableStream = new Readable({ read() {} });
-    const mockChild = {
+    const mockRawChild3 = {
       pid: 12345,
+      exitCode: null as number | null,
       stdout: controllableStream,
       stderr: Readable.from([]),
       on: vi.fn(),
       kill: vi.fn(),
     } as unknown as ChildProcess;
+    const mockChild3 = {
+      child: mockRawChild3,
+      pid: 12345,
+      stdout: controllableStream,
+      stderr: Readable.from([]),
+      getStderrTail: () => '',
+    };
 
     const ac = new AbortController();
-    mockSpawn.mockReturnValue(mockChild);
+    mockSpawn.mockReturnValue(mockChild3);
 
     const gen = query({ prompt: 'x', abortSignal: ac.signal });
 
@@ -393,15 +427,23 @@ describe('queryFull()', () => {
       RESULT_SUCCESS + '\n';
 
     const stdout = Readable.from([Buffer.from(MULTI_MSG_NDJSON)]);
-    const child = {
+    const rawChildFull = {
       pid: 12345,
+      exitCode: null as number | null,
       stdout,
       stderr: Readable.from([]),
       on: vi.fn(),
       kill: vi.fn(),
     } as unknown as ChildProcess;
+    const spawnResultFull = {
+      child: rawChildFull,
+      pid: 12345,
+      stdout,
+      stderr: Readable.from([]),
+      getStderrTail: () => '',
+    };
 
-    mockSpawn.mockReturnValue(child);
+    mockSpawn.mockReturnValue(spawnResultFull);
 
     const result = await queryFull({ prompt: 'say hello' });
 

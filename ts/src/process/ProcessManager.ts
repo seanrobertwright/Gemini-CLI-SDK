@@ -13,6 +13,22 @@ export interface SpawnOptions2 {
 }
 
 /**
+ * Wraps a ChildProcess with additional runtime state needed by the SDK.
+ * Returned by ProcessManager.spawn() — callers use this instead of the raw ChildProcess.
+ */
+export interface SpawnResult {
+  child: ChildProcess;
+  pid: number | undefined;
+  stdout: NodeJS.ReadableStream | null;
+  stderr: NodeJS.ReadableStream | null;
+  /** Returns the last ≤ 8192 bytes of stderr accumulated since spawn. */
+  getStderrTail(): string;
+}
+
+/** Ring buffer size for stderr accumulation (RESEARCH.md §Pattern 5). */
+const RING_LIMIT = 8192;
+
+/**
  * Orchestrates the full lifecycle of gemini-cli subprocesses:
  * binary resolution, env building, spawning, and process tree cleanup.
  *
@@ -21,11 +37,33 @@ export interface SpawnOptions2 {
 export class ProcessManager {
   constructor(private strategy: ProcessStrategy = new SpawnPerCallStrategy()) {}
 
-  spawn(options: SpawnOptions2 = {}): ChildProcess {
+  spawn(options: SpawnOptions2 = {}): SpawnResult {
     const binary = resolveBinary(options.cliPath);
     const env = buildEnv(options.env);
     const argv = [binary, ...(options.argv ?? [])];
-    return this.strategy.spawn(argv, env, options.spawnOptions);
+    const child = this.strategy.spawn(argv, env, options.spawnOptions);
+
+    // Attach stderr ring buffer SYNCHRONOUSLY (before any await or return)
+    // to avoid race condition on fast-exit processes (RESEARCH.md Pitfall 2).
+    let stderrBuf = '';
+    const childStderr = child.stderr;
+    if (childStderr) {
+      childStderr.setEncoding('utf-8');
+      childStderr.on('data', (chunk: string) => {
+        stderrBuf += chunk;
+        if (stderrBuf.length > RING_LIMIT) {
+          stderrBuf = stderrBuf.slice(stderrBuf.length - RING_LIMIT);
+        }
+      });
+    }
+
+    return {
+      child,
+      pid: child.pid,
+      stdout: child.stdout,
+      stderr: child.stderr,
+      getStderrTail: () => stderrBuf,
+    };
   }
 }
 

@@ -7,9 +7,13 @@
  * Requirements satisfied:
  *   PRS-05 — EventDispatcher routes all known event types to MessageChunk variants
  *   PRS-07 — Tool pairing by tool_id with incomplete:true flush on stream end
+ *
+ * Phase 5: all stream-json error events route through ErrorMapper.fromStreamEvent();
+ * the old rate_limit chunk yield is replaced by a typed throw (ERR-04).
  */
 
 import type { RawEvent, MessageChunk, ToolChunk } from './types.js';
+import { ErrorMapper, type StreamErrorEvent } from '../errors/index.js';
 
 /**
  * Stage 2: Maps RawEvents into MessageChunks.
@@ -66,18 +70,8 @@ export async function* dispatch(
       }
 
       case 'error':
-        if (isRateLimitError(event)) {
-          yield {
-            type: 'rate_limit',
-            code: (event.error['code'] as number) ?? 429,
-            message: (event.error['message'] as string) ?? '',
-            status: event.error['status'] as string | undefined,
-          };
-        } else {
-          // Phase 5 will replace this with throw new GeminiError(...) from error taxonomy
-          throw new Error(`Unhandled error event: ${JSON.stringify(event.error)}`);
-        }
-        break;
+        // Phase 5: all stream-json error events route through ErrorMapper; no rate_limit chunk yield.
+        throw ErrorMapper.fromStreamEvent(event as unknown as StreamErrorEvent);
 
       case 'result':
         yield {
@@ -105,10 +99,6 @@ function isThinking(event: { thought?: boolean; role?: string; type?: string }):
     event.role === 'thinking' ||
     (event as { type?: unknown }).type === 'thinking'
   );
-}
-
-function isRateLimitError(event: { error: Record<string, unknown> }): boolean {
-  return event.error?.['code'] === 429 || event.error?.['status'] === 'RESOURCE_EXHAUSTED';
 }
 
 function mapStopReason(status: string): string {

@@ -16,6 +16,7 @@
  *   SYS-02 — Temp system-prompt file deleted in finally
  *   CWD-01 — cwd option passed to subprocess
  *   MDL-04 — Model mismatch surfaced on ResultChunk
+ *   ERR-06 — sawResult tracking: stream ending without terminal result throws via ErrorMapper
  */
 
 import { writeFile, unlink } from 'node:fs/promises';
@@ -28,6 +29,7 @@ import type { MessageChunk, RawEvent, ResultChunk } from '../parser/types.js';
 import type { QueryOptions, QueryResult } from './types.js';
 import { AbortError } from './types.js';
 import { buildArgv } from './buildArgv.js';
+import { ErrorMapper, GeminiError } from '../errors/index.js';
 
 // ────────────────────────────────────────────────────────────────────────────
 // Internal helpers
@@ -59,7 +61,8 @@ async function writeTempSystemPrompt(systemPrompt: string | undefined): Promise<
  *   4. Pipe stdout through parseNdjson → dispatch
  *   5. Yield chunks; detect model mismatch; buffer pending tool_use chunks
  *   6. On abort: flush pending tool_use as incomplete, throw AbortError
- *   7. Finally: remove abort listener, kill subprocess, delete temp file
+ *   7. ERR-06: if stream ends without a result chunk AND not aborted, throw via ErrorMapper.fromExit
+ *   8. Finally: remove abort listener, kill subprocess, delete temp file
  */
 export async function* query(options: QueryOptions): AsyncGenerator<MessageChunk> {
   // Step 1: Pre-abort check
@@ -79,7 +82,7 @@ export async function* query(options: QueryOptions): AsyncGenerator<MessageChunk
   // Step 4: Build argv and spawn subprocess
   const argv = buildArgv(options);
   const manager = new ProcessManager();
-  const child = manager.spawn({
+  const spawnResult = manager.spawn({
     argv,
     cliPath: options.cliPath,
     env: envOverrides,
@@ -99,8 +102,12 @@ export async function* query(options: QueryOptions): AsyncGenerator<MessageChunk
   // Step 7: Tool chunk buffering — unpaired tool_use chunks accumulate here
   const pendingToolChunks: MessageChunk[] = [];
 
+  // ERR-06: track whether a terminal result chunk was received
+  let sawResult = false;
+
   try {
-    const rawEvents = parseNdjson(child.stdout!);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const rawEvents = parseNdjson(spawnResult.stdout! as any);
     const chunks = dispatch(rawEvents);
 
     for await (const chunk of chunks) {
@@ -113,6 +120,7 @@ export async function* query(options: QueryOptions): AsyncGenerator<MessageChunk
 
       // Enrich ResultChunk with model mismatch info (MDL-04)
       if (chunk.type === 'result') {
+        sawResult = true;
         if (requestedModel && actualModel && requestedModel !== actualModel) {
           const enriched: ResultChunk = {
             ...(chunk as ResultChunk),
@@ -146,10 +154,29 @@ export async function* query(options: QueryOptions): AsyncGenerator<MessageChunk
       }
       throw new AbortError();
     }
+
+    // ERR-06: stream ended without a terminal result chunk AND not aborted AND non-zero exit.
+    // Exit code 0 with no result is treated as a partial/benign stream (tool-use flush, etc.).
+    if (!sawResult && !aborted) {
+      const exitCode = spawnResult.child.exitCode;
+      if (exitCode !== null && exitCode !== undefined && exitCode !== 0) {
+        const tail = spawnResult.getStderrTail();
+        throw ErrorMapper.fromExit({ exitCode, stderr: tail });
+      }
+    }
+  } catch (err) {
+    // Stream-event path: dispatch already threw a typed GeminiError — re-raise as-is.
+    if (err instanceof GeminiError) throw err;
+    // AbortError handling: already thrown above, but guard for unexpected re-entry
+    if (err instanceof AbortError) throw err;
+    // Unexpected error during iteration — treat as exit-code path
+    const tail = spawnResult.getStderrTail();
+    const exitCode = spawnResult.child.exitCode ?? 1;
+    throw ErrorMapper.fromExit({ exitCode, stderr: tail });
   } finally {
     options.abortSignal?.removeEventListener('abort', onAbort);
-    if (child.pid !== undefined) {
-      killTree(child.pid).catch(() => { /* ignore — process may already be dead */ });
+    if (spawnResult.pid !== undefined) {
+      killTree(spawnResult.pid).catch(() => { /* ignore — process may already be dead */ });
     }
     if (tempPath) {
       unlink(tempPath).catch(() => { /* ignore — temp file cleanup is best-effort */ });
@@ -180,7 +207,7 @@ export async function* queryRaw(options: QueryOptions): AsyncGenerator<RawEvent>
 
   const argv = buildArgv(options);
   const manager = new ProcessManager();
-  const child = manager.spawn({
+  const spawnResult = manager.spawn({
     argv,
     cliPath: options.cliPath,
     env: envOverrides,
@@ -192,7 +219,8 @@ export async function* queryRaw(options: QueryOptions): AsyncGenerator<RawEvent>
   options.abortSignal?.addEventListener('abort', onAbort, { once: true });
 
   try {
-    const rawEvents = parseNdjson(child.stdout!);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const rawEvents = parseNdjson(spawnResult.stdout! as any);
 
     for await (const event of rawEvents) {
       if (aborted) break;
@@ -204,8 +232,8 @@ export async function* queryRaw(options: QueryOptions): AsyncGenerator<RawEvent>
     }
   } finally {
     options.abortSignal?.removeEventListener('abort', onAbort);
-    if (child.pid !== undefined) {
-      killTree(child.pid).catch(() => { /* ignore */ });
+    if (spawnResult.pid !== undefined) {
+      killTree(spawnResult.pid).catch(() => { /* ignore */ });
     }
     if (tempPath) {
       unlink(tempPath).catch(() => { /* ignore */ });
