@@ -109,9 +109,12 @@ def test_run_fromExit_api_key_not_valid_yields_AuthError():
 
 def test_run_fromExit_unmatched_stderr_yields_generic_GeminiError_bucket_unknown():
     """run_fromExit_unmatched_stderr_yields_generic_GeminiError_bucket_unknown"""
+    # After SC-2 / ERR-06 fix: the catch-all returns ProcessError (bucket='crash') so that
+    # any stream ending without a terminal result event is a crash-bucket error (not unknown).
+    # ProcessError extends GeminiError so isinstance(err, GeminiError) still holds.
     err = ErrorMapper.from_exit(exit_code=42, stderr="some unrecognized error tail")
     assert isinstance(err, GeminiError)
-    assert err.bucket == "unknown"
+    assert err.bucket == "crash"
     assert err.retryable is False
     assert "42" in str(err)
     assert "some unrecognized error tail" in str(err)

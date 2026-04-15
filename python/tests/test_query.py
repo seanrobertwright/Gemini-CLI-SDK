@@ -17,6 +17,7 @@ import anyio
 import pytest
 
 from gemini_sdk.query import AbortError, query, query_full, query_raw
+from gemini_sdk.errors import ProcessError
 from gemini_sdk.parser.types import MessageChunk, RawEvent
 from gemini_sdk.process.process_manager import SpawnResult
 
@@ -329,14 +330,16 @@ class TestQuery:
     @pytest.mark.anyio
     async def test_abort_mid_tool_flushes_incomplete_tool_chunk(self):
         """abort mid-tool flushes incomplete tool chunk"""
-        # dispatch yields tool_use with incomplete:True when stream ends without tool_result
-        # query() also tracks pendingToolChunks for abort flushing
+        # dispatch yields tool_use with incomplete:True when stream ends without tool_result.
+        # After SC-2 / ERR-06 fix: streams ending without a terminal result event also raise
+        # ProcessError (even on exit 0). The incomplete tool chunk is yielded BEFORE the raise.
         TOOL_USE_LINE = (
             '{"type":"tool_use","timestamp":"t","tool_name":"read_file",'
             '"tool_id":"tool_001","parameters":{"path":"src/index.ts"}}'
         )
-        # Stream: init + tool_use (no tool_result) — stream closes without pairing
-        # dispatch will flush the pending tool_use with incomplete:True at stream end
+        # Stream: init + tool_use (no tool_result) — stream closes without pairing.
+        # dispatch flushes the pending tool_use with incomplete:True at stream end (PRS-07).
+        # Then ERR-06 fires because not saw_result and not cancelled.
         proc = _make_mock_proc([INIT_LINE, TOOL_USE_LINE])
 
         with (
@@ -347,15 +350,24 @@ class TestQuery:
             mock_pm.spawn = AsyncMock(return_value=proc)
             mock_pm_cls.return_value = mock_pm
 
-            chunks = await _collect_chunks(query({"prompt": "x"}))
+            chunks_collected = []
+            caught = None
+            try:
+                async for chunk in query({"prompt": "x"}):
+                    chunks_collected.append(chunk)
+            except ProcessError as e:
+                caught = e
 
         # dispatch flushes incomplete tool chunks at stream end (PRS-07)
         incomplete_chunk = next(
-            (c for c in chunks if c.get("type") == "tool" and c.get("incomplete") is True),
+            (c for c in chunks_collected if c.get("type") == "tool" and c.get("incomplete") is True),
             None,
         )
         assert incomplete_chunk is not None
         assert incomplete_chunk.get("toolId") == "tool_001"
+
+        # ERR-06 / SC-2: ProcessError raised after incomplete flush (stream had no result event)
+        assert isinstance(caught, ProcessError)
 
     @pytest.mark.anyio
     async def test_abort_mid_tool_active_streaming(self):
@@ -461,6 +473,46 @@ class TestQuery:
         assert result_chunk is not None
         assert result_chunk.get("requestedModel") is None
         assert result_chunk.get("actualModel") is None
+
+    @pytest.mark.anyio
+    async def test_run_throws_process_error_when_stream_ends_without_result_on_exit_zero(self):
+        """throws ProcessError when stream ends without result on exit 0"""
+        # ERR-06 / SC-2: even exit code 0 must raise ProcessError when no result event was seen.
+        # Mock: stream emits one non-result chunk then EOF; process returncode is 0.
+        # Consume generator; expect ProcessError.
+        proc = _make_mock_proc([INIT_LINE, MSG_HELLO])
+        proc.process.returncode = 0  # explicit exit 0
+
+        with (
+            patch("gemini_sdk.query.query.ProcessManager") as mock_pm_cls,
+            patch("gemini_sdk.query.query.kill_tree", new_callable=AsyncMock),
+        ):
+            mock_pm = MagicMock()
+            mock_pm.spawn = AsyncMock(return_value=proc)
+            mock_pm_cls.return_value = mock_pm
+
+            with pytest.raises(ProcessError):
+                await _collect_chunks(query({"prompt": "x"}))
+
+    @pytest.mark.anyio
+    async def test_run_throws_process_error_when_stream_ends_without_result_on_non_zero_exit(self):
+        """throws ProcessError when stream ends without result on non-zero exit"""
+        # ERR-06: locks the non-zero-exit branch in place after guard removal.
+        # Mock: stream emits one non-result chunk then EOF; process returncode is 1.
+        # Consume generator; expect ProcessError.
+        proc = _make_mock_proc([INIT_LINE, MSG_HELLO])
+        proc.process.returncode = 1  # non-zero exit
+
+        with (
+            patch("gemini_sdk.query.query.ProcessManager") as mock_pm_cls,
+            patch("gemini_sdk.query.query.kill_tree", new_callable=AsyncMock),
+        ):
+            mock_pm = MagicMock()
+            mock_pm.spawn = AsyncMock(return_value=proc)
+            mock_pm_cls.return_value = mock_pm
+
+            with pytest.raises(ProcessError):
+                await _collect_chunks(query({"prompt": "x"}))
 
 
 # ── query_raw() tests ──────────────────────────────────────────────────────────

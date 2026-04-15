@@ -22,6 +22,7 @@ from .errors import (
     ToSViolation,
     ModelAccessError,
     InvalidPromptError,
+    ProcessError,
     ProcessCrashError,
 )
 
@@ -126,6 +127,8 @@ class ErrorMapper:
             return ProcessCrashError(
                 f"Process exited with code {exit_code}. Stderr tail: {snippet}"
             )
-        return GeminiError(
+        # Generic no-pattern-match case: process ended without a terminal result event.
+        # Use ProcessError (bucket='crash') as the canonical SC-2 / ERR-06 fallback.
+        return ProcessError(
             f"Process exited with code {exit_code}. Stderr tail: {snippet or '(empty)'}"
         )

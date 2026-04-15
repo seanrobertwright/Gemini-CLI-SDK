@@ -170,13 +170,17 @@ async def query(options: QueryOptions) -> AsyncIterator[MessageChunk]:
                 yield {**pending, "incomplete": True}  # type: ignore[misc]
             raise AbortError()
 
-        # ERR-06: stream ended without a terminal result chunk AND not cancelled AND non-zero exit.
-        # Exit code 0 with no result is treated as a partial/benign stream (tool-use flush, etc.).
+        # ERR-06 (SC-2): stream ended without a terminal result chunk AND not cancelled.
+        # Per ROADMAP Phase 5 SC-2, ProcessError must be raised regardless of exit code
+        # (including exit 0) when no terminal result event was seen. ErrorMapper.from_exit
+        # classifies the resulting exit + stderr tail into the correct typed subclass
+        # (ProcessError for the generic no-result case; more specific subclasses when
+        # stderr patterns match, e.g. AuthError / RateLimitError).
         if not saw_result and not cancelled:
             exit_code = spawn_result.process.returncode
-            if exit_code is not None and exit_code != 0:
-                tail = spawn_result.get_stderr_tail()
-                raise ErrorMapper.from_exit(exit_code=exit_code, stderr=tail)
+            code = exit_code if exit_code is not None else 0
+            tail = spawn_result.get_stderr_tail()
+            raise ErrorMapper.from_exit(exit_code=code, stderr=tail)
 
     except GeminiError:
         raise  # already typed from dispatch or ErrorMapper.from_exit
