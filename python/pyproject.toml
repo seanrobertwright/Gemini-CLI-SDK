@@ -30,3 +30,8 @@ testpaths = ["tests"]
 # Collect both test_* (standard) and run_* (fixture-corpus parametrize helpers that
 # must not appear in diff-test-names.sh parity extraction which only scans test_* names)
 python_functions = ["test_*", "run_*"]
+
+[dependency-groups]
+dev = [
+    "pyyaml>=6.0.3",
+]

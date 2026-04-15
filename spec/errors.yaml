@@ -1,0 +1,133 @@
+# spec/errors.yaml — single source of truth for the error taxonomy.
+# Consumed by scripts/gen-errors.mjs (TS) and scripts/gen-errors.py (Python).
+#
+# Naming note: `retry_after_ms_source` is snake_case here;
+#   TS codegen maps to `retryAfterMs`, Python uses `retry_after_ms` (PEP-8).
+#
+# Regex subset: basic character classes + alternation only. No lookaround.
+# Portable between TS RegExp and Python re.
+#
+# retry_after_field_observed: null — real 429 capture blocked (05-01 Option B).
+# field name unconfirmed; dynamic extraction disabled in ErrorMapper until
+# follow-up-quota-capped-key phase resolves RESEARCH Open Question #3.
+
+version: 1
+buckets: [rate_limit, auth, model_access, crash, unknown]
+errors:
+  - name: GeminiError
+    base: Error
+    bucket: unknown
+    retryable: false
+    message_template: "Gemini CLI error: {message}"
+
+  - name: RateLimitError
+    base: GeminiError
+    bucket: rate_limit
+    retryable: true
+    retry_after_ms_source: "error.retryAfter"  # field name unconfirmed; dynamic extraction disabled in ErrorMapper
+    stream_matchers:
+      - { field: code, equals: 429 }
+      - { field: status, equals: "RESOURCE_EXHAUSTED" }
+    stderr_patterns:
+      - "quota|RESOURCE_EXHAUSTED|429|Too Many Requests"
+    exit_codes: [1]
+
+  - name: AuthError
+    base: GeminiError
+    bucket: auth
+    retryable: false
+    stream_matchers:
+      - { field: code, equals: 401 }
+      - { field: status, equals: "UNAUTHENTICATED" }
+    stderr_patterns:
+      - "API key not valid|UNAUTHENTICATED|401"
+    exit_codes: [1]
+
+  - name: NotConfigured
+    parent: AuthError
+    base: AuthError
+    bucket: auth
+    retryable: false
+    stderr_patterns:
+      - "no API key|not configured|GEMINI_API_KEY"
+
+  - name: Forbidden403
+    parent: AuthError
+    base: AuthError
+    bucket: auth
+    retryable: false
+    stream_matchers:
+      - { field: code, equals: 403 }
+    stderr_patterns:
+      - "403|PERMISSION_DENIED|Forbidden"
+
+  - name: Expired
+    parent: AuthError
+    base: AuthError
+    bucket: auth
+    retryable: false
+    stderr_patterns:
+      - "token expired|oauth.*expired"
+
+  - name: ToSViolation
+    parent: AuthError
+    base: AuthError
+    bucket: auth
+    retryable: false
+    stderr_patterns:
+      - "Terms of Service|ToS|account suspended"
+
+  - name: ModelAccessError
+    base: GeminiError
+    bucket: model_access
+    retryable: false
+    stream_matchers:
+      - { field: code, equals: 404 }
+      - { field: status, equals: "NOT_FOUND" }
+    stderr_patterns:
+      - "model.*not found|deprecated|not available"
+
+  - name: InvalidPromptError
+    base: GeminiError
+    bucket: unknown
+    retryable: false
+    stream_matchers:
+      - { field: code, equals: 400 }
+      - { field: status, equals: "INVALID_ARGUMENT" }
+    stderr_patterns:
+      - "invalid.*prompt|content policy|safety"
+
+  - name: ProcessError
+    base: GeminiError
+    bucket: crash
+    retryable: false
+
+  - name: ProcessCrashError
+    parent: ProcessError
+    base: ProcessError
+    bucket: crash
+    retryable: false
+    exit_codes: [1, 2, 137, 143]
+
+  - name: AbortError
+    parent: ProcessError
+    base: ProcessError
+    bucket: crash
+    retryable: false
+    message_template: "Query aborted by caller"
+
+  - name: ParseError
+    base: GeminiError
+    bucket: unknown
+    retryable: false
+
+  - name: UnsupportedFeatureError
+    base: GeminiError
+    bucket: unknown
+    retryable: false
+
+  - name: GeminiNotFoundError
+    base: GeminiError
+    bucket: unknown
+    retryable: false
+    message_template: "gemini-cli not found. Install with: npm install -g @google/gemini-cli"
