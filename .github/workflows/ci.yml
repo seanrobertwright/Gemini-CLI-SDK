@@ -92,6 +92,10 @@ jobs:
       - name: Check test name parity
         run: bash scripts/diff-test-names.sh
 
+      - name: Lint error taxonomy (ERR-07 + PAR-05)
+        shell: bash
+        run: bash scripts/lint-errors.sh
+
   version-sync:
     name: "Version sync check"
     runs-on: ubuntu-latest
