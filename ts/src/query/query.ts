@@ -155,14 +155,16 @@ export async function* query(options: QueryOptions): AsyncGenerator<MessageChunk
       throw new AbortError();
     }
 
-    // ERR-06: stream ended without a terminal result chunk AND not aborted AND non-zero exit.
-    // Exit code 0 with no result is treated as a partial/benign stream (tool-use flush, etc.).
+    // ERR-06 (SC-2): stream ended without a terminal result chunk AND not aborted.
+    // Per ROADMAP Phase 5 SC-2, ProcessError must be raised regardless of exit code
+    // (including exit 0) when no terminal result event was seen. ErrorMapper.fromExit
+    // classifies the resulting exit + stderr tail into the correct typed subclass
+    // (ProcessError for the generic no-result case; more specific subclasses when
+    // stderr patterns match, e.g. AuthError / RateLimitError).
     if (!sawResult && !aborted) {
-      const exitCode = spawnResult.child.exitCode;
-      if (exitCode !== null && exitCode !== undefined && exitCode !== 0) {
-        const tail = spawnResult.getStderrTail();
-        throw ErrorMapper.fromExit({ exitCode, stderr: tail });
-      }
+      const exitCode = spawnResult.child.exitCode ?? 0;
+      const tail = spawnResult.getStderrTail();
+      throw ErrorMapper.fromExit({ exitCode, stderr: tail });
     }
   } catch (err) {
     // Stream-event path: dispatch already threw a typed GeminiError — re-raise as-is.

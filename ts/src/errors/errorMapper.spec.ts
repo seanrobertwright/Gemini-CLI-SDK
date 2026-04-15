@@ -104,12 +104,15 @@ describe('ErrorMapper.fromExit (ERR-04)', () => {
   });
 
   it('run_fromExit_unmatched_stderr_yields_generic_GeminiError_bucket_unknown', () => {
+    // After SC-2 / ERR-06 fix: the catch-all returns ProcessError (bucket='crash') so that
+    // any stream ending without a terminal result event is a crash-bucket error (not unknown).
+    // ProcessError extends GeminiError so `instanceof GeminiError` still holds.
     const err = ErrorMapper.fromExit({
       exitCode: 42,
       stderr: 'some unrecognized error tail',
     });
     expect(err instanceof GeminiError).toBe(true);
-    expect((err as GeminiError).bucket).toBe('unknown');
+    expect((err as GeminiError).bucket).toBe('crash');
     expect((err as GeminiError).retryable).toBe(false);
     expect(err.message).toMatch(/42/);
     expect(err.message).toMatch(/some unrecognized error tail/);

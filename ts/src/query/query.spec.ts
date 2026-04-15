@@ -46,6 +46,7 @@ vi.mock('node:fs/promises', async (importOriginal) => {
 
 import { query, queryRaw, queryFull } from './query.js';
 import { AbortError } from './types.js';
+import { ProcessError } from '../errors/index.js';
 import type { MessageChunk, RawEvent } from '../parser/types.js';
 import * as fsMod from 'node:fs/promises';
 
@@ -296,15 +297,25 @@ describe('query()', () => {
   });
 
   it('abort mid-tool flushes incomplete tool chunk', async () => {
-    // dispatch yields tool_use with incomplete:true when stream ends without tool_result
-    // query() also tracks pendingToolChunks for abort flushing
+    // dispatch yields tool_use with incomplete:true when stream ends without tool_result.
+    // After SC-2 / ERR-06 fix: streams ending without a terminal result event also throw
+    // ProcessError (even on exit 0). The incomplete tool chunk is yielded BEFORE the throw.
     const TOOL_USE_LINE = '{"type":"tool_use","timestamp":"t","tool_name":"read_file","tool_id":"tool_001","parameters":{"path":"src/index.ts"}}';
 
-    // Stream: init + tool_use (no tool_result) — stream closes without pairing
-    // dispatch will flush the pending tool_use with incomplete:true at stream end
+    // Stream: init + tool_use (no tool_result) — stream closes without pairing.
+    // dispatch flushes the pending tool_use with incomplete:true at stream end (PRS-07).
+    // Then ERR-06 fires because !sawResult && !aborted.
     mockSpawn.mockReturnValue(createMockChild([INIT_LINE, TOOL_USE_LINE]));
 
-    const chunks = await collectChunks(query({ prompt: 'x' }));
+    const chunks: MessageChunk[] = [];
+    let caught: unknown;
+    try {
+      for await (const chunk of query({ prompt: 'x' })) {
+        chunks.push(chunk);
+      }
+    } catch (err) {
+      caught = err;
+    }
 
     // dispatch flushes incomplete tool chunks at stream end (PRS-07)
     const incompleteChunk = chunks.find(
@@ -312,6 +323,9 @@ describe('query()', () => {
     );
     expect(incompleteChunk).toBeDefined();
     expect((incompleteChunk as { toolId?: string }).toolId).toBe('tool_001');
+
+    // ERR-06 / SC-2: ProcessError thrown after incomplete flush (stream had no result event)
+    expect(caught).toBeInstanceOf(ProcessError);
   });
 
   it('abort mid-tool during active streaming flushes pending tool chunk before AbortError', async () => {
@@ -390,6 +404,29 @@ describe('query()', () => {
     expect(resultChunk).toBeDefined();
     expect(resultChunk?.requestedModel).toBeUndefined();
     expect(resultChunk?.actualModel).toBeUndefined();
+  });
+
+  it('throws ProcessError when stream ends without result on exit 0', async () => {
+    // ERR-06 / SC-2: even exit code 0 must raise ProcessError when no result event was seen.
+    // Mock: stream emits one non-result chunk then EOF; child exits with code 0.
+    // Iterate; expect ProcessError.
+    const mockChild = createMockChild([INIT_LINE, MSG_HELLO]);
+    // Set exitCode to 0 (explicitly) — ?? 0 coercion makes null also map to 0, but set explicitly for clarity
+    (mockChild.child as unknown as { exitCode: number }).exitCode = 0;
+    mockSpawn.mockReturnValue(mockChild);
+
+    await expect(collectChunks(query({ prompt: 'x' }))).rejects.toBeInstanceOf(ProcessError);
+  });
+
+  it('throws ProcessError when stream ends without result on non-zero exit', async () => {
+    // ERR-06: locks the non-zero-exit branch in place after guard removal.
+    // Mock: stream emits one non-result chunk then EOF; child exits with code 1.
+    // Iterate; expect ProcessError.
+    const mockChild = createMockChild([INIT_LINE, MSG_HELLO]);
+    (mockChild.child as unknown as { exitCode: number }).exitCode = 1;
+    mockSpawn.mockReturnValue(mockChild);
+
+    await expect(collectChunks(query({ prompt: 'x' }))).rejects.toBeInstanceOf(ProcessError);
   });
 });
 

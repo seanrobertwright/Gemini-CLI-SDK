@@ -19,6 +19,7 @@ import {
   ToSViolation,
   ModelAccessError,
   InvalidPromptError,
+  ProcessError,
   ProcessCrashError,
 } from './errors.js';
 import type { RawEvent } from '../parser/types.js';
@@ -96,7 +97,9 @@ export class ErrorMapper {
         `Process exited with code ${exitCode}. Stderr tail: ${snippet}`,
       );
     }
-    return new GeminiError(
+    // Generic no-pattern-match case: process ended without a terminal result event.
+    // Use ProcessError (bucket='crash') as the canonical SC-2 / ERR-06 fallback.
+    return new ProcessError(
       `Process exited with code ${exitCode}. Stderr tail: ${snippet || '(empty)'}`,
     );
   }
