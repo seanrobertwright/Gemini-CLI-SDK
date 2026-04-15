@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Completed 05-02-PLAN.md
-last_updated: "2026-04-15T11:49:46.417Z"
+stopped_at: Completed 05-03-PLAN.md
+last_updated: "2026-04-15T12:03:58.342Z"
 last_activity: "2026-04-15 — Completed plan 05-01: Phase 5 Wave-1 fixture re-targeting + RED scaffolds; Task 1 Option B (synthetic_blocked) taken due to auth-isolation + quota-key gaps; 104:104 TS:Python parity achieved"
 progress:
   total_phases: 11
   completed_phases: 4
   total_plans: 26
-  completed_plans: 24
+  completed_plans: 25
   percent: 10
 ---
 
@@ -70,6 +70,7 @@ Progress: [█░░░░░░░░░] 10% (Phase 1 of 11 complete + Phase 5
 | Phase 04 P03 | 7 | 3 tasks | 9 files |
 | Phase 05 P01 | 22 | 3 tasks | 11 files |
 | Phase 05 P02 | 6 | 2 tasks | 15 files |
+| Phase 05 P03 | 25 | 2 tasks | 16 files |
 
 ## Accumulated Context
 
@@ -152,6 +153,9 @@ Recent decisions affecting current work:
 - [Phase 05]: retry_after_ms_source left as 'error.retryAfter' with comment — field name unconfirmed (05-01 Option B blocker); ErrorMapper will skip dynamic extraction until follow-up-quota-capped-key
 - [Phase 05]: AbortError relocated from query/types to errors module (reparented to ProcessError) in both TS and Python; query/types now re-exports from errors
 - [Phase 05]: retryAfterMs only declared on GeminiError root (not subclasses) to avoid TS2612; subclasses pass options through super() chain
+- [Phase 05]: fromExit uses generic AuthError (not subtype classifyAuthSubtype) for exit-path UNAUTHENTICATED detection — mixed stderr tail cannot reliably distinguish subtypes; aligns with 05-01 decision
+- [Phase 05]: ERR-06 sawResult guard fires only on non-zero exit — zero-exit partial streams (tool-use flush) are benign; fires ErrorMapper.fromExit on non-zero exit without terminal result chunk
+- [Phase 05]: DI-01 resolved: dispatch fixture corpus checks top-level _throws (Phase 5 convention) alongside in-chunks _throws (Phase 3 compat); dispatch.spec.ts + test_dispatch.py updated; 429 dispatch test updated to assert RateLimitError throw
 
 ### Pending Todos
 
@@ -168,6 +172,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-04-15T11:49:46.414Z
-Stopped at: Completed 05-02-PLAN.md
+Last session: 2026-04-15T12:03:58.339Z
+Stopped at: Completed 05-03-PLAN.md
 Resume file: None
