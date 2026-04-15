@@ -99,9 +99,9 @@ Requirements for initial release. Each maps to a roadmap phase.
 
 ### Error Taxonomy
 
-- [ ] **ERR-01**: SDK defines a typed error hierarchy: `GeminiError` base + `RateLimitError`, `AuthError` (with subtypes), `ModelAccessError`, `InvalidPromptError`, `ProcessError`, `ProcessCrashError`, `ParseError`, `AbortError`, `UnsupportedFeatureError`, `GeminiNotFoundError`
-- [ ] **ERR-02**: Every error carries `.retryable: boolean` and optional `.retryAfterMs?: number`
-- [ ] **ERR-03**: Error classes map 1:1 to Archon's 5 retry buckets: `rate_limit` / `auth` / `model_access` / `crash` / `unknown`
+- [x] **ERR-01**: SDK defines a typed error hierarchy: `GeminiError` base + `RateLimitError`, `AuthError` (with subtypes), `ModelAccessError`, `InvalidPromptError`, `ProcessError`, `ProcessCrashError`, `ParseError`, `AbortError`, `UnsupportedFeatureError`, `GeminiNotFoundError`
+- [x] **ERR-02**: Every error carries `.retryable: boolean` and optional `.retryAfterMs?: number`
+- [x] **ERR-03**: Error classes map 1:1 to Archon's 5 retry buckets: `rate_limit` / `auth` / `model_access` / `crash` / `unknown`
 - [ ] **ERR-04**: `ErrorMapper` pattern-matches `(exit code, stderr tail, last events)` into typed errors; pattern table versioned in `spec/errors.md`
 - [ ] **ERR-05**: Stream-json `error` events and exit-code + stderr matching both produce the same typed errors (two code paths, one taxonomy)
 - [ ] **ERR-06**: SDK raises `ProcessError` if the stream ends without a terminal `result` event, even on exit code 0
@@ -133,7 +133,7 @@ Requirements for initial release. Each maps to a roadmap phase.
 - [x] **PAR-02**: Both language suites consume the same `spec/fixtures/*.ndjson` in CI
 - [x] **PAR-03**: Parity CI job diffs test names across TS and Python and blocks merge on divergence
 - [x] **PAR-04**: Both SDKs ship with a single shared version number
-- [ ] **PAR-05**: Error taxonomy is generated from one YAML source consumed by both SDKs
+- [x] **PAR-05**: Error taxonomy is generated from one YAML source consumed by both SDKs
 
 ### Documentation
 
@@ -284,9 +284,9 @@ All v1 requirements map to exactly one phase. Coverage: 102/102.
 | OUT-02 | Phase 8 | Pending |
 | OUT-03 | Phase 8 | Pending |
 | OUT-04 | Phase 8 | Pending |
-| ERR-01 | Phase 5 | Pending |
-| ERR-02 | Phase 5 | Pending |
-| ERR-03 | Phase 5 | Pending |
+| ERR-01 | Phase 5 | Complete |
+| ERR-02 | Phase 5 | Complete |
+| ERR-03 | Phase 5 | Complete |
 | ERR-04 | Phase 5 | Pending |
 | ERR-05 | Phase 5 | Pending |
 | ERR-06 | Phase 5 | Pending |
@@ -309,7 +309,7 @@ All v1 requirements map to exactly one phase. Coverage: 102/102.
 | PAR-02 | Phase 3 | Complete |
 | PAR-03 | Phase 2 | Complete |
 | PAR-04 | Phase 2 | Complete |
-| PAR-05 | Phase 5 | Pending |
+| PAR-05 | Phase 5 | Complete |
 | DOC-01 | Phase 11 | Pending |
 | DOC-02 | Phase 11 | Pending |
 | DOC-03 | Phase 11 | Pending |
