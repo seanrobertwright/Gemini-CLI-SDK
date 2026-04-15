@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Completed 05-04-PLAN.md
-last_updated: "2026-04-15T12:11:25.975Z"
+stopped_at: Completed 05-05-PLAN.md
+last_updated: "2026-04-15T12:35:47.716Z"
 last_activity: "2026-04-15 — Completed plan 05-01: Phase 5 Wave-1 fixture re-targeting + RED scaffolds; Task 1 Option B (synthetic_blocked) taken due to auth-isolation + quota-key gaps; 104:104 TS:Python parity achieved"
 progress:
   total_phases: 11
   completed_phases: 5
-  total_plans: 26
-  completed_plans: 26
+  total_plans: 27
+  completed_plans: 27
   percent: 10
 ---
 
@@ -72,6 +72,7 @@ Progress: [█░░░░░░░░░] 10% (Phase 1 of 11 complete + Phase 5
 | Phase 05 P02 | 6 | 2 tasks | 15 files |
 | Phase 05 P03 | 25 | 2 tasks | 16 files |
 | Phase 05-error-taxonomy-archon-5-bucket-mapping P04 | 4 | 2 tasks | 5 files |
+| Phase 05-error-taxonomy-archon-5-bucket-mapping P05 | 25 | 3 tasks | 8 files |
 
 ## Accumulated Context
 
@@ -159,6 +160,8 @@ Recent decisions affecting current work:
 - [Phase 05]: DI-01 resolved: dispatch fixture corpus checks top-level _throws (Phase 5 convention) alongside in-chunks _throws (Phase 3 compat); dispatch.spec.ts + test_dispatch.py updated; 429 dispatch test updated to assert RateLimitError throw
 - [Phase 05]: Corpus test placed at ts/src/errors/errorMapperCorpus.spec.ts (not ts/tests/) — vitest.config.ts only scans src/**/*.{test,spec}.ts; project convention colocates tests with source
 - [Phase 05]: GeminiError subclasses are sole vocabulary for Phases 6-10 error handling — import from ts/src/errors/index.ts or python/src/gemini_sdk/errors/__init__.py; lint-errors.sh enforces 15-class YAML/TS/Python sync in CI parity job
+- [Phase 05-05]: SC-2 intent is authoritative: exit-0 streams without a terminal result event must raise ProcessError; 05-03 benign-treatment decision reversed
+- [Phase 05-05]: ErrorMapper catch-all returns ProcessError (bucket=crash) not GeminiError: generic no-pattern-match exits are crash events, not unknown
 
 ### Pending Todos
 
@@ -175,6 +178,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-04-15T12:11:25.972Z
-Stopped at: Completed 05-04-PLAN.md
+Last session: 2026-04-15T12:35:47.713Z
+Stopped at: Completed 05-05-PLAN.md
 Resume file: None

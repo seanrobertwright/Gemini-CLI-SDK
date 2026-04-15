@@ -102,10 +102,10 @@ Requirements for initial release. Each maps to a roadmap phase.
 - [x] **ERR-01**: SDK defines a typed error hierarchy: `GeminiError` base + `RateLimitError`, `AuthError` (with subtypes), `ModelAccessError`, `InvalidPromptError`, `ProcessError`, `ProcessCrashError`, `ParseError`, `AbortError`, `UnsupportedFeatureError`, `GeminiNotFoundError`
 - [x] **ERR-02**: Every error carries `.retryable: boolean` and optional `.retryAfterMs?: number`
 - [x] **ERR-03**: Error classes map 1:1 to Archon's 5 retry buckets: `rate_limit` / `auth` / `model_access` / `crash` / `unknown`
-- [ ] **ERR-04**: `ErrorMapper` pattern-matches `(exit code, stderr tail, last events)` into typed errors; pattern table versioned in `spec/errors.md`
-- [ ] **ERR-05**: Stream-json `error` events and exit-code + stderr matching both produce the same typed errors (two code paths, one taxonomy)
-- [ ] **ERR-06**: SDK raises `ProcessError` if the stream ends without a terminal `result` event, even on exit code 0
-- [ ] **ERR-07**: A CI linter cross-checks `spec/errors.md` against both TS and Python implementations
+- [x] **ERR-04**: `ErrorMapper` pattern-matches `(exit code, stderr tail, last events)` into typed errors; pattern table versioned in `spec/errors.md`
+- [x] **ERR-05**: Stream-json `error` events and exit-code + stderr matching both produce the same typed errors (two code paths, one taxonomy)
+- [x] **ERR-06**: SDK raises `ProcessError` if the stream ends without a terminal `result` event, even on exit code 0
+- [x] **ERR-07**: A CI linter cross-checks `spec/errors.md` against both TS and Python implementations
 
 ### Cross-Platform
 
@@ -287,10 +287,10 @@ All v1 requirements map to exactly one phase. Coverage: 102/102.
 | ERR-01 | Phase 5 | Complete |
 | ERR-02 | Phase 5 | Complete |
 | ERR-03 | Phase 5 | Complete |
-| ERR-04 | Phase 5 | Pending |
-| ERR-05 | Phase 5 | Pending |
-| ERR-06 | Phase 5 | Pending |
-| ERR-07 | Phase 5 | Pending |
+| ERR-04 | Phase 5 | Complete |
+| ERR-05 | Phase 5 | Complete |
+| ERR-06 | Phase 5 | Complete |
+| ERR-07 | Phase 5 | Complete |
 | PLT-01 | Phase 11 | Pending |
 | PLT-02 | Phase 11 | Pending |
 | PLT-03 | Phase 2 | Complete |
