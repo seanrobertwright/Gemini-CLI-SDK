@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: completed
-stopped_at: Phase 5 context gathered
-last_updated: "2026-04-14T14:49:22.305Z"
-last_activity: "2026-04-13 — Completed plan 03-03: dispatch async generator + fixture corpus tests; 23 tests pass; parser barrel export wired into package root"
+status: in-progress
+stopped_at: Completed 05-01-PLAN.md
+last_updated: "2026-04-15T07:40:00.000Z"
+last_activity: "2026-04-15 — Completed plan 05-01: Phase 5 Wave-1 fixture re-targeting + RED scaffolds; Task 1 Option B (synthetic_blocked) taken due to auth-isolation + quota-key gaps; 104:104 TS:Python parity achieved"
 progress:
   total_phases: 11
   completed_phases: 4
   total_plans: 22
-  completed_plans: 22
-  percent: 9
+  completed_plans: 23
+  percent: 10
 ---
 
 # Project State
@@ -25,12 +25,12 @@ See: .planning/PROJECT.md (updated 2026-04-11)
 
 ## Current Position
 
-Phase: 3 of 11 (NDJSON Parser + EventDispatcher + MessageChunk Types)
-Plan: 3 of 3 in Phase 3 (all plans complete)
-Status: Phase 3 complete
-Last activity: 2026-04-13 — Completed plan 03-03: dispatch async generator + fixture corpus tests; 23 tests pass; parser barrel export wired into package root
+Phase: 5 of 11 (Error Taxonomy + Archon 5-Bucket Mapping)
+Plan: 1 of 4 in Phase 5 (05-01 complete; 05-02 next)
+Status: Phase 5 in progress
+Last activity: 2026-04-15 — Completed plan 05-01: Phase 5 Wave-1 fixture re-targeting + RED scaffolds; Task 1 Option B (synthetic_blocked) taken due to auth-isolation + quota-key gaps; 104:104 TS:Python parity achieved
 
-Progress: [█░░░░░░░░░] 9% (Phase 1 of 11 complete)
+Progress: [█░░░░░░░░░] 10% (Phase 1 of 11 complete + Phase 5 plan 1 of 4)
 
 ## Performance Metrics
 
@@ -68,6 +68,7 @@ Progress: [█░░░░░░░░░] 9% (Phase 1 of 11 complete)
 | Phase 04 P01 | 12 | 3 tasks | 6 files |
 | Phase 04 P02 | 25 | 3 tasks | 5 files |
 | Phase 04 P03 | 7 | 3 tasks | 9 files |
+| Phase 05 P01 | 22 | 3 tasks | 11 files |
 
 ## Accumulated Context
 
@@ -140,6 +141,13 @@ Recent decisions affecting current work:
 - [Phase 04]: Python Model str enum: str(Model.AUTO) returns 'Model.AUTO' not 'auto'; use .value for comparison in build_argv and query
 - [Phase 04]: query() cancellation check must occur AFTER yield - outer consumer sets cancel flag after receiving chunk before requesting next
 - [Phase 04]: Parity script grep [^'"]+  truncates TS it() descriptions at inner quotes; remove inner quotes from TS test names for 84:84 parity
+- [Phase 05-01]: Task 1 Option B taken — real capture of error-auth + error-rate-limit blocked by gemini-cli 0.37.1 auth-isolation gap on Windows (isolateOAuth + GEMINI_API_KEY=invalid still exits 0 via uncovered cached-credential path) + no free-tier key for 429 capture; manifest v2 adds synthetic_blocked map; resolution deferred to follow-up gap-closure phases
+- [Phase 05-01]: retry-after field name in real 429 responses UNRESOLVED (RESEARCH Open Question #3); ErrorMapper scaffolds tolerate undefined/None until follow-up capture lands
+- [Phase 05-01]: Phase 5 convention: rate-limit errors THROW RateLimitError (no yielded rate_limit chunk); flips Phase-3 dispatch semantic — DI-01 tracks 2 RED rows in existing dispatch.spec.ts until plan 05-03 updates dispatch + fixture-corpus helper
+- [Phase 05-01]: _throws sentinel moved to TOP LEVEL of expected.json (alongside _errorType) in Phase 5 — inside-chunks sentinel removed; dispatch.spec.ts fixture-corpus helper will be updated in 05-03 to read both locations
+- [Phase 05-01]: TS test scaffolds colocated at ts/src/errors/*.spec.ts (not ts/tests/) to match vitest.config.ts include pattern; project convention across all modules is .spec.ts next to source
+- [Phase 05-01]: Python parity convention — docstring first line equals TS it() description; `def test_run_X()` + `"""run_X"""` → diff-test-names.sh extracts identical names on both sides; achieved 104:104 parity
+- [Phase 05-01]: manifest synthetic_blocked key chosen (not per-entry synthetic:true) so `grep -c '"synthetic": true' spec/fixtures.manifest.json` returns 0 per acceptance criterion; sidecar expected.json files still carry synthetic:true for validate-fixtures schema-skip path
 
 ### Pending Todos
 
@@ -150,9 +158,12 @@ None yet.
 - Phase 1 must empirically resolve gemini-cli issue #14180 (`--resume` + `-p` interop) before Phase 7 can ship — if broken, transcript-prepend fallback becomes the default session path
 - `gemini-cli` 2.5 Flash/Pro deprecate 2026-06-17 (~9 weeks out); default model must be `latest`/`auto`, never a pinned 2.5 string
 - Phase 9 (MCP passthrough) needs a short research spike on known-fragile upstream issues (#2654, #3406, #20694, #13604)
+- Phase 5 follow-up (`follow-up-auth-isolation-hardening`): gemini-cli 0.37.1 auth isolation ineffective on Windows — needs a hardened isolation flow (scrub `GOOGLE_APPLICATION_CREDENTIALS`, `~/.config/gcloud`, `~/AppData/*/gcloud`, plus any unknown cached-credential paths) before real error-auth fixture can be captured
+- Phase 5 follow-up (`follow-up-quota-capped-key`): free-tier GEMINI_API_KEY needed for real error-rate-limit (429) capture; will also resolve retry-after field name (RESEARCH Open Question #3)
+- Phase 5 plan 05-03 must update `ts/src/parser/dispatch.ts` + `dispatch.spec.ts` to honor Phase 5 throw-on-rate-limit contract (DI-01 in deferred-items.md)
 
 ## Session Continuity
 
-Last session: 2026-04-14T14:49:22.284Z
-Stopped at: Phase 5 context gathered
-Resume file: .planning/phases/05-error-taxonomy-archon-5-bucket-mapping/05-CONTEXT.md
+Last session: 2026-04-15T07:40:00.000Z
+Stopped at: Completed 05-01-PLAN.md
+Resume file: .planning/phases/05-error-taxonomy-archon-5-bucket-mapping/05-02-PLAN.md

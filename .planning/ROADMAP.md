@@ -103,9 +103,14 @@ Plans:
 **Success Criteria** (what must be TRUE):
   1. A contract test runs every stderr fixture captured in Phase 1 through both TS and Python `ErrorMapper` implementations and asserts both produce the same typed `GeminiError` subclass, same `.retryable`, same `.retryAfterMs`, and same Archon retry bucket (`rate_limit | auth | model_access | crash | unknown`)
   2. A stream ending without a terminal `result` event always raises `ProcessError` — even on exit code 0 — verified by a fixture where the subprocess is SIGKILL'd mid-stream
-  3. `scripts/lint-errors-yaml.sh` runs in CI and fails merge if any class in `spec/errors.yaml` is missing from either `ts/src/errors.ts` or `python/src/gemini_sdk/errors.py`, and vice versa
+  3. `scripts/lint-errors.sh` runs in CI and fails merge if any class in `spec/errors.yaml` is missing from either `ts/src/errors.ts` or `python/src/gemini_sdk/errors.py`, and vice versa
   4. A stream-json `{"type":"error"}` event and an exit-code+stderr match for the same underlying failure both produce the identical typed error instance (verified by a test that feeds both paths the same rate-limit scenario and `assertEquals` on the resulting error class)
-**Plans**: TBD
+**Plans**: 4 plans
+Plans:
+- [ ] 05-01-PLAN.md — Wave 1: Re-capture real error-auth + error-rate-limit fixtures against API-key-only host + failing TS/Python test scaffolds (ERR-01..07)
+- [ ] 05-02-PLAN.md — Wave 2: Author spec/errors.yaml + codegen scripts + generated class files + reparent GeminiNotFoundError (ERR-01, ERR-02, ERR-03, PAR-05)
+- [ ] 05-03-PLAN.md — Wave 3: Hand-written ErrorMapper (TS + Python) + ProcessManager stderr ring buffer + dispatch/query wiring + ERR-06 sawResult + AbortError relocation (ERR-04, ERR-05, ERR-06)
+- [ ] 05-04-PLAN.md — Wave 4: scripts/lint-errors.sh CI drift linter + fixture-corpus contract tests + spec/errors.md finalization (ERR-07, PAR-05)
 
 ### Phase 6: Auth Environment
 **Goal**: Wire all auth modes into `EnvBuilder`: `GEMINI_API_KEY` is the canonical default, Vertex AI via `GOOGLE_APPLICATION_CREDENTIALS` (service account JSON) or `GOOGLE_API_KEY` (alternative Vertex path) is supported when explicitly selected, `GOOGLE_CLOUD_PROJECT` / `GOOGLE_CLOUD_PROJECT_ID` / `GOOGLE_CLOUD_LOCATION` pass through for Vertex project+region scoping, and ADC/Sign-in-with-Google is picked up transparently if already configured — but the SDK **never automates interactive OAuth login**. A runtime warning fires if multiple auth modes are configured, and the documented precedence is `GEMINI_API_KEY` > `GOOGLE_APPLICATION_CREDENTIALS` > `GOOGLE_API_KEY` > ADC/OAuth fallback. Documentation captures why API key is the default (discussion #22970, ToS warning) and that no `GOOGLE_AUTH_TOKEN` bearer-token passthrough exists.
@@ -184,7 +189,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8 →
 | 2. Process Foundation + Workspace + CI Matrix | 5/5 | Complete   | 2026-04-13 |
 | 3. NDJSON Parser + EventDispatcher + MessageChunk Types | 4/4 | Complete   | 2026-04-13 |
 | 4. Public query() + ArgvBuilder + systemPrompt + Workspace + Model | 3/3 | Complete   | 2026-04-13 |
-| 5. Error Taxonomy + Archon 5-Bucket Mapping | 0/TBD | Not started | - |
+| 5. Error Taxonomy + Archon 5-Bucket Mapping | 0/4 | In Progress | - |
 | 6. Auth Environment | 0/TBD | Not started | - |
 | 7. Session Resume + Multi-Turn | 0/TBD | Not started | - |
 | 8. Tools + Approval Mode + Structured Output | 0/TBD | Not started | - |
