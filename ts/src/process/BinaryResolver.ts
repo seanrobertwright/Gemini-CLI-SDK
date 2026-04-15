@@ -1,6 +1,6 @@
 import { existsSync } from 'node:fs';
 import { join, delimiter } from 'node:path';
-import { GeminiNotFoundError } from '../errors/GeminiNotFoundError.js';
+import { GeminiNotFoundError } from '../errors/index.js';
 
 /**
  * Resolves the path to the gemini-cli binary.

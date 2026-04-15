@@ -6,10 +6,11 @@
  * QueryOptions  — options passed to query() / queryRaw() / queryFull()
  * QueryResult   — final accumulated result returned by queryFull()
  * Model         — known Gemini model identifiers (const object + union type)
- * AbortError    — thrown when an AbortSignal fires during a query
+ * AbortError    — re-exported from errors module (reparented to ProcessError in Phase 5)
  */
 
 import type { MessageChunk } from '../parser/types.js';
+export { AbortError } from '../errors/index.js';
 
 // ────────────────────────────────────────────────────────────────────────────
 // Model — known Gemini model identifiers
@@ -82,17 +83,5 @@ export interface QueryResult {
   chunks: MessageChunk[];
 }
 
-// ────────────────────────────────────────────────────────────────────────────
-// AbortError — thrown when AbortSignal fires during an in-flight query
-// ────────────────────────────────────────────────────────────────────────────
-
-export class AbortError extends Error {
-  readonly name = 'AbortError' as const;
-  readonly retryable = false as const;
-
-  constructor() {
-    super('Query aborted by caller');
-    // Restore prototype chain for instanceof checks across transpiler targets
-    Object.setPrototypeOf(this, new.target.prototype);
-  }
-}
+// AbortError is now re-exported from errors/index.js (see top of file).
+// It extends ProcessError (bucket: crash, retryable: false) per Phase 5 taxonomy.

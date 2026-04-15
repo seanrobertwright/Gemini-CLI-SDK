@@ -1,1 +1,1 @@
-export { GeminiNotFoundError } from './GeminiNotFoundError.js';
+export * from './errors.js';

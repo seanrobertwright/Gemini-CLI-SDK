@@ -14,7 +14,8 @@
     "test": "vitest run --passWithNoTests",
     "test:coverage": "vitest run --coverage --passWithNoTests",
     "build": "tsc",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "gen:errors": "node ../scripts/gen-errors.mjs"
   },
   "devDependencies": {
     "@fast-check/vitest": "^0.4.0",

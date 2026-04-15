@@ -11,7 +11,7 @@ import os
 import shutil
 import sys
 
-from gemini_sdk.errors.not_found import GeminiNotFoundError
+from gemini_sdk.errors import GeminiNotFoundError
 
 
 def resolve_binary(cli_path: str | None = None) -> str:

@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, afterEach } from 'vitest';
-import { GeminiNotFoundError } from '../errors/GeminiNotFoundError.js';
+import { GeminiNotFoundError } from '../errors/index.js';
 import type { ProcessStrategy } from './ProcessStrategy.js';
 import type { ChildProcess, SpawnOptions } from 'node:child_process';
 import { EventEmitter } from 'node:events';

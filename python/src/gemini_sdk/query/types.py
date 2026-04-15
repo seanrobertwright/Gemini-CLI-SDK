@@ -6,7 +6,7 @@ Public type definitions for the query module.
 QueryOptions  — options passed to query() / query_raw() / query_full()
 QueryResult   — final accumulated result returned by query_full()
 Model         — known Gemini model identifiers (str enum)
-AbortError    — thrown when a cancel scope fires during a query
+AbortError    — re-exported from errors module (reparented to ProcessError in Phase 5)
 """
 
 from __future__ import annotations
@@ -17,6 +17,8 @@ from typing import Any, Dict, List, Union
 from typing_extensions import Required, TypedDict
 
 from ..parser.types import MessageChunk
+# AbortError is now canonical in the errors module (extends ProcessError, bucket=crash).
+from ..errors import AbortError as AbortError  # re-export
 
 # ────────────────────────────────────────────────────────────────────────────
 # Model — known Gemini model identifiers
@@ -88,16 +90,5 @@ class QueryResult(TypedDict):
     """All MessageChunks yielded during the query."""
 
 
-# ────────────────────────────────────────────────────────────────────────────
-# AbortError — thrown when cancel scope fires during an in-flight query
-# ────────────────────────────────────────────────────────────────────────────
-
-
-class AbortError(Exception):
-    """Thrown when a cancel scope fires during an in-flight query."""
-
-    name: str = "AbortError"
-    retryable: bool = False
-
-    def __init__(self) -> None:
-        super().__init__("Query aborted by caller")
+# AbortError is imported from errors module above and re-exported.
+# It extends ProcessError (bucket: crash, retryable: False) per Phase 5 taxonomy.

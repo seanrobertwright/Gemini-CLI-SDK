@@ -3,7 +3,7 @@ import { mkdtempSync, writeFileSync, chmodSync } from 'node:fs';
 import { join } from 'node:path';
 import { tmpdir, platform } from 'node:os';
 import { resolveBinary } from './BinaryResolver.js';
-import { GeminiNotFoundError } from '../errors/GeminiNotFoundError.js';
+import { GeminiNotFoundError } from '../errors/index.js';
 
 afterEach(() => {
   vi.unstubAllEnvs();
