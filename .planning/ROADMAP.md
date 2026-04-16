@@ -16,7 +16,8 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 2: Process Foundation + Workspace Scaffolding + CI Matrix** - Stand up the polyglot monorepo (TS + Python), bring up `BinaryResolver` + `ProcessManager` (spawn-per-call) + `EnvBuilder` behind a pluggable strategy interface, and turn on the `{ubuntu, macos, windows} × {node, python}` CI matrix with a non-en-US Windows runner (completed 2026-04-13)
 - [x] **Phase 3: NDJSON Parser + EventDispatcher + MessageChunk Types** - Build the line-buffered, lenient, CRLF-tolerant NDJSON parser and the `EventDispatcher` that normalizes CLI events into Archon's 8-variant `MessageChunk` union, with both TS and Python test suites running the shared fixture corpus (completed 2026-04-13)
 - [x] **Phase 4: Public query() + ArgvBuilder + systemPrompt + Workspace + Model Selection** - Ship the public `query()` async generator, the pure-function `buildArgv`, temp-file `GEMINI_SYSTEM_MD` for system prompts, `cwd` + `--include-directories`, and the typed model enum with downgrade-warning detection (completed 2026-04-13)
-- [x] **Phase 5: Error Taxonomy + Archon 5-Bucket Mapping** - Define the typed `GeminiError` hierarchy, generate it from a single YAML source consumed by both languages, and classify `(exit code, stderr tail, last events)` → typed error → one of Archon's 5 retry buckets (completed 2026-04-15)
+- [x] **Phase 5: Error Taxonomy + Archon 5-Bucket Mapping** - Define the typed `GeminiError` hierarchy, generate it from a single YAML source consumed by both languages, and classify `(exit code, stderr tail, last events)` → typed error → one of Archon's 5 retry buckets
+ (completed 2026-04-15)
 - [ ] **Phase 6: Auth Environment** - Wire the canonical `GEMINI_API_KEY` default plus Vertex AI (service account JSON + Google Cloud API key) plus ADC/OAuth fallback, with precedence warnings and typed `AuthError` subtypes
 - [ ] **Phase 7: Session Resume + Multi-Turn** - Ship the `Session` value object, capture session IDs from the `init` event, wire `--resume`, and gate the transcript-prepend fallback on the Phase-1 decision about gemini-cli issue #14180
 - [ ] **Phase 8: Tools + Approval Mode + Structured Output (Best-Effort)** - Pass through `--allowed-tools` / Policy Engine + `--approval-mode`, document that caller-defined custom tools are not in v1, and ship best-effort structured output via system-prompt schema injection + runtime validation + single retry
@@ -121,7 +122,12 @@ Plans:
   2. Setting two auth modes simultaneously (e.g. `GEMINI_API_KEY` + `GOOGLE_APPLICATION_CREDENTIALS`) emits a runtime warning naming the precedence winner, and a test asserts the warning text matches the documented precedence chain
   3. An auth-failure integration test (invalid API key) surfaces an `AuthError` subclass (`NotConfigured` / `Forbidden403` / `Expired` / `ToSViolation`) distinct from the generic `GeminiError` base, with `.retryable = false` and Archon bucket `auth`
   4. The SDK never calls `gemini auth login` or any interactive OAuth entrypoint — verified by a grep-based CI linter that fails if `auth login` appears anywhere in the source tree
-**Plans**: TBD
+**Plans**: 4 plans
+Plans:
+- [ ] 06-01-PLAN.md — Wave 1: TS resolveAuth pure function + spec (AUT-01..06 TS side)
+- [ ] 06-02-PLAN.md — Wave 1: Python resolve_auth port + pytest parity (AUT-01..06 Python side)
+- [ ] 06-03-PLAN.md — Wave 2: query() wiring + error-auth-invalid-key fixture + corpus contract tests (AUT-06, AUT-07)
+- [ ] 06-04-PLAN.md — Wave 1: lint-auth-login.sh + CI wiring + docs/auth.md (AUT-05, AUT-08, AUT-09)
 
 ### Phase 7: Session Resume + Multi-Turn
 **Goal**: Ship the `Session` value object (immutable, identifier-based, NOT process-bound), capture session IDs from the `init` event, wire `--resume <id>` into `ArgvBuilder`, and land the transcript-prepend fallback inside `Session` + `ArgvBuilder` **gated by the Phase-1 verdict on gemini-cli issue #14180**. If `--resume` + `-p` works, `Session` is trivial and the fallback is dark-shipped. If it's broken, the fallback becomes the default path.
