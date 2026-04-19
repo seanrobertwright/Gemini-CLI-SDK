@@ -2,6 +2,7 @@
 
 __version__ = "0.0.0"
 
+from .auth import resolve_auth, AUTH_PRECEDENCE
 from .errors import GeminiNotFoundError
 from .process import (
     ProcessStrategy,
@@ -23,6 +24,8 @@ from .query import (
 )
 
 __all__ = [
+    "resolve_auth",
+    "AUTH_PRECEDENCE",
     "ProcessStrategy",
     "SpawnPerCallStrategy",
     "resolve_binary",
