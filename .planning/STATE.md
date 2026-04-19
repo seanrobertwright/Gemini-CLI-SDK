@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Phase 6 context gathered
-last_updated: "2026-04-16T00:16:18.087Z"
+stopped_at: Completed 06-04-PLAN.md
+last_updated: "2026-04-19T23:35:55.874Z"
 last_activity: "2026-04-15 — Completed plan 05-01: Phase 5 Wave-1 fixture re-targeting + RED scaffolds; Task 1 Option B (synthetic_blocked) taken due to auth-isolation + quota-key gaps; 104:104 TS:Python parity achieved"
 progress:
   total_phases: 11
   completed_phases: 5
-  total_plans: 27
-  completed_plans: 27
+  total_plans: 31
+  completed_plans: 28
   percent: 10
 ---
 
@@ -73,6 +73,7 @@ Progress: [█░░░░░░░░░] 10% (Phase 1 of 11 complete + Phase 5
 | Phase 05 P03 | 25 | 2 tasks | 16 files |
 | Phase 05-error-taxonomy-archon-5-bucket-mapping P04 | 4 | 2 tasks | 5 files |
 | Phase 05-error-taxonomy-archon-5-bucket-mapping P05 | 25 | 3 tasks | 8 files |
+| Phase 06-auth-environment P04 | 2 | 2 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -162,6 +163,9 @@ Recent decisions affecting current work:
 - [Phase 05]: GeminiError subclasses are sole vocabulary for Phases 6-10 error handling — import from ts/src/errors/index.ts or python/src/gemini_sdk/errors/__init__.py; lint-errors.sh enforces 15-class YAML/TS/Python sync in CI parity job
 - [Phase 05-05]: SC-2 intent is authoritative: exit-0 streams without a terminal result event must raise ProcessError; 05-03 benign-treatment decision reversed
 - [Phase 05-05]: ErrorMapper catch-all returns ProcessError (bucket=crash) not GeminiError: generic no-pattern-match exits are crash events, not unknown
+- [Phase 06-04]: Lint scope is source-only (ts/src + python/src) — tests/docs may reference 'auth login' in prohibition prose without triggering linter (SC-4)
+- [Phase 06-04]: AUT-09 enforcement is doc-only + allowlist exclusion — GOOGLE_AUTH_TOKEN absent from ALLOWED_KEYS is the architectural gate; no runtime check needed
+- [Phase 06-04]: AUT-08 documented via discussion #22970 + Google FAQ ToS note — GEMINI_API_KEY is canonical default for headless/SDK contexts
 
 ### Pending Todos
 
@@ -178,6 +182,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-04-16T00:16:18.077Z
-Stopped at: Phase 6 context gathered
-Resume file: .planning/phases/06-auth-environment/06-CONTEXT.md
+Last session: 2026-04-19T23:35:55.871Z
+Stopped at: Completed 06-04-PLAN.md
+Resume file: None
