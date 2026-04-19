@@ -490,3 +490,39 @@ describe('queryFull()', () => {
     expect(result.chunks.length).toBeGreaterThanOrEqual(3);
   });
 });
+
+// ── Phase 6 auth warning tests (AUT-06) ─────────────────────────────────────
+
+describe('Phase 6 auth warning', () => {
+  it('emits single console.warn with full precedence chain when multiple modes configured', async () => {
+    vi.stubEnv('GEMINI_API_KEY', 'k');
+    vi.stubEnv('GOOGLE_API_KEY', 'g');
+    const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+
+    mockSpawn.mockReturnValue(createMockChild([INIT_LINE, MSG_HELLO, RESULT_SUCCESS]));
+
+    const gen = query({ prompt: 'x' });
+    await gen.next(); // start generator; warning emits before spawn
+
+    expect(warnSpy).toHaveBeenCalledTimes(1);
+    expect(warnSpy.mock.calls[0][0]).toContain('GEMINI_API_KEY > GOOGLE_APPLICATION_CREDENTIALS > GOOGLE_API_KEY > ADC');
+
+    await gen.return(undefined); // clean up
+  });
+
+  it('emits no warnings when only one auth mode configured', async () => {
+    vi.stubEnv('GEMINI_API_KEY', 'k');
+    vi.stubEnv('GOOGLE_API_KEY', '');
+    vi.stubEnv('GOOGLE_APPLICATION_CREDENTIALS', '');
+    const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+
+    mockSpawn.mockReturnValue(createMockChild([INIT_LINE, MSG_HELLO, RESULT_SUCCESS]));
+
+    const gen = query({ prompt: 'x' });
+    await gen.next(); // start generator
+
+    expect(warnSpy).toHaveBeenCalledTimes(0);
+
+    await gen.return(undefined); // clean up
+  });
+});
