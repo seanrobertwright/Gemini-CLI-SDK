@@ -117,3 +117,20 @@ def test_run_corpus_both_paths_agree_on_class():
             f"{slug}: stream-path={type(from_stream).__name__}, "
             f"exit-path={type(from_exit).__name__}"
         )
+
+
+# Phase 6 plan 03 (AUT-07): explicit contract row for error-auth-invalid-key
+# (auto-discovered by corpus glob above; explicit row confirms slug is exercised)
+
+
+def test_run_error_auth_invalid_key():
+    """error-auth-invalid-key → AuthError with bucket=auth"""
+    from gemini_sdk.errors import AuthError
+
+    stderr = (FIXTURES / "error-auth-invalid-key.stderr.txt").read_text(encoding="utf-8")
+    expected = json.loads((FIXTURES / "error-auth-invalid-key.expected.json").read_text())
+    err = ErrorMapper.from_exit(exit_code=1, stderr=stderr)
+    assert isinstance(err, AuthError)
+    assert err.bucket == "auth"
+    assert err.retryable is False
+    assert type(err).__name__ == expected["_errorType"]

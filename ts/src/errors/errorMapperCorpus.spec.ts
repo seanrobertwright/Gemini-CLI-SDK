@@ -141,3 +141,17 @@ describe('ErrorMapper corpus: two-path parity (ERR-05)', () => {
     }
   });
 });
+
+// Phase 6 plan 03 (AUT-07): explicit contract row for error-auth-invalid-key
+// (auto-discovered by corpus glob above; explicit row confirms slug is exercised)
+describe('ErrorMapper corpus: error-auth-invalid-key (AUT-07)', () => {
+  it('error-auth-invalid-key → AuthError with bucket=auth', () => {
+    const stderrRaw = readFileSync(join(FIXTURES, 'error-auth-invalid-key.stderr.txt'), 'utf-8');
+    const expected = JSON.parse(readFileSync(join(FIXTURES, 'error-auth-invalid-key.expected.json'), 'utf-8')) as ExpectedJson & { _bucket?: string; _retryable?: boolean };
+    const err = ErrorMapper.fromExit({ exitCode: 1, stderr: stderrRaw });
+    expect(err).toBeInstanceOf(errorClasses.AuthError);
+    expect(err.bucket).toBe('auth');
+    expect(err.retryable).toBe(false);
+    expect(err.constructor.name).toBe(expected._errorType);
+  });
+});
