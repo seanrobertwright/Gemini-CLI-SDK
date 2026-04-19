@@ -1,0 +1,8 @@
+{
+  "_errorType": "AuthError",
+  "_bucket": "auth",
+  "_throws": true,
+  "_retryable": false,
+  "synthetic": true,
+  "synthetic_reason": "Phase 6 plan 03: real capture blocked by Windows OAuth-cache bypass (same root cause as Phase 05-01 Option B). Real-capture deferred to follow-up-auth-isolation-hardening."
+}

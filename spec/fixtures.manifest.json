@@ -23,6 +23,10 @@
     "error-rate-limit": {
       "synthetic_reason": "Phase 5 plan 01: no free-tier GEMINI_API_KEY available for 429 RESOURCE_EXHAUSTED capture. Host OAuth quota is generous and does not trigger 429 under rapid-fire requests. Real-capture deferred to a follow-up gap-closure phase.",
       "resolution_phase": "follow-up-quota-capped-key"
+    },
+    "error-auth-invalid-key": {
+      "synthetic_reason": "Phase 6 plan 03: Windows host OAuth-cache bypass (GEMINI_API_KEY=invalid-key-12345 + isolated GEMINI_CONFIG_DIR still yielded exit=0). Same root cause as error-auth synthetic block.",
+      "resolution_phase": "follow-up-auth-isolation-hardening"
     }
   }
 }

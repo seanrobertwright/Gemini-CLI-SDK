@@ -159,6 +159,19 @@ export const SCENARIOS = {
     args: ['-p', 'List 200 distinct facts about octopuses, one per line, numbered.', '--output-format', 'stream-json'],
     abortAtMs: 2000
     // stubbed removed: W3 plan 01-07 implements this scenario (taskkill on Windows)
+  },
+  'error-auth-invalid-key': {
+    slug: 'error-auth-invalid-key',
+    description: 'Invalid API key (Phase 6 plan 03): deliberately bad GEMINI_API_KEY in isolated config dir; captures UNAUTHENTICATED error + non-zero exit.',
+    args: ['-p', 'Say OK', '--output-format', 'stream-json'],
+    // Set a deliberately invalid API key and delete GOOGLE_APPLICATION_CREDENTIALS
+    // to isolate the invalid-key auth path from OAuth/service-account fallback.
+    env: { GEMINI_API_KEY: 'invalid-key-12345-phase6' },
+    isolateOAuth: true,
+    captureStderr: true,
+    expectNonZeroExit: true
+    // Phase 6 plan 03: Windows host OAuth-cache bypass expected (same root cause as error-auth);
+    // synthetic_blocked fallback taken if exit=0 — see spec/fixtures.manifest.json.
   }
 };
 
@@ -176,7 +189,8 @@ const IMPLEMENTED = new Set([
   'large-output',
   'abort-midstream',
   'resume-session-turn1',
-  'resume-session-turn2'
+  'resume-session-turn2',
+  'error-auth-invalid-key'
 ]);
 
 // ---------------------------------------------------------------------------
@@ -219,7 +233,11 @@ function verifyManifestParity() {
     process.exit(3);
   }
 
-  const manifestSlugs = new Set(m.slugs);
+  // All declared slugs = manifest.slugs ∪ manifest.synthetic_blocked keys
+  const manifestSlugs = new Set([
+    ...m.slugs,
+    ...Object.keys(m.synthetic_blocked || {}),
+  ]);
   const scenarioSlugs = new Set(Object.keys(SCENARIOS));
 
   const missing = [...manifestSlugs].filter(s => !scenarioSlugs.has(s));
