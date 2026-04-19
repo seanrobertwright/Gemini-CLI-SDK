@@ -126,7 +126,7 @@ describe('resolveAuth()', () => {
     expect(env['GOOGLE_CLOUD_LOCATION']).toBe('us-central1');
   });
 
-  it('AUTH_PRECEDENCE constant equals exact documented chain', () => {
+  it('AUTH_PRECEDENCE constant equals [GEMINI_API_KEY, GOOGLE_APPLICATION_CREDENTIALS, GOOGLE_API_KEY, ADC]', () => {
     expect(AUTH_PRECEDENCE).toEqual([
       'GEMINI_API_KEY',
       'GOOGLE_APPLICATION_CREDENTIALS',

@@ -5,6 +5,15 @@
 # Usage: bash scripts/diff-test-names.sh
 set -euo pipefail
 
+# Use C.utf8 locale for sort: avoids "Invalid or incomplete multibyte or wide character"
+# errors when test names contain non-ASCII characters (e.g. em-dash U+2014).
+# Falls back to LC_ALL=C if C.utf8 is unavailable (CI runner without full glibc locales).
+if locale -a 2>/dev/null | grep -q '^C\.utf8$'; then
+  export LC_ALL=C.utf8
+else
+  export LC_ALL=C
+fi
+
 REPO_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 
 TS_DIR="$REPO_ROOT/ts/src"
@@ -43,7 +52,9 @@ grep -rhn --include="*.spec.ts" --include="*.test.ts" \
   | sort > "$TS_TESTS" || true  # grep exits 1 when no matches; || true prevents pipefail abort
 
 # Extract Python test docstrings (first line of each test function's docstring)
-"$PYTHON" - "$PY_DIR" <<'PYEOF' | tr -d '\r' | sort > "$PY_TESTS"
+# PYTHONIOENCODING=utf-8: forces Python stdout to UTF-8 on Windows where the default
+# code page (cp1252) would encode non-ASCII chars differently from the TS grep output.
+PYTHONIOENCODING=utf-8 "$PYTHON" - "$PY_DIR" <<'PYEOF' | tr -d '\r' | sort > "$PY_TESTS"
 import ast
 import pathlib
 import sys
