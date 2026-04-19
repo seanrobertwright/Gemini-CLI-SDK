@@ -30,6 +30,7 @@ import type { QueryOptions, QueryResult } from './types.js';
 import { AbortError } from './types.js';
 import { buildArgv } from './buildArgv.js';
 import { ErrorMapper, GeminiError } from '../errors/index.js';
+import { resolveAuth } from '../auth/index.js';
 
 // ────────────────────────────────────────────────────────────────────────────
 // Internal helpers
@@ -70,11 +71,22 @@ export async function* query(options: QueryOptions): AsyncGenerator<MessageChunk
     throw new AbortError();
   }
 
+  // Phase 6 (AUT-06): resolve auth mode and emit precedence warning if multiple configured.
+  // resolveAuth is pure — takes a snapshot of process.env; does not read env during spawn.
+  const resolved = resolveAuth({ ...process.env });
+  for (const w of resolved.warnings) {
+    console.warn(w);
+  }
+
   // Step 2: Write optional system prompt to temp file
   const tempPath = await writeTempSystemPrompt(options.systemPrompt);
 
   // Step 3: Build env overrides
-  const envOverrides: Record<string, string> = { ...(options.env ?? {}) };
+  const envOverrides: Record<string, string> = {
+    ...resolved.envOverrides,  // Phase 6 placeholder (empty today)
+    ...(options.env ?? {}),    // caller overrides win per existing contract
+  };
+  // NotConfigured is emitted post-spawn by ErrorMapper per Phase 5; resolveAuth 'adc' fallback covers the no-explicit-var case.
   if (tempPath) {
     envOverrides['GEMINI_SYSTEM_MD'] = tempPath;
   }
@@ -200,9 +212,19 @@ export async function* queryRaw(options: QueryOptions): AsyncGenerator<RawEvent>
     throw new AbortError();
   }
 
+  // Phase 6 (AUT-06): resolve auth mode and emit precedence warning if multiple configured.
+  // resolveAuth is pure — takes a snapshot of process.env; does not read env during spawn.
+  const resolved = resolveAuth({ ...process.env });
+  for (const w of resolved.warnings) {
+    console.warn(w);
+  }
+
   const tempPath = await writeTempSystemPrompt(options.systemPrompt);
 
-  const envOverrides: Record<string, string> = { ...(options.env ?? {}) };
+  const envOverrides: Record<string, string> = {
+    ...resolved.envOverrides,  // Phase 6 placeholder (empty today)
+    ...(options.env ?? {}),    // caller overrides win per existing contract
+  };
   if (tempPath) {
     envOverrides['GEMINI_SYSTEM_MD'] = tempPath;
   }

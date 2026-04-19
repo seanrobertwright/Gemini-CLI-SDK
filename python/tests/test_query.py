@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import io
 import os
+import warnings
 from typing import AsyncIterator
 from unittest.mock import AsyncMock, MagicMock, patch
 
@@ -580,3 +581,60 @@ class TestQueryFull:
         assert result["session_id"] == "s1"
         assert result["stop_reason"] == "end_turn"
         assert len(result["chunks"]) >= 3
+
+
+# ── Phase 6 auth warning tests (AUT-06) ──────────────────────────────────────
+
+
+class TestPhase6AuthWarning:
+    @pytest.mark.anyio
+    async def test_run_emits_single_warning_multi_mode(self, monkeypatch):
+        """emits single console.warn with full precedence chain when multiple modes configured"""
+        monkeypatch.setenv("GEMINI_API_KEY", "k")
+        monkeypatch.setenv("GOOGLE_API_KEY", "g")
+        monkeypatch.delenv("GOOGLE_APPLICATION_CREDENTIALS", raising=False)
+
+        proc = _make_mock_proc([INIT_LINE, MSG_HELLO, RESULT_SUCCESS])
+
+        with (
+            patch("gemini_sdk.query.query.ProcessManager") as mock_pm_cls,
+            patch("gemini_sdk.query.query.kill_tree", new_callable=AsyncMock),
+        ):
+            mock_pm = MagicMock()
+            mock_pm.spawn = AsyncMock(return_value=proc)
+            mock_pm_cls.return_value = mock_pm
+
+            with warnings.catch_warnings(record=True) as caught:
+                warnings.simplefilter("always")
+                # Drain the generator so query() fully executes
+                async for _ in query({"prompt": "x"}):
+                    pass
+
+        assert len(caught) == 1
+        assert "GEMINI_API_KEY > GOOGLE_APPLICATION_CREDENTIALS > GOOGLE_API_KEY > ADC" in str(
+            caught[0].message
+        )
+
+    @pytest.mark.anyio
+    async def test_run_emits_no_warnings_single_mode(self, monkeypatch):
+        """emits no warnings when only one auth mode configured"""
+        monkeypatch.setenv("GEMINI_API_KEY", "k")
+        monkeypatch.delenv("GOOGLE_API_KEY", raising=False)
+        monkeypatch.delenv("GOOGLE_APPLICATION_CREDENTIALS", raising=False)
+
+        proc = _make_mock_proc([INIT_LINE, MSG_HELLO, RESULT_SUCCESS])
+
+        with (
+            patch("gemini_sdk.query.query.ProcessManager") as mock_pm_cls,
+            patch("gemini_sdk.query.query.kill_tree", new_callable=AsyncMock),
+        ):
+            mock_pm = MagicMock()
+            mock_pm.spawn = AsyncMock(return_value=proc)
+            mock_pm_cls.return_value = mock_pm
+
+            with warnings.catch_warnings(record=True) as caught:
+                warnings.simplefilter("always")
+                async for _ in query({"prompt": "x"}):
+                    pass
+
+        assert len(caught) == 0

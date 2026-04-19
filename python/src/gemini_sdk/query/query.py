@@ -24,11 +24,13 @@ from __future__ import annotations
 import os
 import secrets
 import tempfile
+import warnings as _warnings
 from typing import AsyncIterator, Optional
 
 import anyio
 import anyio.abc
 
+from ..auth import resolve_auth
 from ..errors import ErrorMapper, GeminiError
 from ..parser.dispatch import dispatch
 from ..parser.parse_ndjson import parse_ndjson
@@ -78,11 +80,20 @@ async def query(options: QueryOptions) -> AsyncIterator[MessageChunk]:
     if cancel_scope is not None and getattr(cancel_scope, "cancel_called", False):
         raise AbortError()
 
+    # Phase 6 (AUT-06): resolve auth mode and emit precedence warning if multiple configured.
+    # Snapshot os.environ — resolve_auth is pure and does not re-read env at spawn time.
+    resolved = resolve_auth(dict(os.environ))
+    for w in resolved["warnings"]:
+        _warnings.warn(w, UserWarning, stacklevel=2)
+
     # Step 2: Write optional system prompt to temp file
     temp_path = await _write_temp_system_prompt(options.get("system_prompt"))
 
     # Step 3: Build env overrides
-    env_overrides: dict[str, str] = dict(options.get("env") or {})
+    env_overrides: dict[str, str] = {
+        **resolved["env_overrides"],
+        **(options.get("env") or {}),
+    }
     if temp_path:
         env_overrides["GEMINI_SYSTEM_MD"] = temp_path
 
@@ -222,9 +233,18 @@ async def query_raw(options: QueryOptions) -> AsyncIterator[RawEvent]:
     if cancel_scope is not None and getattr(cancel_scope, "cancel_called", False):
         raise AbortError()
 
+    # Phase 6 (AUT-06): resolve auth mode and emit precedence warning if multiple configured.
+    # Snapshot os.environ — resolve_auth is pure and does not re-read env at spawn time.
+    resolved = resolve_auth(dict(os.environ))
+    for w in resolved["warnings"]:
+        _warnings.warn(w, UserWarning, stacklevel=2)
+
     temp_path = await _write_temp_system_prompt(options.get("system_prompt"))
 
-    env_overrides: dict[str, str] = dict(options.get("env") or {})
+    env_overrides: dict[str, str] = {
+        **resolved["env_overrides"],
+        **(options.get("env") or {}),
+    }
     if temp_path:
         env_overrides["GEMINI_SYSTEM_MD"] = temp_path
 
