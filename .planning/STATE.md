@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Completed 06-02-PLAN.md
-last_updated: "2026-04-19T23:41:17.412Z"
+stopped_at: Completed 06-03-PLAN.md
+last_updated: "2026-04-19T23:51:22.038Z"
 last_activity: "2026-04-15 — Completed plan 05-01: Phase 5 Wave-1 fixture re-targeting + RED scaffolds; Task 1 Option B (synthetic_blocked) taken due to auth-isolation + quota-key gaps; 104:104 TS:Python parity achieved"
 progress:
   total_phases: 11
-  completed_phases: 5
+  completed_phases: 6
   total_plans: 31
-  completed_plans: 30
+  completed_plans: 31
   percent: 10
 ---
 
@@ -76,6 +76,7 @@ Progress: [█░░░░░░░░░] 10% (Phase 1 of 11 complete + Phase 5
 | Phase 06-auth-environment P04 | 2 | 2 tasks | 3 files |
 | Phase 06 P01 | 3 | 2 tasks | 4 files |
 | Phase 06 P02 | 6 | 2 tasks | 4 files |
+| Phase 06-auth-environment P03 | 15 | 3 tasks | 9 files |
 
 ## Accumulated Context
 
@@ -173,6 +174,9 @@ Recent decisions affecting current work:
 - [Phase 06]: envOverrides always empty in resolveAuth — diagnosis not mutation; env vars already flow through buildEnv allowlist
 - [Phase 06]: diff-test-names.sh needs PYTHONIOENCODING=utf-8 + LC_ALL=C.utf8 for Windows UTF-8 sort compatibility when test names contain non-ASCII (em-dash)
 - [Phase 06]: Python auth module (resolve_auth.py) was pre-committed in plan 06-01; plan 06-02 scope was pytest test suite creation
+- [Phase 06-03]: Fixture error-auth-invalid-key taken as synthetic_blocked: same Windows OAuth-cache bypass as Phase 05-01 Option B
+- [Phase 06-03]: error-auth-invalid-key.ndjson uses code:401 + status:UNAUTHENTICATED (not string code) for fromStreamEvent two-path parity
+- [Phase 06-03]: Phase 6: query()/queryRaw() call resolveAuth before spawn, emit UserWarning via warnings.warn (Python) / console.warn (TS) for multi-mode env
 
 ### Pending Todos
 
@@ -189,6 +193,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-04-19T23:41:17.409Z
-Stopped at: Completed 06-02-PLAN.md
+Last session: 2026-04-19T23:51:22.036Z
+Stopped at: Completed 06-03-PLAN.md
 Resume file: None
