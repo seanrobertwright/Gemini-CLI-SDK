@@ -1,0 +1,4 @@
+# file: D:\repos\Gemini-SDK\python\src\gemini_sdk\query\query.py
+# hypothesis_version: 6.151.13
+
+['GEMINI_SYSTEM_MD', 'actualModel', 'assistant', 'auto', 'cancel_called', 'cancel_scope', 'chunks', 'cli_path', 'content', 'cwd', 'env', 'incomplete', 'init', 'model', 'requestedModel', 'result', 'sessionId', 'session_id', 'stopReason', 'stop_reason', 'subtype', 'system', 'system_prompt', 'text', 'tool', 'tool_result', 'type', 'utf-8']

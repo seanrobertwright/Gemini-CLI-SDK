@@ -1,0 +1,4 @@
+# file: D:\repos\Gemini-SDK\python\src\gemini_sdk\errors\error_mapper.py
+# hypothesis_version: 6.151.13
+
+[-200, 137, 143, 400, 401, 403, 404, 429, 1000, 'INVALID_ARGUMENT', 'NOT_FOUND', 'PERMISSION_DENIED', 'RESOURCE_EXHAUSTED', 'Rate limit exceeded', 'UNAUTHENTICATED', 'code', 'error', 'message', 'retryAfter', 'status']

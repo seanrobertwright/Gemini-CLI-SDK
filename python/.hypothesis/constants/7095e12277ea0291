@@ -1,0 +1,4 @@
+# file: D:\repos\Gemini-SDK\python\src\gemini_sdk\parser\dispatch.py
+# hypothesis_version: 6.151.13
+
+['assistant', 'content', 'end_turn', 'error', 'incomplete', 'init', 'message', 'model', 'output', 'parameters', 'result', 'role', 'sessionId', 'session_id', 'status', 'stopReason', 'subtype', 'success', 'system', 'thinking', 'thought', 'tool', 'toolId', 'toolName', 'tool_id', 'tool_name', 'tool_result', 'tool_use', 'type']

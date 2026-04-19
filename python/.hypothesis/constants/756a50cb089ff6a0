@@ -1,0 +1,4 @@
+# file: D:\repos\Gemini-SDK\python\src\gemini_sdk\errors\errors.py
+# hypothesis_version: 6.151.13
+
+['auth', 'crash', 'model_access', 'rate_limit', 'unknown']

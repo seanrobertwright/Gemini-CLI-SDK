@@ -1,0 +1,4 @@
+# file: D:\repos\Gemini-SDK\python\src\gemini_sdk\process\process_manager.py
+# hypothesis_version: 6.151.13
+
+[0.1, 5.0, '/F', '/PID', '/T', 'taskkill', 'win32']

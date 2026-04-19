@@ -1,0 +1,4 @@
+# file: D:\repos\Gemini-SDK\python\src\gemini_sdk\process\binary_resolver.py
+# hypothesis_version: 6.151.13
+
+['GEMINI_BIN_PATH', 'gemini', 'gemini.cmd', 'win32']

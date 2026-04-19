@@ -1,0 +1,4 @@
+# file: D:\repos\Gemini-SDK\python\src\gemini_sdk\process\env_builder.py
+# hypothesis_version: 6.151.13
+
+['APPDATA', 'COMSPEC', 'GEMINI_API_KEY', 'GEMINI_BIN_PATH', 'GEMINI_CONFIG_DIR', 'GEMINI_SYSTEM_MD', 'GOOGLE_API_KEY', 'GOOGLE_CLOUD_PROJECT', 'HOME', 'HOMEDRIVE', 'HOMEPATH', 'LOCALAPPDATA', 'LOGNAME', 'PATH', 'PYTHONUTF8', 'SHELL', 'SystemDrive', 'SystemRoot', 'TEMP', 'TERM', 'TMP', 'TMPDIR', 'USER', 'USERPROFILE']

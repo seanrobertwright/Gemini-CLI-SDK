@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Completed 06-01-PLAN.md
-last_updated: "2026-04-19T23:36:33.562Z"
+stopped_at: Completed 06-02-PLAN.md
+last_updated: "2026-04-19T23:41:17.412Z"
 last_activity: "2026-04-15 — Completed plan 05-01: Phase 5 Wave-1 fixture re-targeting + RED scaffolds; Task 1 Option B (synthetic_blocked) taken due to auth-isolation + quota-key gaps; 104:104 TS:Python parity achieved"
 progress:
   total_phases: 11
   completed_phases: 5
   total_plans: 31
-  completed_plans: 29
+  completed_plans: 30
   percent: 10
 ---
 
@@ -75,6 +75,7 @@ Progress: [█░░░░░░░░░] 10% (Phase 1 of 11 complete + Phase 5
 | Phase 05-error-taxonomy-archon-5-bucket-mapping P05 | 25 | 3 tasks | 8 files |
 | Phase 06-auth-environment P04 | 2 | 2 tasks | 3 files |
 | Phase 06 P01 | 3 | 2 tasks | 4 files |
+| Phase 06 P02 | 6 | 2 tasks | 4 files |
 
 ## Accumulated Context
 
@@ -170,6 +171,8 @@ Recent decisions affecting current work:
 - [Phase 06]: resolveAuth test assertions use toBeFalsy() for keys stubbed to empty string in beforeEach — vi.stubEnv to '' means buildEnv returns '' not undefined
 - [Phase 06]: mode: 'none' kept in AuthMode union as unreachable-via-current-API; reserved for future explicit opt-out (e.g. options.auth='off')
 - [Phase 06]: envOverrides always empty in resolveAuth — diagnosis not mutation; env vars already flow through buildEnv allowlist
+- [Phase 06]: diff-test-names.sh needs PYTHONIOENCODING=utf-8 + LC_ALL=C.utf8 for Windows UTF-8 sort compatibility when test names contain non-ASCII (em-dash)
+- [Phase 06]: Python auth module (resolve_auth.py) was pre-committed in plan 06-01; plan 06-02 scope was pytest test suite creation
 
 ### Pending Todos
 
@@ -186,6 +189,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-04-19T23:36:33.559Z
-Stopped at: Completed 06-01-PLAN.md
+Last session: 2026-04-19T23:41:17.409Z
+Stopped at: Completed 06-02-PLAN.md
 Resume file: None

@@ -1,0 +1,4 @@
+# file: D:\repos\Gemini-SDK\python\src\gemini_sdk\errors\__init__.py
+# hypothesis_version: 6.151.13
+
+['AbortError', 'ArchonBucket', 'AuthError', 'Expired', 'Forbidden403', 'GeminiError', 'GeminiNotFoundError', 'InvalidPromptError', 'ModelAccessError', 'NotConfigured', 'ParseError', 'ProcessCrashError', 'ProcessError', 'RateLimitError', 'ToSViolation']
