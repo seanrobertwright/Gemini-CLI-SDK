@@ -96,6 +96,9 @@ jobs:
         shell: bash
         run: bash scripts/lint-errors.sh
 
+      - name: Lint auth login prohibition
+        run: bash scripts/lint-auth-login.sh
+
   version-sync:
     name: "Version sync check"
     runs-on: ubuntu-latest
