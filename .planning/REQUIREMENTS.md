@@ -80,12 +80,12 @@ Requirements for initial release. Each maps to a roadmap phase.
 
 ### Authentication
 
-- [ ] **AUT-01**: Gemini API key auth (`GEMINI_API_KEY`) is the canonical default
-- [ ] **AUT-02**: SDK supports Vertex AI auth via service account JSON (`GOOGLE_APPLICATION_CREDENTIALS`) when explicitly selected
-- [ ] **AUT-03**: SDK supports Vertex AI auth via Google Cloud API key (`GOOGLE_API_KEY`) as an alternative Vertex path
-- [ ] **AUT-04**: SDK passes through `GOOGLE_CLOUD_PROJECT` / `GOOGLE_CLOUD_PROJECT_ID` / `GOOGLE_CLOUD_LOCATION` for Vertex project+region scoping
+- [x] **AUT-01**: Gemini API key auth (`GEMINI_API_KEY`) is the canonical default
+- [x] **AUT-02**: SDK supports Vertex AI auth via service account JSON (`GOOGLE_APPLICATION_CREDENTIALS`) when explicitly selected
+- [x] **AUT-03**: SDK supports Vertex AI auth via Google Cloud API key (`GOOGLE_API_KEY`) as an alternative Vertex path
+- [x] **AUT-04**: SDK passes through `GOOGLE_CLOUD_PROJECT` / `GOOGLE_CLOUD_PROJECT_ID` / `GOOGLE_CLOUD_LOCATION` for Vertex project+region scoping
 - [x] **AUT-05**: SDK supports Sign-in-with-Google / ADC fallback (picked up transparently if already configured) but NEVER automates interactive OAuth login
-- [ ] **AUT-06**: SDK warns at runtime if multiple auth modes are configured, documenting precedence: `GEMINI_API_KEY` > `GOOGLE_APPLICATION_CREDENTIALS` > `GOOGLE_API_KEY` > ADC/OAuth fallback
+- [x] **AUT-06**: SDK warns at runtime if multiple auth modes are configured, documenting precedence: `GEMINI_API_KEY` > `GOOGLE_APPLICATION_CREDENTIALS` > `GOOGLE_API_KEY` > ADC/OAuth fallback
 - [ ] **AUT-07**: Typed `AuthError` subtypes distinguish `NotConfigured` / `Forbidden403` / `Expired` / `ToSViolation`
 - [x] **AUT-08**: SDK documentation links gemini-cli discussion #22970 and Google's FAQ ToS warning so users understand why API key is the default
 - [x] **AUT-09**: SDK documentation explicitly notes that **there is no `GOOGLE_AUTH_TOKEN` passthrough** and no env-var path for supplying a pre-obtained short-lived OAuth access token — users with bearer tokens must substitute service account JSON or `GOOGLE_API_KEY`
@@ -271,12 +271,12 @@ All v1 requirements map to exactly one phase. Coverage: 102/102.
 | MCP-02 | Phase 9 | Pending |
 | MCP-03 | Phase 9 | Pending |
 | MCP-04 | Phase 9 | Pending |
-| AUT-01 | Phase 6 | Pending |
-| AUT-02 | Phase 6 | Pending |
-| AUT-03 | Phase 6 | Pending |
-| AUT-04 | Phase 6 | Pending |
+| AUT-01 | Phase 6 | Complete |
+| AUT-02 | Phase 6 | Complete |
+| AUT-03 | Phase 6 | Complete |
+| AUT-04 | Phase 6 | Complete |
 | AUT-05 | Phase 6 | Complete |
-| AUT-06 | Phase 6 | Pending |
+| AUT-06 | Phase 6 | Complete |
 | AUT-07 | Phase 6 | Pending |
 | AUT-08 | Phase 6 | Complete |
 | AUT-09 | Phase 6 | Complete |
