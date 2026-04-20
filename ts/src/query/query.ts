@@ -29,8 +29,10 @@ import type { MessageChunk, RawEvent, ResultChunk } from '../parser/types.js';
 import type { QueryOptions, QueryResult } from './types.js';
 import { AbortError } from './types.js';
 import { buildArgv } from './buildArgv.js';
-import { ErrorMapper, GeminiError } from '../errors/index.js';
+import { ErrorMapper, GeminiError, InvalidPromptError } from '../errors/index.js';
 import { resolveAuth } from '../auth/index.js';
+import { normaliseSessionId } from '../session/index.js';
+import type { Session } from '../session/index.js';
 
 // ────────────────────────────────────────────────────────────────────────────
 // Internal helpers
@@ -278,15 +280,27 @@ export async function queryFull(options: QueryOptions): Promise<QueryResult> {
   let text = '';
   let sessionId = '';
   let stopReason = '';
+  let initSessionId = '';
+  let initModel = '';
 
   for await (const chunk of query(options)) {
     chunks.push(chunk);
     if (chunk.type === 'assistant') text += chunk.content;
+    if (chunk.type === 'system' && chunk.subtype === 'init') {
+      initSessionId = chunk.sessionId ?? '';
+      initModel = chunk.model ?? '';
+    }
     if (chunk.type === 'result') {
       sessionId = chunk.sessionId;
       stopReason = chunk.stopReason;
     }
   }
 
-  return { text, sessionId, stopReason, chunks };
+  const session: Session = {
+    id: initSessionId || sessionId,  // prefer init-event id; fall back to result-event id
+    model: initModel,
+    createdAt: new Date().toISOString(),  // wall-clock at queryFull call time
+  };
+
+  return { text, sessionId, session, stopReason, chunks };
 }

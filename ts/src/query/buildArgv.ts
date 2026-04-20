@@ -2,25 +2,60 @@
  * ts/src/query/buildArgv.ts
  *
  * Pure function that maps QueryOptions to a string[] argv for gemini-cli.
- * No I/O, no side effects — 100% unit-testable.
+ *
+ * Session branches (Phase 7):
+ *   - No session              → no --resume flag (fresh session) — MDL-03 preserved.
+ *   - session + no fallback   → ['--resume', <id>] inserted BEFORE '-p' (primary path, SES-02).
+ *   - session + fallback env  → prompt is PREPENDED with transcript, --resume OMITTED (SES-04).
+ *
+ * Fallback activation: process.env check (see code below) — '1' activates.
+ * AND options.session is a Session object (not a bare string) AND .transcript is non-empty.
+ * Any other combination → primary path.
  */
 
 import type { QueryOptions } from './types.js';
+import type { Session, TranscriptEntry } from '../session/index.js';
+import { normaliseSessionId } from '../session/index.js';
 
 /**
- * Build the argv array to pass to gemini-cli for a given QueryOptions.
- *
- * Rules:
- *   - Always starts with ['--output-format', 'stream-json', '-p', prompt]
- *   - model 'auto' or undefined → omits --model flag (MDL-03)
- *   - Any other model value → ['--model', value] (MDL-01, MDL-02)
- *   - additionalDirectories → one '--include-directories <dir>' per entry (CWD-02)
- *   - Empty additionalDirectories array → omits --include-directories flag
+ * Deterministic transcript prepend format.
+ * Example output for [{role:'user',content:'hi'},{role:'assistant',content:'hello'}] + prompt 'next':
+ *   "User: hi\nAssistant: hello\n\nUser: next"
  */
+function formatTranscriptPrompt(
+  transcript: ReadonlyArray<TranscriptEntry>,
+  newPrompt: string,
+): string {
+  const priorLines = transcript
+    .map(t => `${t.role === 'user' ? 'User' : 'Assistant'}: ${t.content}`)
+    .join('\n');
+  return `${priorLines}\n\nUser: ${newPrompt}`;
+}
+
 export function buildArgv(options: QueryOptions): string[] {
+  // Determine effective prompt (may be transcript-prepended in SES-04 fallback)
+  let effectivePrompt = options.prompt;
+  let resumeFlagPair: string[] = [];
+
+  if (options.session) {
+    const id = normaliseSessionId(options.session);
+    const fallbackActive = process.env['GEMINI_SDK_TRANSCRIPT_FALLBACK'] === '1';
+    const sessionObj = typeof options.session === 'string' ? undefined : options.session as Session;
+    const hasTranscript = !!(sessionObj?.transcript && sessionObj.transcript.length > 0);
+
+    if (fallbackActive && hasTranscript) {
+      // SES-04 fallback: transcript-prepend; no --resume flag
+      effectivePrompt = formatTranscriptPrompt(sessionObj!.transcript!, options.prompt);
+    } else {
+      // SES-02 primary path: --resume <id> before -p
+      resumeFlagPair = ['--resume', id];
+    }
+  }
+
   const argv: string[] = [
     '--output-format', 'stream-json',
-    '-p', options.prompt,
+    ...resumeFlagPair,
+    '-p', effectivePrompt,
   ];
 
   // MDL-03: omit --model when undefined or 'auto'

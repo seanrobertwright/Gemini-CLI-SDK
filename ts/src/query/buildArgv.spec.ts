@@ -5,10 +5,11 @@
  * Covers all branches: model omission, explicit model, additionalDirectories.
  */
 
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import fc from 'fast-check';
 import { buildArgv } from './buildArgv.js';
 import { Model } from './types.js';
+import type { Session } from '../session/index.js';
 
 // ── basic prompt ──────────────────────────────────────────────────────────────
 
@@ -180,7 +181,12 @@ describe('buildArgv: Model enum values', () => {
 // ── fuzz test ─────────────────────────────────────────────────────────────────
 
 describe('buildArgv: fuzz test', () => {
+  beforeEach(() => { vi.unstubAllEnvs(); });
+  afterEach(() => { vi.unstubAllEnvs(); });
+
   it('never throws for arbitrary input and always returns non-empty string[]', () => {
+    // Ensure deterministic env state: fallback env var must not be set
+    vi.unstubAllEnvs();
     fc.assert(
       fc.property(
         fc.record({
@@ -201,6 +207,13 @@ describe('buildArgv: fuzz test', () => {
             fc.array(fc.string()),
             { nil: undefined }
           ),
+          session: fc.option(
+            fc.oneof(
+              fc.string({ minLength: 1 }),
+              fc.record({ id: fc.string(), model: fc.string(), createdAt: fc.string() }),
+            ),
+            { nil: undefined }
+          ),
         }),
         (opts) => {
           const result = buildArgv(opts);
@@ -209,11 +222,17 @@ describe('buildArgv: fuzz test', () => {
           expect(result.length).toBeGreaterThan(0);
           expect(result[0]).toBe('--output-format');
           expect(result[1]).toBe('stream-json');
-          expect(result[2]).toBe('-p');
-          expect(result[3]).toBe(opts.prompt);
           // All elements are strings
           for (const el of result) {
             expect(typeof el).toBe('string');
+          }
+          // Session invariant (fallback env var NOT set, so primary path applies)
+          if (opts.session !== undefined) {
+            expect(result).toContain('--resume');
+            expect(result[2]).toBe('--resume');
+          } else {
+            expect(result[2]).toBe('-p');
+            expect(result[3]).toBe(opts.prompt);
           }
         }
       )
@@ -246,5 +265,98 @@ describe('buildArgv: fuzz test', () => {
         }
       )
     );
+  });
+});
+
+describe('buildArgv: session primary path (SES-02)', () => {
+  beforeEach(() => { vi.unstubAllEnvs(); });
+  afterEach(() => { vi.unstubAllEnvs(); });
+
+  it('omits --resume when no session option provided', () => {
+    const result = buildArgv({ prompt: 'x' });
+    expect(result).not.toContain('--resume');
+  });
+
+  it('inserts --resume id between stream-json and -p when session is a string', () => {
+    const result = buildArgv({ prompt: 'x', session: 'abc-123' });
+    expect(result).toEqual(['--output-format', 'stream-json', '--resume', 'abc-123', '-p', 'x']);
+  });
+
+  it('inserts --resume id when session is a Session object', () => {
+    const s: Session = { id: 'xyz-9', model: '', createdAt: '' };
+    const result = buildArgv({ prompt: 'x', session: s });
+    expect(result[2]).toBe('--resume');
+    expect(result[3]).toBe('xyz-9');
+  });
+
+  it('places --resume before -p', () => {
+    const result = buildArgv({ prompt: 'x', session: 'abc' });
+    const resumeIdx = result.indexOf('--resume');
+    const pIdx = result.indexOf('-p');
+    expect(resumeIdx).toBeGreaterThan(-1);
+    expect(pIdx).toBeGreaterThan(-1);
+    expect(resumeIdx).toBeLessThan(pIdx);
+  });
+
+  it('session and additionalDirectories both produce flags in argv', () => {
+    const result = buildArgv({ prompt: 'x', session: 's', additionalDirectories: ['d1'] });
+    expect(result).toEqual([
+      '--output-format', 'stream-json',
+      '--resume', 's',
+      '-p', 'x',
+      '--include-directories', 'd1',
+    ]);
+  });
+
+  it('session and model both produce flags in argv', () => {
+    const result = buildArgv({ prompt: 'x', session: 's', model: 'gemini-3-pro' });
+    expect(result).toContain('--resume');
+    expect(result).toContain('--model');
+    expect(result).toContain('gemini-3-pro');
+  });
+});
+
+describe('buildArgv: transcript-prepend fallback (SES-04)', () => {
+  beforeEach(() => { vi.unstubAllEnvs(); });
+  afterEach(() => { vi.unstubAllEnvs(); });
+
+  it('fallback env var set plus transcript present omits --resume and prepends transcript', () => {
+    vi.stubEnv('GEMINI_SDK_TRANSCRIPT_FALLBACK', '1');
+    const s: Session = {
+      id: 'abc',
+      model: '',
+      createdAt: '',
+      transcript: [
+        { role: 'user', content: 'hi' },
+        { role: 'assistant', content: 'hello' },
+      ],
+    };
+    const result = buildArgv({ prompt: 'next', session: s });
+    expect(result).not.toContain('--resume');
+    expect(result[3]).toBe('User: hi\nAssistant: hello\n\nUser: next');
+  });
+
+  it('fallback env var set but no transcript falls back to primary path', () => {
+    vi.stubEnv('GEMINI_SDK_TRANSCRIPT_FALLBACK', '1');
+    const s: Session = { id: 'abc', model: '', createdAt: '' };
+    const result = buildArgv({ prompt: 'x', session: s });
+    expect(result).toContain('--resume');
+  });
+
+  it('fallback env var set but session is a string falls back to primary path', () => {
+    vi.stubEnv('GEMINI_SDK_TRANSCRIPT_FALLBACK', '1');
+    const result = buildArgv({ prompt: 'x', session: 'abc' });
+    expect(result).toContain('--resume');
+  });
+
+  it('fallback env var unset with transcript present uses primary path', () => {
+    const s: Session = {
+      id: 'abc',
+      model: '',
+      createdAt: '',
+      transcript: [{ role: 'user', content: 'hi' }],
+    };
+    const result = buildArgv({ prompt: 'x', session: s });
+    expect(result).toContain('--resume');
   });
 });

@@ -10,6 +10,7 @@
  */
 
 import type { MessageChunk } from '../parser/types.js';
+import type { Session } from '../session/index.js';
 export { AbortError } from '../errors/index.js';
 
 // ────────────────────────────────────────────────────────────────────────────
@@ -63,6 +64,12 @@ export interface QueryOptions {
 
   /** Extra environment variables merged into the subprocess environment. */
   env?: Record<string, string>;
+
+  /**
+   * Resume an existing session (SES-01, SES-02).
+   * Accepts a Session value object or a bare session id string (restored from storage).
+   */
+  session?: Session | string;
 }
 
 // ────────────────────────────────────────────────────────────────────────────
@@ -78,6 +85,9 @@ export interface QueryResult {
 
   /** Stop reason from the gemini-cli result event. */
   stopReason: string;
+
+  /** Session value object (Phase 7, SES-03). Constructed from init event. */
+  session: Session;
 
   /** All MessageChunks yielded during the query. */
   chunks: MessageChunk[];

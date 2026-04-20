@@ -125,8 +125,10 @@ export interface ResultChunk {
   type: 'result';
   sessionId: string;
   stopReason: string;
-  requestedModel?: string;  // MDL-04: populated only on mismatch
-  actualModel?: string;     // MDL-04: populated only on mismatch
+  requestedModel?: string;       // MDL-04: populated only on mismatch
+  actualModel?: string;          // MDL-04: populated only on mismatch
+  requestedSessionId?: string;   // Phase 7: populated only when --resume <id> != init.session_id
+  actualSessionId?: string;      // Phase 7: populated only on session-id mismatch
 }
 
 export interface RateLimitChunk {
