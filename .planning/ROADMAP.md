@@ -138,7 +138,11 @@ Plans:
   2. The `Session` value object has no open process handles, no file descriptors, and is trivially serializable (JSON round-trip returns an equivalent `Session`) — verified by a unit test
   3. The transcript-prepend fallback activates when a config flag (set by Phase 1's verdict) is `true`, and a unit test asserts that `buildArgv` with the fallback produces a single `-p` invocation whose prompt contains both the previous turn and the new turn in order
   4. Killing a session mid-stream and resuming it in a new `query()` call works on all three OSes (kill-mid-session integration test per OS)
-**Plans**: TBD
+**Plans**: 3 plans
+Plans:
+- [ ] 07-01-PLAN.md — Wave 1: Session value object (TS + Python types, frozen dataclass, normaliser, parity tests)
+- [ ] 07-02-PLAN.md — Wave 2: TS extension (ResultChunk fields, buildArgv session branch, query guard + mismatch, queryFull Session construction, multi-turn fixture integration test)
+- [ ] 07-03-PLAN.md — Wave 3: Python mechanical port + parity + spec/protocol.md §6 session-flow documentation
 
 ### Phase 8: Tools + Approval Mode + Structured Output (Best-Effort)
 **Goal**: Pass `options.allowedTools` through to `--allowed-tools` / Policy Engine (runtime compat check to handle the migration gracefully), pass `options.approvalMode` through to `--approval-mode` (`default` | `auto_edit` | `yolo` | `plan`), explicitly document that caller-defined custom tool definitions are NOT supported in v1.0, and ship best-effort structured output: `options.outputSchema` injects schema guidance into the system prompt + runtime-validates output with Zod (TS) / Pydantic (Python) + retries ONCE on validation failure with feedback, then raises `SchemaValidationError`. Structured output is marked `@experimental` in types and docs with a clear limitation note linking upstream issue #13388.
@@ -197,7 +201,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8 →
 | 4. Public query() + ArgvBuilder + systemPrompt + Workspace + Model | 3/3 | Complete   | 2026-04-13 |
 | 5. Error Taxonomy + Archon 5-Bucket Mapping | 5/5 | Complete   | 2026-04-15 |
 | 6. Auth Environment | 4/4 | Complete   | 2026-04-19 |
-| 7. Session Resume + Multi-Turn | 0/TBD | Not started | - |
+| 7. Session Resume + Multi-Turn | 0/3 | Planned    | - |
 | 8. Tools + Approval Mode + Structured Output | 0/TBD | Not started | - |
 | 9. MCP Passthrough + Isolated Config Dir | 0/TBD | Not started | - |
 | 10. Archon Adapter (TS only) | 0/TBD | Not started | - |
