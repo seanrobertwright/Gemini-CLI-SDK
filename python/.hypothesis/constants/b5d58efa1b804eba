@@ -1,0 +1,4 @@
+# file: D:\repos\Gemini-SDK\python\src\gemini_sdk\__init__.py
+# hypothesis_version: 6.151.13
+
+['0.0.0', 'AUTH_PRECEDENCE', 'AbortError', 'ApprovalMode', 'GeminiNotFoundError', 'Model', 'ProcessManager', 'ProcessStrategy', 'QueryOptions', 'QueryResult', 'Session', 'SpawnPerCallStrategy', 'TranscriptEntry', 'build_argv', 'build_env', 'kill_tree', 'normalise_session_id', 'query', 'query_full', 'query_raw', 'resolve_auth', 'resolve_binary']

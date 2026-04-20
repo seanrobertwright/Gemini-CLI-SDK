@@ -1,0 +1,4 @@
+# file: D:\repos\Gemini-SDK\python\src\gemini_sdk\query\query.py
+# hypothesis_version: 6.151.13
+
+['GEMINI_SYSTEM_MD', 'actualModel', 'actualSessionId', 'assistant', 'auto', 'cancel_called', 'cancel_scope', 'chunks', 'cli_path', 'content', 'cwd', 'env', 'env_overrides', 'incomplete', 'init', 'model', 'output_schema', 'prompt', 'requestedModel', 'requestedSessionId', 'result', 'session', 'session id is empty', 'sessionId', 'session_id', 'stopReason', 'stop_reason', 'structured', 'subtype', 'system', 'system_prompt', 'text', 'tool', 'tool_result', 'type', 'utf-8', 'warnings']

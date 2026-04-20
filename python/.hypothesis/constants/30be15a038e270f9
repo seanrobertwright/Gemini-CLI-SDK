@@ -1,0 +1,4 @@
+# file: D:\repos\Gemini-SDK\python\src\gemini_sdk\auth\__init__.py
+# hypothesis_version: 6.151.13
+
+['AUTH_PRECEDENCE', 'AuthMode', 'ResolvedAuth', 'resolve_auth']

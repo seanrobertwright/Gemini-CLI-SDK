@@ -1,0 +1,4 @@
+# file: D:\repos\Gemini-SDK\python\src\gemini_sdk\parser\types.py
+# hypothesis_version: 6.151.13
+
+['assistant', 'cli_log', 'error', 'init', 'message', 'rate_limit', 'result', 'system', 'thinking', 'tool', 'tool_result', 'tool_use', 'unknown', 'workflow_dispatch']
