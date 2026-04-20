@@ -7,6 +7,7 @@ from typing import Literal, Optional
 
 ArchonBucket = Literal['rate_limit', 'auth', 'model_access', 'crash', 'unknown']
 
+# source: stderr
 class GeminiError(Exception):
     bucket: ArchonBucket = 'unknown'
     retryable: bool = False
@@ -23,6 +24,7 @@ class GeminiError(Exception):
             self.retry_after_ms = retry_after_ms
 
 
+# source: stderr
 class RateLimitError(GeminiError):
     bucket: ArchonBucket = 'rate_limit'
     retryable: bool = True
@@ -39,6 +41,7 @@ class RateLimitError(GeminiError):
             self.retry_after_ms = retry_after_ms
 
 
+# source: stderr
 class AuthError(GeminiError):
     bucket: ArchonBucket = 'auth'
     retryable: bool = False
@@ -55,6 +58,7 @@ class AuthError(GeminiError):
             self.retry_after_ms = retry_after_ms
 
 
+# source: stderr
 class NotConfigured(AuthError):
     bucket: ArchonBucket = 'auth'
     retryable: bool = False
@@ -71,6 +75,7 @@ class NotConfigured(AuthError):
             self.retry_after_ms = retry_after_ms
 
 
+# source: stderr
 class Forbidden403(AuthError):
     bucket: ArchonBucket = 'auth'
     retryable: bool = False
@@ -87,6 +92,7 @@ class Forbidden403(AuthError):
             self.retry_after_ms = retry_after_ms
 
 
+# source: stderr
 class Expired(AuthError):
     bucket: ArchonBucket = 'auth'
     retryable: bool = False
@@ -103,6 +109,7 @@ class Expired(AuthError):
             self.retry_after_ms = retry_after_ms
 
 
+# source: stderr
 class ToSViolation(AuthError):
     bucket: ArchonBucket = 'auth'
     retryable: bool = False
@@ -119,6 +126,7 @@ class ToSViolation(AuthError):
             self.retry_after_ms = retry_after_ms
 
 
+# source: stderr
 class ModelAccessError(GeminiError):
     bucket: ArchonBucket = 'model_access'
     retryable: bool = False
@@ -135,6 +143,7 @@ class ModelAccessError(GeminiError):
             self.retry_after_ms = retry_after_ms
 
 
+# source: stderr
 class InvalidPromptError(GeminiError):
     bucket: ArchonBucket = 'unknown'
     retryable: bool = False
@@ -151,6 +160,7 @@ class InvalidPromptError(GeminiError):
             self.retry_after_ms = retry_after_ms
 
 
+# source: stderr
 class ProcessError(GeminiError):
     bucket: ArchonBucket = 'crash'
     retryable: bool = False
@@ -167,6 +177,7 @@ class ProcessError(GeminiError):
             self.retry_after_ms = retry_after_ms
 
 
+# source: stderr
 class ProcessCrashError(ProcessError):
     bucket: ArchonBucket = 'crash'
     retryable: bool = False
@@ -183,6 +194,7 @@ class ProcessCrashError(ProcessError):
             self.retry_after_ms = retry_after_ms
 
 
+# source: stderr
 class AbortError(ProcessError):
     bucket: ArchonBucket = 'crash'
     retryable: bool = False
@@ -199,6 +211,7 @@ class AbortError(ProcessError):
             self.retry_after_ms = retry_after_ms
 
 
+# source: stderr
 class ParseError(GeminiError):
     bucket: ArchonBucket = 'unknown'
     retryable: bool = False
@@ -215,6 +228,7 @@ class ParseError(GeminiError):
             self.retry_after_ms = retry_after_ms
 
 
+# source: stderr
 class UnsupportedFeatureError(GeminiError):
     bucket: ArchonBucket = 'unknown'
     retryable: bool = False
@@ -231,6 +245,7 @@ class UnsupportedFeatureError(GeminiError):
             self.retry_after_ms = retry_after_ms
 
 
+# source: stderr
 class GeminiNotFoundError(GeminiError):
     bucket: ArchonBucket = 'unknown'
     retryable: bool = False
@@ -239,6 +254,23 @@ class GeminiNotFoundError(GeminiError):
     def __init__(
         self,
         message: str = 'gemini-cli not found. Install with: npm install -g @google/gemini-cli',
+        *,
+        retry_after_ms: Optional[int] = None,
+    ) -> None:
+        super().__init__(message)
+        if retry_after_ms is not None:
+            self.retry_after_ms = retry_after_ms
+
+
+# source: sdk
+class SchemaValidationError(GeminiError):
+    bucket: ArchonBucket = 'unknown'
+    retryable: bool = False
+    retry_after_ms: Optional[int] = None
+
+    def __init__(
+        self,
+        message: str = 'Schema validation failed after retry',
         *,
         retry_after_ms: Optional[int] = None,
     ) -> None:

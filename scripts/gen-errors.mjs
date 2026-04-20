@@ -44,6 +44,8 @@ for (const entry of doc.errors) {
   // (always emit to keep generated file fully self-describing, but only
   // declare retryAfterMs on root).
 
+  const source = entry.source || 'stderr';
+  out += `// source: ${source}\n`;
   out += `export class ${entry.name} extends ${baseClass} {\n`;
   out += `  readonly bucket: ArchonBucket = ${bucket};\n`;
   out += `  readonly retryable: boolean = ${retryableLiteral};\n`;

@@ -131,3 +131,10 @@ errors:
     bucket: unknown
     retryable: false
     message_template: "gemini-cli not found. Install with: npm install -g @google/gemini-cli"
+
+  - name: SchemaValidationError
+    base: GeminiError
+    source: sdk
+    bucket: unknown
+    retryable: false
+    message_template: "Schema validation failed after retry"

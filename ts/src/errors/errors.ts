@@ -4,6 +4,7 @@
 
 export type ArchonBucket = 'rate_limit' | 'auth' | 'model_access' | 'crash' | 'unknown';
 
+// source: stderr
 export class GeminiError extends Error {
   readonly bucket: ArchonBucket = 'unknown';
   readonly retryable: boolean = false;
@@ -17,6 +18,7 @@ export class GeminiError extends Error {
   }
 }
 
+// source: stderr
 export class RateLimitError extends GeminiError {
   readonly bucket: ArchonBucket = 'rate_limit';
   readonly retryable: boolean = true;
@@ -28,6 +30,7 @@ export class RateLimitError extends GeminiError {
   }
 }
 
+// source: stderr
 export class AuthError extends GeminiError {
   readonly bucket: ArchonBucket = 'auth';
   readonly retryable: boolean = false;
@@ -39,6 +42,7 @@ export class AuthError extends GeminiError {
   }
 }
 
+// source: stderr
 export class NotConfigured extends AuthError {
   readonly bucket: ArchonBucket = 'auth';
   readonly retryable: boolean = false;
@@ -50,6 +54,7 @@ export class NotConfigured extends AuthError {
   }
 }
 
+// source: stderr
 export class Forbidden403 extends AuthError {
   readonly bucket: ArchonBucket = 'auth';
   readonly retryable: boolean = false;
@@ -61,6 +66,7 @@ export class Forbidden403 extends AuthError {
   }
 }
 
+// source: stderr
 export class Expired extends AuthError {
   readonly bucket: ArchonBucket = 'auth';
   readonly retryable: boolean = false;
@@ -72,6 +78,7 @@ export class Expired extends AuthError {
   }
 }
 
+// source: stderr
 export class ToSViolation extends AuthError {
   readonly bucket: ArchonBucket = 'auth';
   readonly retryable: boolean = false;
@@ -83,6 +90,7 @@ export class ToSViolation extends AuthError {
   }
 }
 
+// source: stderr
 export class ModelAccessError extends GeminiError {
   readonly bucket: ArchonBucket = 'model_access';
   readonly retryable: boolean = false;
@@ -94,6 +102,7 @@ export class ModelAccessError extends GeminiError {
   }
 }
 
+// source: stderr
 export class InvalidPromptError extends GeminiError {
   readonly bucket: ArchonBucket = 'unknown';
   readonly retryable: boolean = false;
@@ -105,6 +114,7 @@ export class InvalidPromptError extends GeminiError {
   }
 }
 
+// source: stderr
 export class ProcessError extends GeminiError {
   readonly bucket: ArchonBucket = 'crash';
   readonly retryable: boolean = false;
@@ -116,6 +126,7 @@ export class ProcessError extends GeminiError {
   }
 }
 
+// source: stderr
 export class ProcessCrashError extends ProcessError {
   readonly bucket: ArchonBucket = 'crash';
   readonly retryable: boolean = false;
@@ -127,6 +138,7 @@ export class ProcessCrashError extends ProcessError {
   }
 }
 
+// source: stderr
 export class AbortError extends ProcessError {
   readonly bucket: ArchonBucket = 'crash';
   readonly retryable: boolean = false;
@@ -138,6 +150,7 @@ export class AbortError extends ProcessError {
   }
 }
 
+// source: stderr
 export class ParseError extends GeminiError {
   readonly bucket: ArchonBucket = 'unknown';
   readonly retryable: boolean = false;
@@ -149,6 +162,7 @@ export class ParseError extends GeminiError {
   }
 }
 
+// source: stderr
 export class UnsupportedFeatureError extends GeminiError {
   readonly bucket: ArchonBucket = 'unknown';
   readonly retryable: boolean = false;
@@ -160,6 +174,7 @@ export class UnsupportedFeatureError extends GeminiError {
   }
 }
 
+// source: stderr
 export class GeminiNotFoundError extends GeminiError {
   readonly bucket: ArchonBucket = 'unknown';
   readonly retryable: boolean = false;
@@ -167,6 +182,18 @@ export class GeminiNotFoundError extends GeminiError {
   constructor(message?: string, options?: { retryAfterMs?: number }) {
     super(message ?? "gemini-cli not found. Install with: npm install -g @google/gemini-cli", options);
     this.name = 'GeminiNotFoundError';
+    Object.setPrototypeOf(this, new.target.prototype);
+  }
+}
+
+// source: sdk
+export class SchemaValidationError extends GeminiError {
+  readonly bucket: ArchonBucket = 'unknown';
+  readonly retryable: boolean = false;
+
+  constructor(message?: string, options?: { retryAfterMs?: number }) {
+    super(message ?? "Schema validation failed after retry", options);
+    this.name = 'SchemaValidationError';
     Object.setPrototypeOf(this, new.target.prototype);
   }
 }

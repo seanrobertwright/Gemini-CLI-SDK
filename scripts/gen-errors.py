@@ -36,6 +36,8 @@ for entry in doc["errors"]:
     retryable = "True" if entry.get("retryable") else "False"
     bucket = repr(entry["bucket"])
 
+    source = entry.get("source", "stderr")
+    out += f"# source: {source}\n"
     out += f"class {entry['name']}({base}):\n"
     out += f"    bucket: ArchonBucket = {bucket}\n"
     out += f"    retryable: bool = {retryable}\n"
