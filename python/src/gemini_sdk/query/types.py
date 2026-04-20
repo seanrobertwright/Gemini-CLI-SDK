@@ -19,6 +19,7 @@ from typing_extensions import Required, TypedDict
 from ..parser.types import MessageChunk
 # AbortError is now canonical in the errors module (extends ProcessError, bucket=crash).
 from ..errors import AbortError as AbortError  # re-export
+from ..session import Session  # Phase 7 (SES-01, SES-02)
 
 # ────────────────────────────────────────────────────────────────────────────
 # Model — known Gemini model identifiers
@@ -68,6 +69,9 @@ class QueryOptions(TypedDict, total=False):
     env: Dict[str, str]
     """Extra environment variables merged into the subprocess environment."""
 
+    session: Union[Session, str]
+    """Resume an existing session (SES-01, SES-02). Accepts a Session or a bare id str."""
+
 
 # ────────────────────────────────────────────────────────────────────────────
 # QueryResult — returned by query_full() after stream is fully consumed
@@ -88,6 +92,9 @@ class QueryResult(TypedDict):
 
     chunks: List[MessageChunk]
     """All MessageChunks yielded during the query."""
+
+    session: Session
+    """Phase 7 (SES-03): Session value object populated from init event."""
 
 
 # AbortError is imported from errors module above and re-exported.

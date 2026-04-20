@@ -130,6 +130,8 @@ class ResultChunk(TypedDict, total=False):
     stopReason: Required[str]
     requestedModel: str  # MDL-04: populated only on mismatch
     actualModel: str     # MDL-04: populated only on mismatch
+    requestedSessionId: str  # Phase 7: populated only on session-id mismatch
+    actualSessionId: str     # Phase 7: populated only on session-id mismatch
 
 
 class RateLimitChunk(TypedDict, total=False):

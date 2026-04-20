@@ -12,6 +12,7 @@ from hypothesis import given, settings
 from hypothesis import strategies as st
 
 from gemini_sdk.query import Model, build_argv
+from gemini_sdk.session import Session, TranscriptEntry
 
 
 # ── basic prompt ──────────────────────────────────────────────────────────────
@@ -206,25 +207,38 @@ class TestBuildArgvFuzzTest:
                 st.none(),
                 st.lists(st.text()),
             ),
+            "session": st.one_of(
+                st.none(),
+                st.text(min_size=1),
+            ),
         })
     )
     @settings(max_examples=100)
     def test_never_throws(self, opts: dict) -> None:
         """never throws for arbitrary input and always returns non-empty string[]"""
+        import os as _os
+        # Ensure deterministic env state: fallback env var must not be set
+        _os.environ.pop("GEMINI_SDK_TRANSCRIPT_FALLBACK", None)
         # Build a QueryOptions-compatible dict (skip None values)
         options = {"prompt": opts["prompt"]}
         if opts.get("model") is not None:
             options["model"] = opts["model"]  # type: ignore[assignment]
         if opts.get("additional_directories") is not None:
             options["additional_directories"] = opts["additional_directories"]  # type: ignore[assignment]
+        if opts.get("session") is not None:
+            options["session"] = opts["session"]  # type: ignore[assignment]
 
         result = build_argv(options)  # type: ignore[arg-type]
         assert isinstance(result, list)
         assert len(result) > 0
         assert result[0] == "--output-format"
         assert result[1] == "stream-json"
-        assert result[2] == "-p"
-        assert result[3] == opts["prompt"]
+        # Session invariant (fallback env var NOT set, so primary path applies)
+        if opts.get("session") is not None:
+            assert result[2] == "--resume"
+        else:
+            assert result[2] == "-p"
+            assert result[3] == opts["prompt"]
         for el in result:
             assert isinstance(el, str)
 
@@ -254,3 +268,101 @@ class TestBuildArgvFuzzTest:
         assert "--model" in result
         idx = result.index("--model")
         assert result[idx + 1] == model
+
+
+# ── session primary path (SES-02) ────────────────────────────────────────────
+
+
+class TestBuildArgvSessionPrimaryPath:
+    def test_run_omits_resume_when_no_session(self, monkeypatch):
+        """omits --resume when no session option provided"""
+        monkeypatch.delenv("GEMINI_SDK_TRANSCRIPT_FALLBACK", raising=False)
+        result = build_argv({"prompt": "x"})
+        assert "--resume" not in result
+
+    def test_run_inserts_resume_id_for_string_session(self, monkeypatch):
+        """inserts --resume id between stream-json and -p when session is a string"""
+        monkeypatch.delenv("GEMINI_SDK_TRANSCRIPT_FALLBACK", raising=False)
+        result = build_argv({"prompt": "x", "session": "abc-123"})
+        assert result == ["--output-format", "stream-json", "--resume", "abc-123", "-p", "x"]
+
+    def test_run_inserts_resume_id_for_session_object(self, monkeypatch):
+        """inserts --resume id when session is a Session object"""
+        monkeypatch.delenv("GEMINI_SDK_TRANSCRIPT_FALLBACK", raising=False)
+        s = Session(id="xyz-9", model="", created_at="")
+        result = build_argv({"prompt": "x", "session": s})
+        assert result[2] == "--resume"
+        assert result[3] == "xyz-9"
+
+    def test_run_places_resume_before_p(self, monkeypatch):
+        """places --resume before -p"""
+        monkeypatch.delenv("GEMINI_SDK_TRANSCRIPT_FALLBACK", raising=False)
+        result = build_argv({"prompt": "x", "session": "abc"})
+        resume_idx = result.index("--resume")
+        p_idx = result.index("-p")
+        assert resume_idx < p_idx
+
+    def test_run_session_and_additional_directories_both_emit(self, monkeypatch):
+        """session and additionalDirectories both produce flags in argv"""
+        monkeypatch.delenv("GEMINI_SDK_TRANSCRIPT_FALLBACK", raising=False)
+        result = build_argv({"prompt": "x", "session": "s", "additional_directories": ["d1"]})
+        assert result == [
+            "--output-format", "stream-json",
+            "--resume", "s",
+            "-p", "x",
+            "--include-directories", "d1",
+        ]
+
+    def test_run_session_and_model_both_emit(self, monkeypatch):
+        """session and model both produce flags in argv"""
+        monkeypatch.delenv("GEMINI_SDK_TRANSCRIPT_FALLBACK", raising=False)
+        result = build_argv({"prompt": "x", "session": "s", "model": "gemini-3-pro"})
+        assert "--resume" in result
+        assert "--model" in result
+        assert "gemini-3-pro" in result
+
+
+# ── transcript-prepend fallback (SES-04) ─────────────────────────────────────
+
+
+class TestBuildArgvTranscriptFallback:
+    def test_run_fallback_and_transcript_prepends(self, monkeypatch):
+        """fallback env var set plus transcript present omits --resume and prepends transcript"""
+        monkeypatch.setenv("GEMINI_SDK_TRANSCRIPT_FALLBACK", "1")
+        s = Session(
+            id="abc",
+            model="",
+            created_at="",
+            transcript=(
+                TranscriptEntry(role="user", content="hi"),
+                TranscriptEntry(role="assistant", content="hello"),
+            ),
+        )
+        result = build_argv({"prompt": "next", "session": s})
+        assert "--resume" not in result
+        assert result[3] == "User: hi\nAssistant: hello\n\nUser: next"
+
+    def test_run_fallback_no_transcript_falls_back(self, monkeypatch):
+        """fallback env var set but no transcript falls back to primary path"""
+        monkeypatch.setenv("GEMINI_SDK_TRANSCRIPT_FALLBACK", "1")
+        s = Session(id="abc", model="", created_at="")
+        result = build_argv({"prompt": "x", "session": s})
+        assert "--resume" in result
+
+    def test_run_fallback_string_session_falls_back(self, monkeypatch):
+        """fallback env var set but session is a string falls back to primary path"""
+        monkeypatch.setenv("GEMINI_SDK_TRANSCRIPT_FALLBACK", "1")
+        result = build_argv({"prompt": "x", "session": "abc"})
+        assert "--resume" in result
+
+    def test_run_no_fallback_transcript_ignored(self, monkeypatch):
+        """fallback env var unset with transcript present uses primary path"""
+        monkeypatch.delenv("GEMINI_SDK_TRANSCRIPT_FALLBACK", raising=False)
+        s = Session(
+            id="abc",
+            model="",
+            created_at="",
+            transcript=(TranscriptEntry(role="user", content="hi"),),
+        )
+        result = build_argv({"prompt": "x", "session": s})
+        assert "--resume" in result
