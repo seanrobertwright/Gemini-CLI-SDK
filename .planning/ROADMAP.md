@@ -153,14 +153,15 @@ Plans:
   2. Passing `approvalMode: 'yolo'` successfully executes a file-write tool call end-to-end in a fixture-sandboxed workspace without prompting, and `approvalMode: 'plan'` produces a plan-only event stream with no filesystem mutations (verified via post-run `fs.stat`)
   3. A `outputSchema` test with a prompt that returns non-conformant JSON triggers exactly one retry with validation feedback, and a second failure raises `SchemaValidationError` (extends `GeminiError`, `.retryable = false`, bucket `unknown`)
   4. The TS public API marks `outputSchema` and the `tools.customDefinitions` absence with `@experimental` / `@deprecated`-style JSDoc, and the docs site "Known Limitations" section links gemini-cli #13388
-**Plans**: 6 plans
+**Plans**: 7 plans
 Plans:
-- [ ] 08-01-PLAN.md — Wave 1: errors.yaml source discriminator + SchemaValidationError codegen + lint-errors extension
-- [ ] 08-02-PLAN.md — Wave 1: TS zod install + QueryOptions/Result extension + ApprovalMode + buildArgv branches
-- [ ] 08-03-PLAN.md — Wave 2: TS output module (injectSchema + schemaValidator + retry pure functions)
-- [ ] 08-04-PLAN.md — Wave 3: TS query wiring (pre-spawn guards + writeTempSystemPrompt ext + queryFull retry loop)
-- [ ] 08-05-PLAN.md — Wave 4: Python mechanical port (jsonschema + output module + types + query + tests)
-- [ ] 08-06-PLAN.md — Wave 5: docs/tools.md + docs/structured-output.md
+- [x] 08-01-PLAN.md — Wave 1: errors.yaml source discriminator + SchemaValidationError codegen + lint-errors extension
+- [x] 08-02-PLAN.md — Wave 1: TS zod install + QueryOptions/Result extension + ApprovalMode + buildArgv branches
+- [x] 08-03-PLAN.md — Wave 2: TS output module (injectSchema + schemaValidator + retry pure functions)
+- [x] 08-04-PLAN.md — Wave 3: TS query wiring (pre-spawn guards + writeTempSystemPrompt ext + queryFull retry loop)
+- [x] 08-05-PLAN.md — Wave 4: Python mechanical port (jsonschema + output module + types + query + tests)
+- [x] 08-06-PLAN.md — Wave 5: docs/tools.md + docs/structured-output.md
+- [ ] 08-07-PLAN.md — Wave 6 (gap closure): opt-in live E2E suite (ts/tests-live/) closing SC-1 + SC-2; VALIDATION.md reconciliation
 
 ### Phase 9: MCP Passthrough + Isolated Config Dir
 **Goal**: Accept `options.mcpServers` (map of server name → config), write a temp `settings.json` fragment into an isolated `GEMINI_CONFIG_DIR` per query, gate which servers `gemini-cli` can use via `--allowed-mcp-server-names`, and clean up the temp dir in `finally` (even on error or cancel). The SDK **must never mutate the user's real `~/.gemini/settings.json`** — this is a hard invariant verified by a test. The phase starts with a short research spike to pin the smallest reliable MCP configuration window against the known-fragile upstream (#2654, #3406, #20694, #13604).
