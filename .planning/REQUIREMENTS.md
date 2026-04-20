@@ -92,8 +92,8 @@ Requirements for initial release. Each maps to a roadmap phase.
 
 ### Structured Output (best-effort)
 
-- [ ] **OUT-01**: `options.outputSchema` / `responseFormat` enables best-effort JSON schema mode
-- [ ] **OUT-02**: Best-effort mode injects schema guidance into the system prompt + runtime-validates output with Zod/Pydantic
+- [x] **OUT-01**: `options.outputSchema` / `responseFormat` enables best-effort JSON schema mode
+- [x] **OUT-02**: Best-effort mode injects schema guidance into the system prompt + runtime-validates output with Zod/Pydantic
 - [ ] **OUT-03**: Best-effort mode retries ONCE with validation feedback on failure, then raises `SchemaValidationError`
 - [x] **OUT-04**: Structured output is marked `@experimental` in types and docs; limitations are clearly documented (wait for upstream #13388)
 
@@ -280,8 +280,8 @@ All v1 requirements map to exactly one phase. Coverage: 102/102.
 | AUT-07 | Phase 6 | Complete |
 | AUT-08 | Phase 6 | Complete |
 | AUT-09 | Phase 6 | Complete |
-| OUT-01 | Phase 8 | Pending |
-| OUT-02 | Phase 8 | Pending |
+| OUT-01 | Phase 8 | Complete |
+| OUT-02 | Phase 8 | Complete |
 | OUT-03 | Phase 8 | Pending |
 | OUT-04 | Phase 8 | Complete |
 | ERR-01 | Phase 5 | Complete |
