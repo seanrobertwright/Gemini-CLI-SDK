@@ -22,6 +22,7 @@ from .query import (
     QueryOptions,
     QueryResult,
 )
+from .session import Session, TranscriptEntry, normalise_session_id
 
 __all__ = [
     "resolve_auth",
@@ -41,4 +42,7 @@ __all__ = [
     "Model",
     "QueryOptions",
     "QueryResult",
+    "Session",
+    "TranscriptEntry",
+    "normalise_session_id",
 ]
