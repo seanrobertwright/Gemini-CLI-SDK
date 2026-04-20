@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Completed 08-04-PLAN.md
-last_updated: "2026-04-20T03:38:06.782Z"
+stopped_at: Completed 08-05-PLAN.md
+last_updated: "2026-04-20T03:52:49.966Z"
 last_activity: "2026-04-15 — Completed plan 05-01: Phase 5 Wave-1 fixture re-targeting + RED scaffolds; Task 1 Option B (synthetic_blocked) taken due to auth-isolation + quota-key gaps; 104:104 TS:Python parity achieved"
 progress:
   total_phases: 11
   completed_phases: 7
   total_plans: 40
-  completed_plans: 38
+  completed_plans: 39
   percent: 10
 ---
 
@@ -84,6 +84,7 @@ Progress: [█░░░░░░░░░] 10% (Phase 1 of 11 complete + Phase 5
 | Phase 08 P02 | 3 | 2 tasks | 6 files |
 | Phase 08-tools-approval-mode-structured-output-best-effort P03 | 2 | 1 tasks | 8 files |
 | Phase 08-tools-approval-mode-structured-output-best-effort P04 | 4 | 1 tasks | 2 files |
+| Phase 08-tools-approval-mode-structured-output-best-effort P05 | 11 | 2 tasks | 22 files |
 
 ## Accumulated Context
 
@@ -200,6 +201,9 @@ Recent decisions affecting current work:
 - [Phase 08-03]: ValidationResult.error is string (not Error object) — matches plan interface spec; ZodError.message extracted directly for buildRetryPrompt consumption
 - [Phase 08]: queryFull handles schema injection inline via buildSchemaInjectionBlock before calling query(), avoiding conflict with the pre-spawn outputSchema guard
 - [Phase 08]: Retry options explicitly set outputSchema: undefined (not delete) to satisfy Pitfall-4 guard; undefined is equivalent to absent for the !== undefined check
+- [Phase 08-05]: jsonschema>=4.0 chosen as Python JSON Schema validator (not pydantic TypeAdapter): per RESEARCH recommendation, jsonschema is canonical and validates arbitrary JSON Schema objects directly
+- [Phase 08-05]: TS spec descriptions with inner quotes updated to remove quotes for diff-test-names.sh parity (Phase 4 PAR-03 convention): 8 it() descriptions modified across 4 TS spec files
+- [Phase 08-05]: query_full inlines build_schema_injection_block before calling query() — mirrors TS 08-04 deviation: UnsupportedFeatureError guard in query() blocks output_schema path
 
 ### Pending Todos
 
@@ -216,6 +220,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-04-20T03:38:06.779Z
-Stopped at: Completed 08-04-PLAN.md
+Last session: 2026-04-20T03:52:49.962Z
+Stopped at: Completed 08-05-PLAN.md
 Resume file: None
