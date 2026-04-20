@@ -59,10 +59,10 @@ Requirements for initial release. Each maps to a roadmap phase.
 
 ### Sessions / Multi-Turn
 
-- [ ] **SES-01**: SDK captures session ID from the `stream-json` `init` event
-- [ ] **SES-02**: SDK resumes a session by passing `--resume <id>` when `resumeSessionId` is provided
+- [x] **SES-01**: SDK captures session ID from the `stream-json` `init` event
+- [x] **SES-02**: SDK resumes a session by passing `--resume <id>` when `resumeSessionId` is provided
 - [x] **SES-03**: SDK provides a `Session` value object (immutable, identifier-based; NOT process-bound)
-- [ ] **SES-04**: SDK includes a transcript-prepend fallback inside `Session` in case gemini-cli issue #14180 (`--resume` + `-p` interop) proves unresolvable — fallback lives inside `Session` + `ArgvBuilder` only
+- [x] **SES-04**: SDK includes a transcript-prepend fallback inside `Session` in case gemini-cli issue #14180 (`--resume` + `-p` interop) proves unresolvable — fallback lives inside `Session` + `ArgvBuilder` only
 
 ### Tools
 
@@ -259,10 +259,10 @@ All v1 requirements map to exactly one phase. Coverage: 102/102.
 | SYS-02 | Phase 4 | Complete |
 | CWD-01 | Phase 4 | Complete |
 | CWD-02 | Phase 4 | Complete |
-| SES-01 | Phase 7 | Pending |
-| SES-02 | Phase 7 | Pending |
+| SES-01 | Phase 7 | Complete |
+| SES-02 | Phase 7 | Complete |
 | SES-03 | Phase 7 | Complete |
-| SES-04 | Phase 7 | Pending |
+| SES-04 | Phase 7 | Complete |
 | TOL-01 | Phase 8 | Pending |
 | TOL-02 | Phase 8 | Pending |
 | TOL-03 | Phase 8 | Pending |
