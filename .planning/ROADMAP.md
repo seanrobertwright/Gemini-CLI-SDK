@@ -20,7 +20,7 @@ Decimal phases appear between their surrounding integers in numeric order.
  (completed 2026-04-15)
 - [x] **Phase 6: Auth Environment** - Wire the canonical `GEMINI_API_KEY` default plus Vertex AI (service account JSON + Google Cloud API key) plus ADC/OAuth fallback, with precedence warnings and typed `AuthError` subtypes (completed 2026-04-19)
 - [x] **Phase 7: Session Resume + Multi-Turn** - Ship the `Session` value object, capture session IDs from the `init` event, wire `--resume`, and gate the transcript-prepend fallback on the Phase-1 decision about gemini-cli issue #14180 (completed 2026-04-20)
-- [ ] **Phase 8: Tools + Approval Mode + Structured Output (Best-Effort)** - Pass through `--allowed-tools` / Policy Engine + `--approval-mode`, document that caller-defined custom tools are not in v1, and ship best-effort structured output via system-prompt schema injection + runtime validation + single retry
+- [x] **Phase 8: Tools + Approval Mode + Structured Output (Best-Effort)** - Pass through `--allowed-tools` / Policy Engine + `--approval-mode`, document that caller-defined custom tools are not in v1, and ship best-effort structured output via system-prompt schema injection + runtime validation + single retry (completed 2026-04-20)
 - [ ] **Phase 9: MCP Passthrough + Isolated Config Dir** - Accept `options.mcpServers`, write a temp `settings.json` fragment inside an isolated `GEMINI_CONFIG_DIR` per query, gate via `--allowed-mcp-server-names`, and clean up in `finally` — never mutate the user's real `~/.gemini/settings.json`
 - [ ] **Phase 10: Archon Adapter (TS only)** - Implement `GeminiClient implements IAssistantClient` in the `adapter-archon/` subpackage, prove `DEFAULT_AI_ASSISTANT=gemini` works end-to-end in a real Archon checkout, and open the PR against `coleam00/Archon`
 - [ ] **Phase 11: Docs Site + Compat Matrix + Release** - Publish the VitePress + mkdocs-material doc site, ship the runtime `gemini --version` compat probe, dual-publish to npm (changesets) + PyPI (`uv publish`), and tag v1.0.0 **only after** the Archon PR merges
@@ -209,7 +209,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8 →
 | 5. Error Taxonomy + Archon 5-Bucket Mapping | 5/5 | Complete   | 2026-04-15 |
 | 6. Auth Environment | 4/4 | Complete   | 2026-04-19 |
 | 7. Session Resume + Multi-Turn | 3/3 | Complete   | 2026-04-20 |
-| 8. Tools + Approval Mode + Structured Output | 5/6 | In Progress|  |
+| 8. Tools + Approval Mode + Structured Output | 6/6 | Complete   | 2026-04-20 |
 | 9. MCP Passthrough + Isolated Config Dir | 0/TBD | Not started | - |
 | 10. Archon Adapter (TS only) | 0/TBD | Not started | - |
 | 11. Docs Site + Compat Matrix + Release | 0/TBD | Not started | - |
