@@ -153,7 +153,14 @@ Plans:
   2. Passing `approvalMode: 'yolo'` successfully executes a file-write tool call end-to-end in a fixture-sandboxed workspace without prompting, and `approvalMode: 'plan'` produces a plan-only event stream with no filesystem mutations (verified via post-run `fs.stat`)
   3. A `outputSchema` test with a prompt that returns non-conformant JSON triggers exactly one retry with validation feedback, and a second failure raises `SchemaValidationError` (extends `GeminiError`, `.retryable = false`, bucket `unknown`)
   4. The TS public API marks `outputSchema` and the `tools.customDefinitions` absence with `@experimental` / `@deprecated`-style JSDoc, and the docs site "Known Limitations" section links gemini-cli #13388
-**Plans**: TBD
+**Plans**: 6 plans
+Plans:
+- [ ] 08-01-PLAN.md — Wave 1: errors.yaml source discriminator + SchemaValidationError codegen + lint-errors extension
+- [ ] 08-02-PLAN.md — Wave 1: TS zod install + QueryOptions/Result extension + ApprovalMode + buildArgv branches
+- [ ] 08-03-PLAN.md — Wave 2: TS output module (injectSchema + schemaValidator + retry pure functions)
+- [ ] 08-04-PLAN.md — Wave 3: TS query wiring (pre-spawn guards + writeTempSystemPrompt ext + queryFull retry loop)
+- [ ] 08-05-PLAN.md — Wave 4: Python mechanical port (jsonschema + output module + types + query + tests)
+- [ ] 08-06-PLAN.md — Wave 5: docs/tools.md + docs/structured-output.md
 
 ### Phase 9: MCP Passthrough + Isolated Config Dir
 **Goal**: Accept `options.mcpServers` (map of server name → config), write a temp `settings.json` fragment into an isolated `GEMINI_CONFIG_DIR` per query, gate which servers `gemini-cli` can use via `--allowed-mcp-server-names`, and clean up the temp dir in `finally` (even on error or cancel). The SDK **must never mutate the user's real `~/.gemini/settings.json`** — this is a hard invariant verified by a test. The phase starts with a short research spike to pin the smallest reliable MCP configuration window against the known-fragile upstream (#2654, #3406, #20694, #13604).
@@ -202,7 +209,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8 →
 | 5. Error Taxonomy + Archon 5-Bucket Mapping | 5/5 | Complete   | 2026-04-15 |
 | 6. Auth Environment | 4/4 | Complete   | 2026-04-19 |
 | 7. Session Resume + Multi-Turn | 3/3 | Complete   | 2026-04-20 |
-| 8. Tools + Approval Mode + Structured Output | 0/TBD | Not started | - |
+| 8. Tools + Approval Mode + Structured Output | 0/6 | Planned | - |
 | 9. MCP Passthrough + Isolated Config Dir | 0/TBD | Not started | - |
 | 10. Archon Adapter (TS only) | 0/TBD | Not started | - |
 | 11. Docs Site + Compat Matrix + Release | 0/TBD | Not started | - |
