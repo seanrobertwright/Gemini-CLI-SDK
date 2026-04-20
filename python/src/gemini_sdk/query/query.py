@@ -31,11 +31,12 @@ import anyio
 import anyio.abc
 
 from ..auth import resolve_auth
-from ..errors import ErrorMapper, GeminiError
+from ..errors import ErrorMapper, GeminiError, InvalidPromptError
 from ..parser.dispatch import dispatch
 from ..parser.parse_ndjson import parse_ndjson
 from ..parser.types import MessageChunk, RawEvent, ResultChunk
 from ..process.process_manager import ProcessManager, kill_tree
+from ..session import Session, normalise_session_id
 from .build_argv import build_argv
 from .types import AbortError, QueryOptions, QueryResult
 
@@ -75,6 +76,13 @@ async def query(options: QueryOptions) -> AsyncIterator[MessageChunk]:
       7. ERR-06: if stream ends without result chunk AND not cancelled AND non-zero exit, raise
       8. Finally: kill subprocess, delete temp file
     """
+    # Phase 7 (SES-01 Layer 1 guard): reject empty/whitespace session ids BEFORE spawn.
+    session = options.get("session")
+    if session is not None:
+        _sid = normalise_session_id(session)
+        if not _sid or not _sid.strip():
+            raise InvalidPromptError("session id is empty")
+
     # Step 1: Pre-cancel check
     cancel_scope = options.get("cancel_scope")
     if cancel_scope is not None and getattr(cancel_scope, "cancel_called", False):
@@ -135,15 +143,29 @@ async def query(options: QueryOptions) -> AsyncIterator[MessageChunk]:
             if chunk.get("type") == "system" and chunk.get("subtype") == "init":  # type: ignore[union-attr]
                 actual_model = chunk.get("model")  # type: ignore[union-attr]
 
-            # Enrich ResultChunk with model mismatch info (MDL-04)
+            # Enrich ResultChunk with model mismatch (MDL-04) and session mismatch (Phase 7)
             if chunk.get("type") == "result":  # type: ignore[union-attr]
                 saw_result = True
-                if requested_model and actual_model and requested_model != actual_model:
-                    enriched: ResultChunk = {
-                        **chunk,  # type: ignore[misc]
-                        "requestedModel": requested_model,
-                        "actualModel": actual_model,
-                    }
+                base = chunk  # type: ignore[assignment]
+                model_mismatch = bool(
+                    requested_model and actual_model and requested_model != actual_model
+                )
+                requested_session_id: Optional[str] = None
+                actual_session_id: Optional[str] = None
+                if session is not None:
+                    requested_session_id = normalise_session_id(session)
+                    actual_session_id = base.get("sessionId")  # type: ignore[union-attr]
+                    if requested_session_id == actual_session_id:
+                        requested_session_id = None
+                        actual_session_id = None
+                if model_mismatch or (requested_session_id is not None and actual_session_id is not None):
+                    enriched: ResultChunk = {**base}  # type: ignore[misc]
+                    if model_mismatch:
+                        enriched["requestedModel"] = requested_model
+                        enriched["actualModel"] = actual_model
+                    if requested_session_id is not None and actual_session_id is not None:
+                        enriched["requestedSessionId"] = requested_session_id
+                        enriched["actualSessionId"] = actual_session_id
                     # Result chunk ends the stream, clear pending
                     pending_tool_chunks.clear()
                     yield enriched  # type: ignore[misc]
@@ -228,6 +250,13 @@ async def query_raw(options: QueryOptions) -> AsyncIterator[RawEvent]:
 
     Skips the dispatch stage — intended for low-level introspection.
     """
+    # Phase 7 (SES-01 Layer 1 guard): reject empty/whitespace session ids BEFORE spawn.
+    _raw_session = options.get("session")
+    if _raw_session is not None:
+        _raw_sid = normalise_session_id(_raw_session)
+        if not _raw_sid or not _raw_sid.strip():
+            raise InvalidPromptError("session id is empty")
+
     # Pre-cancel check
     cancel_scope = options.get("cancel_scope")
     if cancel_scope is not None and getattr(cancel_scope, "cancel_called", False):
@@ -290,26 +319,37 @@ async def query_raw(options: QueryOptions) -> AsyncIterator[RawEvent]:
 
 
 async def query_full(options: QueryOptions) -> QueryResult:
-    """Run a full query and accumulate all MessageChunks into a QueryResult.
+    """Run a full query and accumulate all MessageChunks into a QueryResult."""
+    import datetime
 
-    Convenience wrapper around query() for callers that don't need streaming.
-    """
     chunks: list[MessageChunk] = []
     text = ""
     session_id = ""
     stop_reason = ""
+    init_session_id = ""
+    init_model = ""
 
     async for chunk in query(options):
         chunks.append(chunk)
         if chunk.get("type") == "assistant":  # type: ignore[union-attr]
             text += chunk.get("content", "")  # type: ignore[union-attr]
+        if chunk.get("type") == "system" and chunk.get("subtype") == "init":  # type: ignore[union-attr]
+            init_session_id = chunk.get("sessionId", "") or ""  # type: ignore[union-attr]
+            init_model = chunk.get("model", "") or ""  # type: ignore[union-attr]
         if chunk.get("type") == "result":  # type: ignore[union-attr]
-            session_id = chunk.get("sessionId", "")  # type: ignore[union-attr]
-            stop_reason = chunk.get("stopReason", "")  # type: ignore[union-attr]
+            session_id = chunk.get("sessionId", "") or ""  # type: ignore[union-attr]
+            stop_reason = chunk.get("stopReason", "") or ""  # type: ignore[union-attr]
+
+    session_obj = Session(
+        id=init_session_id or session_id,
+        model=init_model,
+        created_at=datetime.datetime.now(datetime.timezone.utc).isoformat(),
+    )
 
     return {
         "text": text,
         "session_id": session_id,
         "stop_reason": stop_reason,
         "chunks": chunks,
+        "session": session_obj,
     }

@@ -18,9 +18,10 @@ import anyio
 import pytest
 
 from gemini_sdk.query import AbortError, query, query_full, query_raw
-from gemini_sdk.errors import ProcessError
+from gemini_sdk.errors import InvalidPromptError, ProcessError
 from gemini_sdk.parser.types import MessageChunk, RawEvent
 from gemini_sdk.process.process_manager import SpawnResult
+from gemini_sdk.session import Session
 
 # ── NDJSON fixture constants ──────────────────────────────────────────────────
 
@@ -638,3 +639,231 @@ class TestPhase6AuthWarning:
                     pass
 
         assert len(caught) == 0
+
+
+# ── Phase 7 session guard (SES-01) ───────────────────────────────────────────
+
+
+class TestPhase7SessionGuard:
+    @pytest.mark.anyio
+    async def test_run_empty_string_session_id_throws(self):
+        """query with empty-string session id throws InvalidPromptError before spawning"""
+        with patch("gemini_sdk.query.query.ProcessManager") as mock_pm_cls:
+            mock_pm = MagicMock()
+            mock_pm.spawn = AsyncMock()
+            mock_pm_cls.return_value = mock_pm
+
+            with pytest.raises(InvalidPromptError):
+                async for _ in query({"prompt": "x", "session": ""}):
+                    pass
+            mock_pm_cls.assert_not_called()
+
+    @pytest.mark.anyio
+    async def test_run_whitespace_session_id_throws(self):
+        """query with whitespace-only session id throws InvalidPromptError before spawning"""
+        with patch("gemini_sdk.query.query.ProcessManager") as mock_pm_cls:
+            mock_pm = MagicMock()
+            mock_pm.spawn = AsyncMock()
+            mock_pm_cls.return_value = mock_pm
+
+            with pytest.raises(InvalidPromptError):
+                async for _ in query({"prompt": "x", "session": "   "}):
+                    pass
+            mock_pm_cls.assert_not_called()
+
+    @pytest.mark.anyio
+    async def test_run_empty_session_id_in_session_object_throws(self):
+        """query with empty Session.id throws InvalidPromptError before spawning"""
+        with patch("gemini_sdk.query.query.ProcessManager") as mock_pm_cls:
+            mock_pm = MagicMock()
+            mock_pm.spawn = AsyncMock()
+            mock_pm_cls.return_value = mock_pm
+
+            with pytest.raises(InvalidPromptError):
+                s = Session(id="", model="", created_at="")
+                async for _ in query({"prompt": "x", "session": s}):
+                    pass
+            mock_pm_cls.assert_not_called()
+
+    @pytest.mark.anyio
+    async def test_run_valid_session_id_proceeds(self):
+        """query with valid session id proceeds to spawn"""
+        valid_lines = [
+            '{"type":"init","timestamp":"t","session_id":"valid-id","model":"m"}',
+            '{"type":"result","timestamp":"t","status":"success","stats":{}}',
+        ]
+        proc = _make_mock_proc(valid_lines)
+        with (
+            patch("gemini_sdk.query.query.ProcessManager") as mock_pm_cls,
+            patch("gemini_sdk.query.query.kill_tree", new_callable=AsyncMock),
+        ):
+            mock_pm = MagicMock()
+            mock_pm.spawn = AsyncMock(return_value=proc)
+            mock_pm_cls.return_value = mock_pm
+
+            chunks = await _collect_chunks(query({"prompt": "x", "session": "valid-id"}))
+
+        assert mock_pm_cls.call_count == 1
+        assert len(chunks) >= 1
+
+
+# ── Phase 7 session mismatch detection (SES Layer 2) ─────────────────────────
+
+
+class TestPhase7SessionMismatchDetection:
+    @pytest.mark.anyio
+    async def test_run_resultchunk_gains_mismatch_fields(self):
+        """ResultChunk gains requestedSessionId and actualSessionId when init session_id differs from --resume id"""
+        mismatch_lines = [
+            '{"type":"init","timestamp":"t","session_id":"actual-s","model":"auto-gemini-3"}',
+            '{"type":"result","timestamp":"t","status":"success","stats":{}}',
+        ]
+        proc = _make_mock_proc(mismatch_lines)
+        with (
+            patch("gemini_sdk.query.query.ProcessManager") as mock_pm_cls,
+            patch("gemini_sdk.query.query.kill_tree", new_callable=AsyncMock),
+        ):
+            mock_pm = MagicMock()
+            mock_pm.spawn = AsyncMock(return_value=proc)
+            mock_pm_cls.return_value = mock_pm
+
+            chunks = await _collect_chunks(query({"prompt": "x", "session": "requested-s"}))
+
+        result_chunk = next((c for c in chunks if c.get("type") == "result"), None)
+        assert result_chunk is not None
+        assert result_chunk.get("requestedSessionId") == "requested-s"
+        assert result_chunk.get("actualSessionId") == "actual-s"
+
+    @pytest.mark.anyio
+    async def test_run_resultchunk_omits_fields_on_match(self):
+        """ResultChunk omits session mismatch fields when init session_id matches --resume id"""
+        match_lines = [
+            '{"type":"init","timestamp":"t","session_id":"same-s","model":"auto-gemini-3"}',
+            '{"type":"result","timestamp":"t","status":"success","stats":{}}',
+        ]
+        proc = _make_mock_proc(match_lines)
+        with (
+            patch("gemini_sdk.query.query.ProcessManager") as mock_pm_cls,
+            patch("gemini_sdk.query.query.kill_tree", new_callable=AsyncMock),
+        ):
+            mock_pm = MagicMock()
+            mock_pm.spawn = AsyncMock(return_value=proc)
+            mock_pm_cls.return_value = mock_pm
+
+            chunks = await _collect_chunks(query({"prompt": "x", "session": "same-s"}))
+
+        result_chunk = next((c for c in chunks if c.get("type") == "result"), None)
+        assert result_chunk is not None
+        assert result_chunk.get("requestedSessionId") is None
+        assert result_chunk.get("actualSessionId") is None
+
+    @pytest.mark.anyio
+    async def test_run_resultchunk_omits_fields_when_no_session(self):
+        """ResultChunk omits session mismatch fields when no session option passed"""
+        lines = [
+            '{"type":"init","timestamp":"t","session_id":"fresh-s","model":"auto-gemini-3"}',
+            '{"type":"result","timestamp":"t","status":"success","stats":{}}',
+        ]
+        proc = _make_mock_proc(lines)
+        with (
+            patch("gemini_sdk.query.query.ProcessManager") as mock_pm_cls,
+            patch("gemini_sdk.query.query.kill_tree", new_callable=AsyncMock),
+        ):
+            mock_pm = MagicMock()
+            mock_pm.spawn = AsyncMock(return_value=proc)
+            mock_pm_cls.return_value = mock_pm
+
+            chunks = await _collect_chunks(query({"prompt": "x"}))
+
+        result_chunk = next((c for c in chunks if c.get("type") == "result"), None)
+        assert result_chunk is not None
+        assert result_chunk.get("requestedSessionId") is None
+        assert result_chunk.get("actualSessionId") is None
+
+
+# ── Phase 7 queryFull Session construction (SES-01 + SES-03) ─────────────────
+
+
+class TestPhase7QueryFullSessionConstruction:
+    @pytest.mark.anyio
+    async def test_run_queryfull_returns_session_populated_from_init(self):
+        """queryFull returns QueryResult with session field populated from init event"""
+        lines = [
+            '{"type":"init","timestamp":"t","session_id":"init-s","model":"auto-gemini-3"}',
+            '{"type":"message","timestamp":"t","role":"assistant","content":"hi"}',
+            '{"type":"result","timestamp":"t","status":"success","stats":{}}',
+        ]
+        proc = _make_mock_proc(lines)
+        with (
+            patch("gemini_sdk.query.query.ProcessManager") as mock_pm_cls,
+            patch("gemini_sdk.query.query.kill_tree", new_callable=AsyncMock),
+        ):
+            mock_pm = MagicMock()
+            mock_pm.spawn = AsyncMock(return_value=proc)
+            mock_pm_cls.return_value = mock_pm
+
+            result = await query_full({"prompt": "x"})
+
+        assert result["session"].id == "init-s"
+        assert result["session"].model == "auto-gemini-3"
+        assert isinstance(result["session"].created_at, str)
+        assert len(result["session"].created_at) > 0
+
+    @pytest.mark.anyio
+    async def test_run_queryfull_preserves_legacy_session_id(self):
+        """queryFull preserves legacy sessionId equal to session.id"""
+        lines = [
+            '{"type":"init","timestamp":"t","session_id":"init-s","model":"m"}',
+            '{"type":"result","timestamp":"t","status":"success","stats":{}}',
+        ]
+        proc = _make_mock_proc(lines)
+        with (
+            patch("gemini_sdk.query.query.ProcessManager") as mock_pm_cls,
+            patch("gemini_sdk.query.query.kill_tree", new_callable=AsyncMock),
+        ):
+            mock_pm = MagicMock()
+            mock_pm.spawn = AsyncMock(return_value=proc)
+            mock_pm_cls.return_value = mock_pm
+
+            result = await query_full({"prompt": "x"})
+
+        assert result["session_id"] == result["session"].id
+
+
+# ── Phase 7 multi-turn integration (SES-01 + SES-02) ─────────────────────────
+
+
+class TestPhase7MultiTurnIntegration:
+    @pytest.mark.anyio
+    async def test_run_multi_turn_resumes_context(self, tmp_path):
+        """multi-turn fixture integration: turn 2 references turn 1 context via 47"""
+        import pathlib
+        repo_root = pathlib.Path(__file__).resolve().parents[2]
+        turn1_ndjson = (repo_root / "spec/fixtures/resume-session-turn1.ndjson").read_text(encoding="utf-8")
+        turn2_ndjson = (repo_root / "spec/fixtures/resume-session-turn2.ndjson").read_text(encoding="utf-8")
+        turn1_lines = turn1_ndjson.strip().splitlines()
+        turn2_lines = turn2_ndjson.strip().splitlines()
+
+        with (
+            patch("gemini_sdk.query.query.ProcessManager") as mock_pm_cls,
+            patch("gemini_sdk.query.query.kill_tree", new_callable=AsyncMock),
+        ):
+            mock_pm = MagicMock()
+            mock_pm_cls.return_value = mock_pm
+
+            # First call: turn 1 — captures sessionId
+            proc1 = _make_mock_proc(turn1_lines)
+            mock_pm.spawn = AsyncMock(return_value=proc1)
+            result1 = await query_full({"prompt": "My favorite number is 47. Remember it exactly."})
+            assert result1["session"].id or result1["session_id"]
+
+            # Second call: turn 2 — passes session from turn 1
+            proc2 = _make_mock_proc(turn2_lines)
+            mock_pm.spawn = AsyncMock(return_value=proc2)
+            result2 = await query_full({
+                "prompt": "What number did I just say?",
+                "session": result1["session"],
+            })
+
+        # Assertion: turn 2's assistant text contains the number 47 (context recalled)
+        assert "47" in result2["text"]

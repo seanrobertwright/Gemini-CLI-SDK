@@ -292,37 +292,57 @@ matching `tool_id` and `status: "error"`, so the pairing contract holds even on 
 
 ---
 
-## 6. Session Resume Mechanics
+## 6. Session Resume Flow
 
 **Feasibility verdict:** PASS — all 9 cells of the `--resume × prompt-mode` matrix pass on
 `gemini-cli@0.37.1` (see `spec/feasibility.md`).
 
-**Session ID in `init` event:** Every stream's first event is an `init` event carrying a
-`session_id` UUID. The SDK captures this value (SES-01) and exposes it for subsequent calls.
+### 6.1 Init event carries session_id (SES-01)
 
-**Turn 1 — session ID is minted fresh:**  
-`spec/fixtures/resume-session-turn1.ndjson` line 1:
-```json
-{"type":"init","timestamp":"2026-04-12T12:32:51.804Z","session_id":"<REDACTED_SESSION_ID>","model":"auto-gemini-3"}
-```
+Every gemini-cli NDJSON stream begins with an `init` event carrying a `session_id`
+(UUID-shaped string) and `model` field. The SDK captures these into a `Session`
+value object exposed on `QueryResult.session` (TS) / `result["session"]` (Python).
 
-**Turn 2 — resumed session emits a NEW `init` event with its own `session_id`:**  
-`spec/fixtures/resume-session-turn2.ndjson` line 1:
-```json
-{"type":"init","timestamp":"2026-04-12T12:33:07.492Z","session_id":"<REDACTED_SESSION_ID>","model":"auto-gemini-3"}
-```
+**Evidence:** `spec/fixtures/resume-session-turn1.ndjson` line 1 —
+`{"type":"init", "session_id":"<REDACTED_SESSION_ID>", "model":"auto-gemini-3", ...}`
 
-Both turns have `<REDACTED_SESSION_ID>` in the fixture (redacted by the capture pipeline).
-On the live host, turn 2 was launched with `--resume <turn1_session_id>` and the assistant
-correctly recalled context from turn 1 (confirmed: the assistant answered "47" without
-re-prompting, per `spec/fixtures/resume-session-turn2.ndjson` line 3).
+### 6.2 Resume via --resume \<id\> -p \<prompt\> (SES-02)
 
-**Transcript-prepend fallback:** Because `resume_verdict=pass`, the fallback described in
-`spec/feasibility.md` is dark-shipped behind a config flag per the Phase 7 implication. The
-primary session path is `--resume <id> -p`.
+To resume a session, the SDK invokes gemini-cli with `--resume <id>` placed BEFORE
+the `-p <prompt>` pair. Phase 1's feasibility matrix (`resume_verdict=pass`) confirmed
+all 9 cells of (--resume × prompt-mode) pass against `gemini-cli@0.37.1`.
 
-**Evidence:** `spec/fixtures/resume-session-turn1.ndjson` (lines 1–7),
-`spec/fixtures/resume-session-turn2.ndjson` (lines 1–4).
+**Evidence:** `spec/fixtures/resume-session-turn2.ndjson` — captured via
+`--resume <id> -p "What number did I just say?"`; assistant's response text
+"You just said that your favorite number is **47**" demonstrates context recall
+from turn 1 (which established the favorite number).
+
+### 6.3 Resumed turns emit their own init event
+
+A resumed turn (turn 2+) emits its OWN `init` event at stream start. The SDK's
+mismatch detection compares the `session_id` in that init event against the
+`<id>` passed to `--resume`; divergence is annotated non-fatally via the optional
+`ResultChunk.requestedSessionId` / `actualSessionId` fields (symmetric with the
+MDL-04 model-mismatch pattern).
+
+**Evidence:** `spec/fixtures/resume-session-turn2.ndjson` line 1 — turn 2's init
+event (redacted session_id — equality with turn 1's id cannot be confirmed from the
+fixture alone; mismatch detection is intentionally non-fatal to tolerate either case).
+
+### 6.4 Transcript-prepend fallback (SES-04)
+
+Dark-shipped behind the environment variable `GEMINI_SDK_TRANSCRIPT_FALLBACK=1`.
+Activation requires BOTH the env var AND a `Session` object carrying a populated
+`transcript` field. When active, the SDK OMITS `--resume` and prepends the prior
+turn transcript into the `-p` prompt string using the deterministic format
+`User: <content>\nAssistant: <content>\n\nUser: <new prompt>`.
+
+**Purpose:** A one-env-var flip away from a working workaround if upstream
+gemini-cli issue #14180 regresses. The fallback lives inside `buildArgv` only
+(per SES-04 literal wording); `query()` is agnostic.
+
+**Not a QueryOptions field** — env var is invisible unless intentionally set,
+matching the `GEMINI_BIN_PATH` / `GEMINI_CONFIG_DIR` / `GEMINI_SYSTEM_MD` pattern.
 
 ---
 
