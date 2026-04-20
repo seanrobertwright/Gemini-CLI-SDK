@@ -68,6 +68,15 @@ async function writeTempSystemPrompt(systemPrompt: string | undefined): Promise<
  *   8. Finally: remove abort listener, kill subprocess, delete temp file
  */
 export async function* query(options: QueryOptions): AsyncGenerator<MessageChunk> {
+  // Phase 7 (SES-01 Layer 1 guard): reject empty/whitespace session ids BEFORE spawn.
+  // Saves a subprocess round-trip for client-side mistakes. Uses existing Phase 5 class.
+  if (options.session !== undefined) {
+    const id = normaliseSessionId(options.session);
+    if (!id || !id.trim()) {
+      throw new InvalidPromptError('session id is empty');
+    }
+  }
+
   // Step 1: Pre-abort check
   if (options.abortSignal?.aborted) {
     throw new AbortError();
@@ -132,16 +141,33 @@ export async function* query(options: QueryOptions): AsyncGenerator<MessageChunk
         actualModel = chunk.model;
       }
 
-      // Enrich ResultChunk with model mismatch info (MDL-04)
+      // Enrich ResultChunk with model mismatch (MDL-04) and session mismatch (Phase 7) info
       if (chunk.type === 'result') {
         sawResult = true;
-        if (requestedModel && actualModel && requestedModel !== actualModel) {
-          const enriched: ResultChunk = {
-            ...(chunk as ResultChunk),
-            requestedModel,
-            actualModel,
-          };
-          // Update pending tool tracking: result chunk ends the stream, clear pending
+        const base = chunk as ResultChunk;
+        const modelMismatch =
+          requestedModel !== undefined && actualModel !== undefined && requestedModel !== actualModel;
+        let requestedSessionId: string | undefined;
+        let actualSessionId: string | undefined;
+        if (options.session !== undefined) {
+          requestedSessionId = normaliseSessionId(options.session);
+          actualSessionId = base.sessionId;
+          if (requestedSessionId === actualSessionId) {
+            // No mismatch — clear both so we don't surface them
+            requestedSessionId = undefined;
+            actualSessionId = undefined;
+          }
+        }
+        if (modelMismatch || (requestedSessionId !== undefined && actualSessionId !== undefined)) {
+          const enriched: ResultChunk = { ...base };
+          if (modelMismatch) {
+            enriched.requestedModel = requestedModel;
+            enriched.actualModel = actualModel;
+          }
+          if (requestedSessionId !== undefined && actualSessionId !== undefined) {
+            enriched.requestedSessionId = requestedSessionId;
+            enriched.actualSessionId = actualSessionId;
+          }
           pendingToolChunks.length = 0;
           yield enriched;
           continue;
@@ -209,6 +235,14 @@ export async function* query(options: QueryOptions): AsyncGenerator<MessageChunk
  * Skips the dispatch stage — intended for low-level introspection.
  */
 export async function* queryRaw(options: QueryOptions): AsyncGenerator<RawEvent> {
+  // Phase 7 (SES-01 Layer 1 guard): reject empty/whitespace session ids BEFORE spawn.
+  if (options.session !== undefined) {
+    const id = normaliseSessionId(options.session);
+    if (!id || !id.trim()) {
+      throw new InvalidPromptError('session id is empty');
+    }
+  }
+
   // Pre-abort check
   if (options.abortSignal?.aborted) {
     throw new AbortError();

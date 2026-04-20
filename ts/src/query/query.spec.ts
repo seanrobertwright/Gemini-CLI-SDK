@@ -46,9 +46,10 @@ vi.mock('node:fs/promises', async (importOriginal) => {
 
 import { query, queryRaw, queryFull } from './query.js';
 import { AbortError } from './types.js';
-import { ProcessError } from '../errors/index.js';
+import { ProcessError, InvalidPromptError } from '../errors/index.js';
 import type { MessageChunk, RawEvent } from '../parser/types.js';
 import * as fsMod from 'node:fs/promises';
+import type { Session } from '../session/index.js';
 
 // ── helpers ─────────────────────────────────────────────────────────────────
 
@@ -524,5 +525,166 @@ describe('Phase 6 auth warning', () => {
     expect(warnSpy).toHaveBeenCalledTimes(0);
 
     await gen.return(undefined); // clean up
+  });
+});
+
+describe('Phase 7 session guard (SES-01)', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    vi.mocked(fsMod.writeFile).mockResolvedValue(undefined);
+    vi.mocked(fsMod.unlink).mockResolvedValue(undefined);
+  });
+
+  it('query with empty-string session id throws InvalidPromptError before spawning', async () => {
+    const gen = query({ prompt: 'x', session: '' });
+    await expect(gen.next()).rejects.toThrow(InvalidPromptError);
+    expect(mockSpawn).not.toHaveBeenCalled();
+  });
+
+  it('query with whitespace-only session id throws InvalidPromptError before spawning', async () => {
+    const gen = query({ prompt: 'x', session: '   ' });
+    await expect(gen.next()).rejects.toThrow(InvalidPromptError);
+    expect(mockSpawn).not.toHaveBeenCalled();
+  });
+
+  it('query with empty Session.id throws InvalidPromptError before spawning', async () => {
+    const s: Session = { id: '', model: '', createdAt: '' };
+    const gen = query({ prompt: 'x', session: s });
+    await expect(gen.next()).rejects.toThrow(InvalidPromptError);
+    expect(mockSpawn).not.toHaveBeenCalled();
+  });
+
+  it('query with valid session id proceeds to spawn', async () => {
+    mockSpawn.mockReturnValue(createMockChild([
+      '{"type":"init","timestamp":"t","session_id":"valid-id","model":"m"}',
+      '{"type":"result","timestamp":"t","status":"success","stats":{}}',
+    ]));
+    const gen = query({ prompt: 'x', session: 'valid-id' });
+    const first = await gen.next();
+    expect(first.done).toBe(false);
+    expect(mockSpawn).toHaveBeenCalledTimes(1);
+    // drain the generator
+    while (!(await gen.next()).done) {}
+  });
+});
+
+describe('Phase 7 session mismatch detection (SES Layer 2)', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    vi.mocked(fsMod.writeFile).mockResolvedValue(undefined);
+    vi.mocked(fsMod.unlink).mockResolvedValue(undefined);
+  });
+
+  it('ResultChunk gains requestedSessionId and actualSessionId when init session_id differs from --resume id', async () => {
+    mockSpawn.mockReturnValue(createMockChild([
+      '{"type":"init","timestamp":"t","session_id":"actual-s","model":"auto-gemini-3"}',
+      '{"type":"result","timestamp":"t","status":"success","stats":{}}',
+    ]));
+    const chunks: MessageChunk[] = [];
+    for await (const chunk of query({ prompt: 'x', session: 'requested-s' })) {
+      chunks.push(chunk);
+    }
+    const result = chunks.find((c): c is Extract<MessageChunk, { type: 'result' }> => c.type === 'result')!;
+    expect(result.requestedSessionId).toBe('requested-s');
+    expect(result.actualSessionId).toBe('actual-s');
+  });
+
+  it('ResultChunk omits session mismatch fields when init session_id matches --resume id', async () => {
+    mockSpawn.mockReturnValue(createMockChild([
+      '{"type":"init","timestamp":"t","session_id":"same-s","model":"auto-gemini-3"}',
+      '{"type":"result","timestamp":"t","status":"success","stats":{}}',
+    ]));
+    const chunks: MessageChunk[] = [];
+    for await (const chunk of query({ prompt: 'x', session: 'same-s' })) {
+      chunks.push(chunk);
+    }
+    const result = chunks.find((c): c is Extract<MessageChunk, { type: 'result' }> => c.type === 'result')!;
+    expect(result.requestedSessionId).toBeUndefined();
+    expect(result.actualSessionId).toBeUndefined();
+  });
+
+  it('ResultChunk omits session mismatch fields when no session option passed', async () => {
+    mockSpawn.mockReturnValue(createMockChild([
+      '{"type":"init","timestamp":"t","session_id":"fresh-s","model":"auto-gemini-3"}',
+      '{"type":"result","timestamp":"t","status":"success","stats":{}}',
+    ]));
+    const chunks: MessageChunk[] = [];
+    for await (const chunk of query({ prompt: 'x' })) {
+      chunks.push(chunk);
+    }
+    const result = chunks.find((c): c is Extract<MessageChunk, { type: 'result' }> => c.type === 'result')!;
+    expect(result.requestedSessionId).toBeUndefined();
+    expect(result.actualSessionId).toBeUndefined();
+  });
+});
+
+describe('Phase 7 queryFull Session construction (SES-01 + SES-03)', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    vi.mocked(fsMod.writeFile).mockResolvedValue(undefined);
+    vi.mocked(fsMod.unlink).mockResolvedValue(undefined);
+  });
+
+  it('queryFull returns QueryResult with session field populated from init event', async () => {
+    mockSpawn.mockReturnValue(createMockChild([
+      '{"type":"init","timestamp":"t","session_id":"init-s","model":"auto-gemini-3"}',
+      '{"type":"message","timestamp":"t","role":"assistant","content":"hi"}',
+      '{"type":"result","timestamp":"t","status":"success","stats":{}}',
+    ]));
+    const result = await queryFull({ prompt: 'x' });
+    expect(result.session.id).toBe('init-s');
+    expect(result.session.model).toBe('auto-gemini-3');
+    expect(typeof result.session.createdAt).toBe('string');
+    expect(result.session.createdAt.length).toBeGreaterThan(0);
+  });
+
+  it('queryFull preserves legacy sessionId equal to session.id', async () => {
+    mockSpawn.mockReturnValue(createMockChild([
+      '{"type":"init","timestamp":"t","session_id":"init-s","model":"m"}',
+      '{"type":"result","timestamp":"t","status":"success","stats":{}}',
+    ]));
+    const result = await queryFull({ prompt: 'x' });
+    expect(result.sessionId).toBe(result.session.id);
+  });
+});
+
+describe('Phase 7 multi-turn integration (SES-01 + SES-02)', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    vi.mocked(fsMod.writeFile).mockResolvedValue(undefined);
+    vi.mocked(fsMod.unlink).mockResolvedValue(undefined);
+  });
+
+  it('multi-turn fixture integration: turn 2 references turn 1 context via 47', async () => {
+    // Turn 1: load resume-session-turn1.ndjson content; extract sessionId via queryFull
+    const fs = await import('node:fs/promises');
+    const path = await import('node:path');
+    // __dirname not available in ESM tests — use process.cwd() which vitest sets to ts/
+    const repoRoot = path.resolve(process.cwd(), '..');
+    const turn1Ndjson = await fs.readFile(
+      path.join(repoRoot, 'spec/fixtures/resume-session-turn1.ndjson'),
+      'utf-8',
+    );
+    const turn2Ndjson = await fs.readFile(
+      path.join(repoRoot, 'spec/fixtures/resume-session-turn2.ndjson'),
+      'utf-8',
+    );
+    const turn1Lines = turn1Ndjson.trim().split(/\r?\n/);
+    const turn2Lines = turn2Ndjson.trim().split(/\r?\n/);
+
+    // First call: turn 1 — captures sessionId
+    mockSpawn.mockReturnValueOnce(createMockChild(turn1Lines));
+    const result1 = await queryFull({ prompt: 'My favorite number is 47. Remember it exactly.' });
+    expect(result1.session.id).toBeTruthy();
+
+    // Second call: turn 2 — passes session from turn 1
+    mockSpawn.mockReturnValueOnce(createMockChild(turn2Lines));
+    const result2 = await queryFull({
+      prompt: 'What number did I just say?',
+      session: result1.session,
+    });
+
+    // Assertion: turn 2's assistant text contains the number 47 (context recalled)
+    expect(result2.text).toContain('47');
   });
 });
