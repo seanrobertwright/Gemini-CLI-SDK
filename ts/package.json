@@ -13,6 +13,7 @@
   "scripts": {
     "test": "vitest run --passWithNoTests",
     "test:coverage": "vitest run --coverage --passWithNoTests",
+    "test:live": "vitest run --config vitest.live.config.ts --passWithNoTests",
     "build": "tsc",
     "typecheck": "tsc --noEmit",
     "gen:errors": "node ../scripts/gen-errors.mjs"
