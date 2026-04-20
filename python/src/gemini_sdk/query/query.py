@@ -25,13 +25,16 @@ import os
 import secrets
 import tempfile
 import warnings as _warnings
-from typing import AsyncIterator, Optional
+from typing import Any, AsyncIterator, Dict, Optional
 
 import anyio
 import anyio.abc
 
 from ..auth import resolve_auth
-from ..errors import ErrorMapper, GeminiError, InvalidPromptError
+from ..errors import ErrorMapper, GeminiError, InvalidPromptError, SchemaValidationError, UnsupportedFeatureError
+from ..output.inject_schema import build_schema_injection_block
+from ..output.schema_validator import validate_with_schema
+from ..output.retry import build_retry_prompt
 from ..parser.dispatch import dispatch
 from ..parser.parse_ndjson import parse_ndjson
 from ..parser.types import MessageChunk, RawEvent, ResultChunk
@@ -45,16 +48,26 @@ from .types import AbortError, QueryOptions, QueryResult
 # ────────────────────────────────────────────────────────────────────────────
 
 
-async def _write_temp_system_prompt(system_prompt: Optional[str]) -> Optional[str]:
-    """Write a system prompt to a uniquely-named temp file.
+async def _write_temp_system_prompt(
+    system_prompt: Optional[str],
+    output_schema: Optional[Dict[str, Any]] = None,
+) -> Optional[str]:
+    """Write a system prompt (+ optional schema injection block) to a temp file.
 
-    Returns the absolute path to the temp file, or None if no prompt given.
+    Returns the absolute path to the temp file, or None if no prompt or schema given.
+    Phase 8 (OUT-01): when output_schema is provided, appends buildSchemaInjectionBlock
+    to the system prompt content (or uses only the block if no system_prompt).
     """
-    if not system_prompt:
+    if not system_prompt and output_schema is None:
         return None
+    base = system_prompt or ""
+    content = base
+    if output_schema is not None:
+        schema_block = build_schema_injection_block(output_schema)
+        content = f"{base}\n\n{schema_block}" if base else schema_block
     suffix = secrets.token_hex(8)
     temp_path = os.path.join(tempfile.gettempdir(), f"gemini-sdk-system-{suffix}.md")
-    await anyio.Path(temp_path).write_text(system_prompt, encoding="utf-8")
+    await anyio.Path(temp_path).write_text(content, encoding="utf-8")
     return temp_path
 
 
@@ -76,6 +89,12 @@ async def query(options: QueryOptions) -> AsyncIterator[MessageChunk]:
       7. ERR-06: if stream ends without result chunk AND not cancelled AND non-zero exit, raise
       8. Finally: kill subprocess, delete temp file
     """
+    # Phase 8 (OUT-01 guard): output_schema only supported on query_full().
+    if options.get("output_schema") is not None:
+        raise UnsupportedFeatureError(
+            "output_schema requires query_full() — not supported on query()/query_raw()"
+        )
+
     # Phase 7 (SES-01 Layer 1 guard): reject empty/whitespace session ids BEFORE spawn.
     session = options.get("session")
     if session is not None:
@@ -250,6 +269,12 @@ async def query_raw(options: QueryOptions) -> AsyncIterator[RawEvent]:
 
     Skips the dispatch stage — intended for low-level introspection.
     """
+    # Phase 8 (OUT-01 guard): output_schema only supported on query_full().
+    if options.get("output_schema") is not None:
+        raise UnsupportedFeatureError(
+            "output_schema requires query_full() — not supported on query()/query_raw()"
+        )
+
     # Phase 7 (SES-01 Layer 1 guard): reject empty/whitespace session ids BEFORE spawn.
     _raw_session = options.get("session")
     if _raw_session is not None:
@@ -319,8 +344,31 @@ async def query_raw(options: QueryOptions) -> AsyncIterator[RawEvent]:
 
 
 async def query_full(options: QueryOptions) -> QueryResult:
-    """Run a full query and accumulate all MessageChunks into a QueryResult."""
+    """Run a full query and accumulate all MessageChunks into a QueryResult.
+
+    Phase 8 (OUT-01/02/03): If output_schema is set, inject schema block into
+    the system prompt (inline, before calling query() which has an output_schema guard),
+    validate the model response, and retry once on failure. Raises SchemaValidationError
+    on double failure.
+    """
     import datetime
+
+    # Phase 8 (OUT-01): schema injection — inline in query_full, not through query()
+    # (query() has a pre-spawn guard that blocks output_schema). Strip output_schema
+    # from inner options and instead inject it into systemPrompt.
+    output_schema: Optional[Dict[str, Any]] = options.get("output_schema")  # type: ignore[assignment]
+
+    if output_schema is not None:
+        # Build combined system prompt: existing sysPrompt + blank line + schema block
+        existing_sys = options.get("system_prompt") or ""
+        schema_block = build_schema_injection_block(output_schema)
+        combined_sys = f"{existing_sys}\n\n{schema_block}" if existing_sys else schema_block
+
+        # Strip output_schema (Pitfall-4: prevent infinite recursion) and inject combined sysPrompt
+        inner_options: QueryOptions = {**options, "system_prompt": combined_sys}
+        inner_options.pop("output_schema", None)  # type: ignore[misc]
+    else:
+        inner_options = options
 
     chunks: list[MessageChunk] = []
     text = ""
@@ -329,7 +377,7 @@ async def query_full(options: QueryOptions) -> QueryResult:
     init_session_id = ""
     init_model = ""
 
-    async for chunk in query(options):
+    async for chunk in query(inner_options):
         chunks.append(chunk)
         if chunk.get("type") == "assistant":  # type: ignore[union-attr]
             text += chunk.get("content", "")  # type: ignore[union-attr]
@@ -346,10 +394,52 @@ async def query_full(options: QueryOptions) -> QueryResult:
         created_at=datetime.datetime.now(datetime.timezone.utc).isoformat(),
     )
 
-    return {
-        "text": text,
-        "session_id": session_id,
-        "stop_reason": stop_reason,
-        "chunks": chunks,
+    # Phase 8 (OUT-01/02/03): if output_schema is unset, existing behavior preserved.
+    if output_schema is None:
+        return {
+            "text": text,
+            "session_id": session_id,
+            "stop_reason": stop_reason,
+            "chunks": chunks,
+            "session": session_obj,
+        }
+
+    # Validate first response. If valid -> return with structured field populated.
+    first_success, first_data, first_err = validate_with_schema(output_schema, text)
+    if first_success:
+        return {
+            "text": text,
+            "session_id": session_id,
+            "stop_reason": stop_reason,
+            "chunks": chunks,
+            "session": session_obj,
+            "structured": first_data,
+        }
+
+    # Invalid -> retry once. Honor cancel_scope between calls.
+    cancel_scope = options.get("cancel_scope")
+    if cancel_scope is not None and getattr(cancel_scope, "cancel_called", False):
+        raise AbortError()
+
+    # Build retry options: reuse session from first call, use retry prompt text.
+    # Strip output_schema from retry call (Pitfall 4 prevention: avoids infinite recursion).
+    retry_prompt_text = build_retry_prompt(options["prompt"], first_err, text)
+    retry_options: QueryOptions = {
+        **options,
+        "prompt": retry_prompt_text,
         "session": session_obj,
     }
+    retry_options.pop("output_schema", None)  # type: ignore[misc]
+
+    retry_result = await query_full(retry_options)
+
+    second_success, second_data, second_err = validate_with_schema(output_schema, retry_result["text"])
+    if second_success:
+        return {
+            **retry_result,
+            "structured": second_data,
+        }
+
+    raise SchemaValidationError(
+        f"Schema validation failed after retry: {second_err}"
+    )

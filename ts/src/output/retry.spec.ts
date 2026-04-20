@@ -12,7 +12,7 @@ describe('buildRetryPrompt', () => {
     expect(result).toContain('Your previous response was invalid JSON for the required schema.');
   });
 
-  it('contains the validator error text prefixed by "Validator error:"', () => {
+  it('contains the validator error text prefixed by Validator error:', () => {
     const result = buildRetryPrompt('p', 'expected string at .x', 'r');
     expect(result).toContain('Validator error: expected string at .x');
   });
@@ -23,7 +23,7 @@ describe('buildRetryPrompt', () => {
     expect(result).toContain('```\n' + raw + '\n```');
   });
 
-  it('ends with the "Return ONLY valid JSON" directive', () => {
+  it('ends with the Return ONLY valid JSON directive', () => {
     const result = buildRetryPrompt('p', 'e', 'r');
     expect(result.endsWith('Return ONLY valid JSON matching the schema.')).toBe(true);
   });

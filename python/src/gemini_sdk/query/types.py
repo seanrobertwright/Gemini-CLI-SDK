@@ -14,7 +14,7 @@ from __future__ import annotations
 import enum
 from typing import Any, Dict, List, Union
 
-from typing_extensions import Required, TypedDict
+from typing_extensions import NotRequired, Required, TypedDict
 
 from ..parser.types import MessageChunk
 # AbortError is now canonical in the errors module (extends ProcessError, bucket=crash).
@@ -35,6 +35,24 @@ class Model(str, enum.Enum):
     FLASH_20 = "gemini-2.0-flash"
     FLASH_3 = "gemini-3-flash"
     PRO_3 = "gemini-3-pro"
+
+
+# ────────────────────────────────────────────────────────────────────────────
+# ApprovalMode — known --approval-mode values for gemini-cli
+# ────────────────────────────────────────────────────────────────────────────
+
+
+class ApprovalMode(str, enum.Enum):
+    """Known --approval-mode values for gemini-cli.
+
+    Mirrors the Phase 4 Model str enum pattern.
+    Raw string values accepted for forward compatibility (use Union type).
+    """
+
+    DEFAULT = "default"
+    AUTO_EDIT = "auto_edit"
+    YOLO = "yolo"
+    PLAN = "plan"
 
 
 # ────────────────────────────────────────────────────────────────────────────
@@ -72,29 +90,50 @@ class QueryOptions(TypedDict, total=False):
     session: Union[Session, str]
     """Resume an existing session (SES-01, SES-02). Accepts a Session or a bare id str."""
 
+    allowed_tools: List[str]
+    """Tool names to whitelist via --allowed-tools (TOL-01).
+    CSV-joined at argv boundary. Empty list or absent -> flag omitted.
+    """
+
+    approval_mode: Union["ApprovalMode", str]
+    """Approval mode passed as --approval-mode <mode> (TOL-02)."""
+
+    output_schema: Dict[str, Any]
+    """**Experimental:** Best-effort JSON schema for structured output (OUT-01..04).
+
+    WARNING: Only works with query_full() -- calling query()/query_raw() with
+    this option raises UnsupportedFeatureError. Subject to change; see
+    docs/structured-output.md Known Limitations and gemini-cli #13388.
+    """
+
 
 # ────────────────────────────────────────────────────────────────────────────
 # QueryResult — returned by query_full() after stream is fully consumed
 # ────────────────────────────────────────────────────────────────────────────
 
 
-class QueryResult(TypedDict):
+class QueryResult(TypedDict, total=False):
     """Accumulated result from query_full()."""
 
-    text: str
+    text: Required[str]
     """Concatenated assistant text from all AssistantChunks."""
 
-    session_id: str
+    session_id: Required[str]
     """Session ID from the gemini-cli init event."""
 
-    stop_reason: str
+    stop_reason: Required[str]
     """Stop reason from the gemini-cli result event."""
 
-    chunks: List[MessageChunk]
+    chunks: Required[List[MessageChunk]]
     """All MessageChunks yielded during the query."""
 
-    session: Session
+    session: Required[Session]
     """Phase 7 (SES-03): Session value object populated from init event."""
+
+    structured: Any
+    """**Experimental:** Parsed + validated output when output_schema was set
+    on the query_full() call. Absent when output_schema was not set.
+    """
 
 
 # AbortError is imported from errors module above and re-exported.

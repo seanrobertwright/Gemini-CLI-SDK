@@ -17,7 +17,7 @@ class TestBuildRetryPrompt:
         assert 'Your previous response was invalid JSON for the required schema.' in result
 
     def test_contains_validator_error_prefix(self):
-        """contains the validator error text prefixed by "Validator error:"""
+        """contains the validator error text prefixed by Validator error:"""
         result = build_retry_prompt('p', 'expected string at .x', 'r')
         assert 'Validator error: expected string at .x' in result
 
@@ -28,7 +28,7 @@ class TestBuildRetryPrompt:
         assert f'```\n{raw}\n```' in result
 
     def test_ends_with_return_only_directive(self):
-        """ends with the "Return ONLY valid JSON" directive"""
+        """ends with the Return ONLY valid JSON directive"""
         result = build_retry_prompt('p', 'e', 'r')
         assert result.endswith('Return ONLY valid JSON matching the schema.')
 

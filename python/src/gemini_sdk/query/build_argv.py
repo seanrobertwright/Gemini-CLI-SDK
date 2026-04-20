@@ -80,4 +80,21 @@ def build_argv(options: QueryOptions) -> list[str]:
         for d in dirs:
             argv.extend(["--include-directories", d])
 
+    # TOL-01: --allowed-tools (skip when None or empty list)
+    allowed_tools = options.get("allowed_tools")
+    if allowed_tools:
+        argv.extend(["--allowed-tools", ",".join(allowed_tools)])
+
+    # TOL-02: --approval-mode (skip when None)
+    # Use .value for enum; str(ApprovalMode.PLAN) returns 'ApprovalMode.PLAN' not 'plan'
+    approval_mode = options.get("approval_mode")
+    if approval_mode is not None:
+        import enum as _enum_mod
+        mode_str = (
+            approval_mode.value
+            if isinstance(approval_mode, _enum_mod.Enum)
+            else str(approval_mode)
+        )
+        argv.extend(["--approval-mode", mode_str])
+
     return argv

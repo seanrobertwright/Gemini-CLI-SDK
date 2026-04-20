@@ -867,3 +867,361 @@ class TestPhase7MultiTurnIntegration:
 
         # Assertion: turn 2's assistant text contains the number 47 (context recalled)
         assert "47" in result2["text"]
+
+
+# ── Phase 8: output_schema pre-spawn guard on query() / queryRaw() ────────────
+
+
+def _make_ndjson_lines(session_id: str, assistant_text: str) -> list[str]:
+    """Helper: create NDJSON lines that produce a given assistant text body."""
+    import json as _json
+    return [
+        f'{{"type":"init","timestamp":"t","session_id":"{session_id}","model":"auto-gemini-3"}}',
+        f'{{"type":"message","timestamp":"t","role":"assistant","content":{_json.dumps(assistant_text)}}}',
+        '{"type":"result","timestamp":"t","status":"success","stats":{}}',
+    ]
+
+
+class TestQueryOutputSchemaGuardPhase8:
+    @pytest.mark.anyio
+    async def test_raises_unsupported_feature_when_output_schema_set_on_query(self):
+        """throws UnsupportedFeatureError when outputSchema is set on query()"""
+        from gemini_sdk.errors import UnsupportedFeatureError
+        with pytest.raises(UnsupportedFeatureError):
+            async for _ in query({"prompt": "x", "output_schema": {"type": "object"}}):
+                pass
+
+    @pytest.mark.anyio
+    async def test_unsupported_feature_error_message_mentions_query_full(self):
+        """UnsupportedFeatureError message mentions queryFull"""
+        from gemini_sdk.errors import UnsupportedFeatureError
+        with pytest.raises(UnsupportedFeatureError, match=r"query_full"):
+            async for _ in query({"prompt": "x", "output_schema": {"type": "object"}}):
+                pass
+
+    @pytest.mark.anyio
+    async def test_raises_unsupported_feature_when_output_schema_set_on_query_raw(self):
+        """throws UnsupportedFeatureError when outputSchema is set on queryRaw()"""
+        from gemini_sdk.errors import UnsupportedFeatureError
+        with pytest.raises(UnsupportedFeatureError):
+            async for _ in query_raw({"prompt": "x", "output_schema": {"type": "object"}}):
+                pass
+
+    @pytest.mark.anyio
+    async def test_guard_fires_pre_spawn_no_spawn_for_query(self):
+        """guard fires pre-spawn (ProcessManager.spawn never called for query)"""
+        from gemini_sdk.errors import UnsupportedFeatureError
+        with patch("gemini_sdk.query.query.ProcessManager") as mock_pm_cls:
+            mock_pm = MagicMock()
+            mock_pm.spawn = AsyncMock()
+            mock_pm_cls.return_value = mock_pm
+
+            caught = None
+            try:
+                async for _ in query({"prompt": "x", "output_schema": {"type": "object"}}):
+                    pass
+            except UnsupportedFeatureError as e:
+                caught = e
+
+        assert isinstance(caught, UnsupportedFeatureError)
+        mock_pm.spawn.assert_not_called()
+
+    @pytest.mark.anyio
+    async def test_guard_fires_pre_spawn_no_spawn_for_query_raw(self):
+        """guard fires pre-spawn (ProcessManager.spawn never called for queryRaw)"""
+        from gemini_sdk.errors import UnsupportedFeatureError
+        with patch("gemini_sdk.query.query.ProcessManager") as mock_pm_cls:
+            mock_pm = MagicMock()
+            mock_pm.spawn = AsyncMock()
+            mock_pm_cls.return_value = mock_pm
+
+            caught = None
+            try:
+                async for _ in query_raw({"prompt": "x", "output_schema": {"type": "object"}}):
+                    pass
+            except UnsupportedFeatureError as e:
+                caught = e
+
+        assert isinstance(caught, UnsupportedFeatureError)
+        mock_pm.spawn.assert_not_called()
+
+
+# ── Phase 8: query_full() output_schema happy path + retry ────────────────────
+
+
+class TestQueryFullOutputSchemaPhase8:
+    _schema = {
+        "type": "object",
+        "properties": {"x": {"type": "string"}},
+        "required": ["x"],
+    }
+
+    @pytest.mark.anyio
+    async def test_no_output_schema_structured_is_undefined_in_result(self):
+        """no outputSchema -> structured is undefined in result"""
+        proc = _make_mock_proc(_make_ndjson_lines("s1", "hello"))
+        with (
+            patch("gemini_sdk.query.query.ProcessManager") as mock_pm_cls,
+            patch("gemini_sdk.query.query.kill_tree", new_callable=AsyncMock),
+        ):
+            mock_pm = MagicMock()
+            mock_pm.spawn = AsyncMock(return_value=proc)
+            mock_pm_cls.return_value = mock_pm
+            result = await query_full({"prompt": "x"})
+
+        assert result.get("structured") is None
+        assert mock_pm.spawn.call_count == 1
+
+    @pytest.mark.anyio
+    async def test_happy_path_valid_output_on_first_try_populates_structured(self):
+        """happy path: valid output on first try populates structured"""
+        proc = _make_mock_proc(_make_ndjson_lines("s1", '{"x":"hello"}'))
+        with (
+            patch("gemini_sdk.query.query.ProcessManager") as mock_pm_cls,
+            patch("gemini_sdk.query.query.kill_tree", new_callable=AsyncMock),
+        ):
+            mock_pm = MagicMock()
+            mock_pm.spawn = AsyncMock(return_value=proc)
+            mock_pm_cls.return_value = mock_pm
+            result = await query_full({"prompt": "give me x", "output_schema": self._schema})
+
+        assert result["structured"] == {"x": "hello"}
+        assert result["text"] == '{"x":"hello"}'
+        # Only one spawn — no retry needed
+        assert mock_pm.spawn.call_count == 1
+
+    @pytest.mark.anyio
+    async def test_happy_path_structured_field_typed_as_unknown_not_undefined(self):
+        """happy path: structured field typed as unknown (not undefined)"""
+        proc = _make_mock_proc(_make_ndjson_lines("s1", '{"x":"hello"}'))
+        with (
+            patch("gemini_sdk.query.query.ProcessManager") as mock_pm_cls,
+            patch("gemini_sdk.query.query.kill_tree", new_callable=AsyncMock),
+        ):
+            mock_pm = MagicMock()
+            mock_pm.spawn = AsyncMock(return_value=proc)
+            mock_pm_cls.return_value = mock_pm
+            result = await query_full({"prompt": "give me x", "output_schema": self._schema})
+
+        assert result.get("structured") is not None
+
+    @pytest.mark.anyio
+    async def test_retry_path_invalid_first_valid_second_populates_structured(self):
+        """retry path: invalid first -> valid second populates structured from retry result"""
+        proc1 = _make_mock_proc(_make_ndjson_lines("s1", '{"x":123}'))
+        proc2 = _make_mock_proc(_make_ndjson_lines("s1", '{"x":"hi"}'))
+        with (
+            patch("gemini_sdk.query.query.ProcessManager") as mock_pm_cls,
+            patch("gemini_sdk.query.query.kill_tree", new_callable=AsyncMock),
+        ):
+            mock_pm = MagicMock()
+            mock_pm.spawn = AsyncMock(side_effect=[proc1, proc2])
+            mock_pm_cls.return_value = mock_pm
+            result = await query_full({"prompt": "give me x", "output_schema": self._schema})
+
+        assert result["structured"] == {"x": "hi"}
+        # Two spawns: first (invalid) + second (retry)
+        assert mock_pm.spawn.call_count == 2
+
+    @pytest.mark.anyio
+    async def test_retry_path_second_call_prompt_contains_original_prompt_text(self):
+        """retry path: second call prompt contains original prompt text"""
+        proc1 = _make_mock_proc(_make_ndjson_lines("s1", '{"x":123}'))
+        proc2 = _make_mock_proc(_make_ndjson_lines("s1", '{"x":"hi"}'))
+        spawn_argv_calls = []
+
+        with (
+            patch("gemini_sdk.query.query.ProcessManager") as mock_pm_cls,
+            patch("gemini_sdk.query.query.kill_tree", new_callable=AsyncMock),
+        ):
+            mock_pm = MagicMock()
+
+            async def _spawn_capturing(**kwargs):
+                spawn_argv_calls.append(kwargs.get("argv", []))
+                call_count = len(spawn_argv_calls)
+                return proc1 if call_count == 1 else proc2
+
+            mock_pm.spawn = _spawn_capturing
+            mock_pm_cls.return_value = mock_pm
+            await query_full({"prompt": "Tell me a joke", "output_schema": self._schema})
+
+        assert len(spawn_argv_calls) == 2
+        # Second call's argv should contain the retry prompt (which embeds original)
+        second_argv = " ".join(spawn_argv_calls[1])
+        assert "Tell me a joke" in second_argv
+
+    @pytest.mark.anyio
+    async def test_retry_path_second_call_options_had_output_schema_undefined(self):
+        """retry path: second call options had outputSchema: undefined (Pitfall-4 prevention)"""
+        proc1 = _make_mock_proc(_make_ndjson_lines("s1", '{"x":123}'))
+        proc2 = _make_mock_proc(_make_ndjson_lines("s1", '{"x":"hi"}'))
+        with (
+            patch("gemini_sdk.query.query.ProcessManager") as mock_pm_cls,
+            patch("gemini_sdk.query.query.kill_tree", new_callable=AsyncMock),
+        ):
+            mock_pm = MagicMock()
+            mock_pm.spawn = AsyncMock(side_effect=[proc1, proc2])
+            mock_pm_cls.return_value = mock_pm
+            await query_full({"prompt": "x", "output_schema": self._schema})
+
+        # Two spawns means retry happened (output_schema was stripped from retry call)
+        assert mock_pm.spawn.call_count == 2
+
+    @pytest.mark.anyio
+    async def test_double_failure_throws_schema_validation_error(self):
+        """double-failure throws SchemaValidationError"""
+        from gemini_sdk.errors import SchemaValidationError
+        proc1 = _make_mock_proc(_make_ndjson_lines("s1", "not valid json at all"))
+        proc2 = _make_mock_proc(_make_ndjson_lines("s1", "still not valid"))
+        with (
+            patch("gemini_sdk.query.query.ProcessManager") as mock_pm_cls,
+            patch("gemini_sdk.query.query.kill_tree", new_callable=AsyncMock),
+        ):
+            mock_pm = MagicMock()
+            mock_pm.spawn = AsyncMock(side_effect=[proc1, proc2])
+            mock_pm_cls.return_value = mock_pm
+            with pytest.raises(SchemaValidationError):
+                await query_full({"prompt": "give me x", "output_schema": self._schema})
+
+        assert mock_pm.spawn.call_count == 2
+
+    @pytest.mark.anyio
+    async def test_double_failure_error_message_begins_with_schema_validation_failed(self):
+        """double-failure error message begins with Schema validation failed after retry:"""
+        from gemini_sdk.errors import SchemaValidationError
+        proc1 = _make_mock_proc(_make_ndjson_lines("s1", '{"x":123}'))
+        proc2 = _make_mock_proc(_make_ndjson_lines("s1", '{"x":456}'))
+        with (
+            patch("gemini_sdk.query.query.ProcessManager") as mock_pm_cls,
+            patch("gemini_sdk.query.query.kill_tree", new_callable=AsyncMock),
+        ):
+            mock_pm = MagicMock()
+            mock_pm.spawn = AsyncMock(side_effect=[proc1, proc2])
+            mock_pm_cls.return_value = mock_pm
+            with pytest.raises(SchemaValidationError, match=r"Schema validation failed after retry:"):
+                await query_full({"prompt": "x", "output_schema": self._schema})
+
+    @pytest.mark.anyio
+    async def test_abort_between_first_and_retry_throws_abort_error(self):
+        """abort between first and retry throws AbortError (pre-aborted signal)"""
+        # Pre-abort the cancel_scope before the query_full call; the inner query_full
+        # (retry call) sees cancel_called=True after first validation fails and raises AbortError.
+        proc1 = _make_mock_proc(_make_ndjson_lines("s1", '{"x":123}'))
+        with (
+            patch("gemini_sdk.query.query.ProcessManager") as mock_pm_cls,
+            patch("gemini_sdk.query.query.kill_tree", new_callable=AsyncMock),
+        ):
+            mock_pm = MagicMock()
+            mock_pm.spawn = AsyncMock(return_value=proc1)
+            mock_pm_cls.return_value = mock_pm
+
+            cancel_scope = MagicMock()
+            cancel_scope.cancel_called = True  # pre-aborted
+
+            with pytest.raises(AbortError):
+                await query_full({"prompt": "x", "output_schema": self._schema, "cancel_scope": cancel_scope})
+
+
+# ── Phase 8: query_full() output_schema -> systemPrompt injection ─────────────
+
+
+class TestQueryFullOutputSchemaSystemPromptInjectionPhase8:
+    @pytest.mark.anyio
+    async def test_with_output_schema_and_no_system_prompt_write_file_receives_schema_block(self):
+        """with outputSchema set and no systemPrompt: writeFile receives schema block"""
+        from gemini_sdk.output import build_schema_injection_block
+        schema = {"type": "object"}
+        proc = _make_mock_proc(_make_ndjson_lines("s1", '{}'))
+        write_contents = []
+
+        with (
+            patch("gemini_sdk.query.query.ProcessManager") as mock_pm_cls,
+            patch("gemini_sdk.query.query.kill_tree", new_callable=AsyncMock),
+            patch("gemini_sdk.query.query.anyio") as mock_anyio,
+        ):
+            mock_pm = MagicMock()
+            mock_pm.spawn = AsyncMock(return_value=proc)
+            mock_pm_cls.return_value = mock_pm
+
+            mock_path_instance = MagicMock()
+
+            async def _write_text(content, encoding="utf-8"):
+                write_contents.append(content)
+
+            mock_path_instance.write_text = _write_text
+            mock_path_instance.unlink = AsyncMock(return_value=None)
+            mock_anyio.Path.return_value = mock_path_instance
+
+            await query_full({"prompt": "x", "output_schema": schema})
+
+        assert len(write_contents) == 1
+        assert write_contents[0] == build_schema_injection_block(schema)
+        assert "## Required Output Format" in write_contents[0]
+
+    @pytest.mark.anyio
+    async def test_with_output_schema_and_system_prompt_write_file_receives_combined(self):
+        """with outputSchema + systemPrompt: writeFile receives sysPrompt + blank line + schema block"""
+        from gemini_sdk.output import build_schema_injection_block
+        schema = {"type": "object"}
+        sys = "be concise"
+        proc = _make_mock_proc(_make_ndjson_lines("s1", '{}'))
+        write_contents = []
+
+        with (
+            patch("gemini_sdk.query.query.ProcessManager") as mock_pm_cls,
+            patch("gemini_sdk.query.query.kill_tree", new_callable=AsyncMock),
+            patch("gemini_sdk.query.query.anyio") as mock_anyio,
+        ):
+            mock_pm = MagicMock()
+            mock_pm.spawn = AsyncMock(return_value=proc)
+            mock_pm_cls.return_value = mock_pm
+
+            mock_path_instance = MagicMock()
+
+            async def _write_text(content, encoding="utf-8"):
+                write_contents.append(content)
+
+            mock_path_instance.write_text = _write_text
+            mock_path_instance.unlink = AsyncMock(return_value=None)
+            mock_anyio.Path.return_value = mock_path_instance
+
+            await query_full({"prompt": "x", "system_prompt": sys, "output_schema": schema})
+
+        assert len(write_contents) == 1
+        expected = f"{sys}\n\n{build_schema_injection_block(schema)}"
+        assert write_contents[0] == expected
+        assert "be concise\n\n## Required Output Format" in write_contents[0]
+
+    @pytest.mark.anyio
+    async def test_without_output_schema_write_file_not_called(self):
+        """without outputSchema: writeFile not called (no temp file)"""
+        proc = _make_mock_proc(_make_ndjson_lines("s1", "hello"))
+        write_count = []
+
+        with (
+            patch("gemini_sdk.query.query.ProcessManager") as mock_pm_cls,
+            patch("gemini_sdk.query.query.kill_tree", new_callable=AsyncMock),
+            patch("gemini_sdk.query.query.anyio") as mock_anyio,
+        ):
+            mock_pm = MagicMock()
+            mock_pm.spawn = AsyncMock(return_value=proc)
+            mock_pm_cls.return_value = mock_pm
+
+            mock_path_instance = MagicMock()
+
+            async def _write_text(content, encoding="utf-8"):
+                write_count.append(content)
+
+            mock_path_instance.write_text = _write_text
+            mock_path_instance.unlink = AsyncMock(return_value=None)
+            mock_anyio.Path.return_value = mock_path_instance
+
+            await query_full({"prompt": "x"})
+
+        assert len(write_count) == 0
+
+    def test_build_schema_injection_block_output_contains_required_output_format(self):
+        """buildSchemaInjectionBlock output contains Required Output Format"""
+        from gemini_sdk.output import build_schema_injection_block
+        schema = {"type": "object"}
+        assert "Required Output Format" in build_schema_injection_block(schema)

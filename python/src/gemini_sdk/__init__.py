@@ -3,7 +3,7 @@
 __version__ = "0.0.0"
 
 from .auth import resolve_auth, AUTH_PRECEDENCE
-from .errors import GeminiNotFoundError
+from .errors import GeminiNotFoundError, SchemaValidationError, UnsupportedFeatureError
 from .process import (
     ProcessStrategy,
     SpawnPerCallStrategy,
@@ -18,6 +18,7 @@ from .query import (
     query_full,
     query_raw,
     AbortError,
+    ApprovalMode,
     Model,
     QueryOptions,
     QueryResult,
@@ -34,11 +35,14 @@ __all__ = [
     "ProcessManager",
     "kill_tree",
     "GeminiNotFoundError",
+    "SchemaValidationError",
+    "UnsupportedFeatureError",
     "build_argv",
     "query",
     "query_full",
     "query_raw",
     "AbortError",
+    "ApprovalMode",
     "Model",
     "QueryOptions",
     "QueryResult",

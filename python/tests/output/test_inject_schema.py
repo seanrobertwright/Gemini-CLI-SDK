@@ -9,12 +9,12 @@ from gemini_sdk.output import build_schema_injection_block
 
 class TestBuildSchemaInjectionBlockTemplate:
     def test_starts_with_required_output_format_heading(self):
-        """starts with the "## Required Output Format" heading"""
+        """starts with the Required Output Format heading"""
         result = build_schema_injection_block({"type": "object"})
         assert result.startswith("## Required Output Format\n")
 
     def test_ends_with_return_only_directive(self):
-        """ends with the "Return ONLY" directive"""
+        """ends with the Return ONLY directive"""
         result = build_schema_injection_block({"type": "object"})
         assert result.endswith("Return ONLY the JSON object. No prose, no markdown fences in the output.")
 
@@ -26,7 +26,7 @@ class TestBuildSchemaInjectionBlockTemplate:
         assert expected_block in result
 
     def test_contains_must_be_valid_json_instruction(self):
-        """contains the "MUST be valid JSON" instruction"""
+        """contains the MUST be valid JSON instruction"""
         result = build_schema_injection_block({})
         assert "Your response MUST be valid JSON matching this JSON Schema:" in result
 
@@ -40,3 +40,4 @@ class TestBuildSchemaInjectionBlockTemplate:
         a = build_schema_injection_block({"type": "object"})
         b = build_schema_injection_block({"type": "object"})
         assert a == b
+

@@ -2,12 +2,12 @@ import { describe, it, expect } from 'vitest';
 import { buildSchemaInjectionBlock } from './injectSchema.js';
 
 describe('buildSchemaInjectionBlock: template', () => {
-  it('starts with the "## Required Output Format" heading', () => {
+  it('starts with the Required Output Format heading', () => {
     const result = buildSchemaInjectionBlock({ type: 'object' });
     expect(result.startsWith('## Required Output Format\n')).toBe(true);
   });
 
-  it('ends with the "Return ONLY" directive', () => {
+  it('ends with the Return ONLY directive', () => {
     const result = buildSchemaInjectionBlock({ type: 'object' });
     expect(result.endsWith('Return ONLY the JSON object. No prose, no markdown fences in the output.')).toBe(true);
   });
@@ -18,7 +18,7 @@ describe('buildSchemaInjectionBlock: template', () => {
     expect(result).toContain('```json\n' + JSON.stringify(schema, null, 2) + '\n```');
   });
 
-  it('contains the "MUST be valid JSON" instruction', () => {
+  it('contains the MUST be valid JSON instruction', () => {
     const result = buildSchemaInjectionBlock({});
     expect(result).toContain('Your response MUST be valid JSON matching this JSON Schema:');
   });
@@ -28,7 +28,7 @@ describe('buildSchemaInjectionBlock: template', () => {
     expect(result).toContain('{}');
   });
 
-  it('is deterministic (same input → same output)', () => {
+  it('is deterministic (same input -> same output)', () => {
     const a = buildSchemaInjectionBlock({ type: 'object' });
     const b = buildSchemaInjectionBlock({ type: 'object' });
     expect(a).toBe(b);

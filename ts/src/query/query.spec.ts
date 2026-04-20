@@ -734,7 +734,7 @@ describe('queryFull() outputSchema (Phase 8)', () => {
     mockSpawn.mockReturnValue(createMockChild(makeNdjsonLines('s1', '{"x":"hello"}')));
   });
 
-  it('no outputSchema → structured is undefined in result', async () => {
+  it('no outputSchema -> structured is undefined in result', async () => {
     mockSpawn.mockReturnValue(createMockChild(makeNdjsonLines('s1', 'hello')));
     const result = await queryFull({ prompt: 'x' });
     expect(result.structured).toBeUndefined();
@@ -755,7 +755,7 @@ describe('queryFull() outputSchema (Phase 8)', () => {
     expect(result.structured).toBeDefined();
   });
 
-  it('retry path: invalid first → valid second populates structured from retry result', async () => {
+  it('retry path: invalid first -> valid second populates structured from retry result', async () => {
     // First spawn: invalid JSON (wrong type for 'x')
     mockSpawn.mockReturnValueOnce(createMockChild(makeNdjsonLines('s1', '{"x":123}')));
     // Second spawn (retry): valid JSON
@@ -802,7 +802,7 @@ describe('queryFull() outputSchema (Phase 8)', () => {
     expect(mockSpawn).toHaveBeenCalledTimes(2);
   });
 
-  it('double-failure error message begins with "Schema validation failed after retry:"', async () => {
+  it('double-failure error message begins with Schema validation failed after retry:', async () => {
     mockSpawn.mockReturnValueOnce(createMockChild(makeNdjsonLines('s1', '{"x":123}')));
     mockSpawn.mockReturnValueOnce(createMockChild(makeNdjsonLines('s1', '{"x":456}')));
 
@@ -873,7 +873,7 @@ describe('queryFull() outputSchema → systemPrompt injection (Phase 8)', () => 
     expect(writeFileSpy).not.toHaveBeenCalled();
   });
 
-  it('buildSchemaInjectionBlock output contains "Required Output Format"', () => {
+  it('buildSchemaInjectionBlock output contains Required Output Format', () => {
     const schema = { type: 'object' };
     expect(buildSchemaInjectionBlock(schema)).toContain('Required Output Format');
   });

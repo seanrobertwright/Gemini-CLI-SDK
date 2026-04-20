@@ -466,7 +466,7 @@ describe('buildArgv: Phase 8 flags combined', () => {
 // ── fuzz: allowedTools CSV property ──────────────────────────────────────────
 
 describe('buildArgv: allowedTools CSV fuzz', () => {
-  it('CSV value always equals arr.join(",") for non-empty arrays', () => {
+  it('CSV value always equals arr.join comma for non-empty arrays', () => {
     fc.assert(
       fc.property(
         fc.array(fc.string({ minLength: 1 }).filter(s => !s.includes(','))),

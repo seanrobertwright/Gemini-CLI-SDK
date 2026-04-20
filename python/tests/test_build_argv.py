@@ -11,7 +11,7 @@ import pytest
 from hypothesis import given, settings
 from hypothesis import strategies as st
 
-from gemini_sdk.query import Model, build_argv
+from gemini_sdk.query import ApprovalMode, Model, build_argv
 from gemini_sdk.session import Session, TranscriptEntry
 
 
@@ -366,3 +366,127 @@ class TestBuildArgvTranscriptFallback:
         )
         result = build_argv({"prompt": "x", "session": s})
         assert "--resume" in result
+
+
+# ── allowedTools (TOL-01) ─────────────────────────────────────────────────────
+
+
+class TestBuildArgvAllowedTools:
+    def test_emits_allowed_tools_csv_for_two_tools(self):
+        """emits --allowed-tools with CSV value for two tools"""
+        result = build_argv({"prompt": "x", "allowed_tools": ["read_file", "write_file"]})
+        assert "--allowed-tools" in result
+        idx = result.index("--allowed-tools")
+        assert result[idx + 1] == "read_file,write_file"
+
+    def test_emits_allowed_tools_single_value(self):
+        """emits --allowed-tools with single value for one tool"""
+        result = build_argv({"prompt": "x", "allowed_tools": ["only_one"]})
+        idx = result.index("--allowed-tools")
+        assert result[idx + 1] == "only_one"
+
+    def test_omits_allowed_tools_when_empty_array(self):
+        """omits --allowed-tools when array is empty"""
+        result = build_argv({"prompt": "x", "allowed_tools": []})
+        assert "--allowed-tools" not in result
+
+    def test_omits_allowed_tools_when_undefined(self):
+        """omits --allowed-tools when option is undefined"""
+        result = build_argv({"prompt": "x"})
+        assert "--allowed-tools" not in result
+
+    def test_passes_through_mcp_style_names(self):
+        """passes through mcp__server__tool-style names unchanged"""
+        result = build_argv({"prompt": "x", "allowed_tools": ["mcp__srv__do"]})
+        idx = result.index("--allowed-tools")
+        assert result[idx + 1] == "mcp__srv__do"
+
+
+# ── approvalMode (TOL-02) ─────────────────────────────────────────────────────
+
+
+class TestBuildArgvApprovalMode:
+    def test_emits_approval_mode_yolo_literal(self):
+        """emits --approval-mode yolo for literal string"""
+        result = build_argv({"prompt": "x", "approval_mode": "yolo"})
+        assert "--approval-mode" in result
+        idx = result.index("--approval-mode")
+        assert result[idx + 1] == "yolo"
+
+    def test_emits_approval_mode_plan_enum(self):
+        """emits --approval-mode plan for ApprovalMode.PLAN"""
+        result = build_argv({"prompt": "x", "approval_mode": ApprovalMode.PLAN})
+        idx = result.index("--approval-mode")
+        assert result[idx + 1] == "plan"
+
+    def test_emits_approval_mode_for_all_4_values(self):
+        """emits --approval-mode for all 4 ApprovalMode values"""
+        for mode in [ApprovalMode.DEFAULT, ApprovalMode.AUTO_EDIT, ApprovalMode.YOLO, ApprovalMode.PLAN]:
+            result = build_argv({"prompt": "x", "approval_mode": mode})
+            idx = result.index("--approval-mode")
+            assert result[idx + 1] == mode.value
+
+    def test_passes_raw_string_through_as_escape_hatch(self):
+        """passes raw string through as escape hatch"""
+        result = build_argv({"prompt": "x", "approval_mode": "some-future-mode"})
+        idx = result.index("--approval-mode")
+        assert result[idx + 1] == "some-future-mode"
+
+    def test_omits_approval_mode_when_undefined(self):
+        """omits --approval-mode when option is undefined"""
+        result = build_argv({"prompt": "x"})
+        assert "--approval-mode" not in result
+
+
+# ── combined tools + approval + directories ──────────────────────────────────
+
+
+class TestBuildArgvPhase8FlagsCombined:
+    def test_emits_all_phase_8_additions_plus_model_plus_directories(self):
+        """emits all three Phase 8 additions plus model plus directories"""
+        result = build_argv({
+            "prompt": "x",
+            "allowed_tools": ["read_file"],
+            "approval_mode": "default",
+            "additional_directories": ["d1"],
+            "model": "gemini-3-pro",
+        })
+        assert "--allowed-tools" in result
+        assert "--approval-mode" in result
+        assert "--include-directories" in result
+        assert "--model" in result
+        pos_model = result.index("--model")
+        pos_include = result.index("--include-directories")
+        pos_allowed = result.index("--allowed-tools")
+        pos_approval = result.index("--approval-mode")
+        assert pos_model < pos_include
+        assert pos_include < pos_allowed
+        assert pos_allowed < pos_approval
+
+    def test_allowed_tools_coexists_with_session(self, monkeypatch):
+        """allowedTools coexists with session (--resume stays between stream-json and -p)"""
+        monkeypatch.delenv("GEMINI_SDK_TRANSCRIPT_FALLBACK", raising=False)
+        result = build_argv({"prompt": "x", "session": "abc", "allowed_tools": ["t1"]})
+        assert result[:4] == ["--output-format", "stream-json", "--resume", "abc"]
+        assert "--allowed-tools" in result
+
+
+# ── fuzz: allowedTools CSV property ──────────────────────────────────────────
+
+
+class TestBuildArgvAllowedToolsCsvFuzz:
+    @given(
+        st.lists(st.text(min_size=1).filter(lambda s: "," not in s)),
+    )
+    def test_csv_value_always_equals_arr_join(self, tools):
+        """CSV value always equals arr.join comma for non-empty arrays"""
+        options = {"prompt": "p"}
+        if tools:
+            options["allowed_tools"] = tools  # type: ignore[assignment]
+        result = build_argv(options)  # type: ignore[arg-type]
+        if not tools:
+            assert "--allowed-tools" not in result
+        else:
+            idx = result.index("--allowed-tools")
+            assert idx >= 0
+            assert result[idx + 1] == ",".join(tools)
