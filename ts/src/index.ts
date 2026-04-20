@@ -4,9 +4,11 @@
 // Phase 4: Public query API
 // Phase 6: Auth environment
 // Phase 7: Session resume + multi-turn
+// Phase 8: Tools + approval mode + structured output (experimental)
 export * from './process/index.js';
 export * from './errors/index.js';
 export * from './parser/index.js';
 export * from './query/index.js';
 export * from './auth/index.js';
 export * from './session/index.js';
+export * from './output/index.js';
