@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Completed 07-02-PLAN.md (TS session resume wiring)
-last_updated: "2026-04-20T02:14:37.691Z"
+stopped_at: Completed 07-03-PLAN.md (Python session resume port + protocol spec)
+last_updated: "2026-04-20T02:24:03.877Z"
 last_activity: "2026-04-15 — Completed plan 05-01: Phase 5 Wave-1 fixture re-targeting + RED scaffolds; Task 1 Option B (synthetic_blocked) taken due to auth-isolation + quota-key gaps; 104:104 TS:Python parity achieved"
 progress:
   total_phases: 11
-  completed_phases: 6
+  completed_phases: 7
   total_plans: 34
-  completed_plans: 33
+  completed_plans: 34
   percent: 10
 ---
 
@@ -79,6 +79,7 @@ Progress: [█░░░░░░░░░] 10% (Phase 1 of 11 complete + Phase 5
 | Phase 06-auth-environment P03 | 15 | 3 tasks | 9 files |
 | Phase 07-session-resume-multi-turn P01 | 3 | 3 tasks | 9 files |
 | Phase 07-session-resume-multi-turn P02 | 5 | 2 tasks | 7 files |
+| Phase 07-session-resume-multi-turn P03 | 6 | 2 tasks | 8 files |
 
 ## Accumulated Context
 
@@ -183,6 +184,9 @@ Recent decisions affecting current work:
 - [Phase 07-02]: queryFull uses wall-clock new Date().toISOString() for session.createdAt; transcript accumulation deferred
 - [Phase 07-02]: GEMINI_SDK_TRANSCRIPT_FALLBACK NOT in EnvBuilder allowlist; read at call time via process.env only
 - [Phase 07-02]: Session guard placed BEFORE abort check in query()/queryRaw() to fail-fast on bad input
+- [Phase 07-03]: Fuzz test test_never_throws updated to include session field; monkeypatch incompatible with hypothesis so os.environ.pop() used inline
+- [Phase 07-03]: query_full uses datetime.now(utc).isoformat() for session.created_at (wall-clock at call time, matching TS)
+- [Phase 07-03]: Multi-turn fixture path resolved via pathlib.Path(__file__).resolve().parents[2] (test -> tests -> python -> repo root)
 
 ### Pending Todos
 
@@ -199,6 +203,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-04-20T02:14:37.689Z
-Stopped at: Completed 07-02-PLAN.md (TS session resume wiring)
+Last session: 2026-04-20T02:24:03.874Z
+Stopped at: Completed 07-03-PLAN.md (Python session resume port + protocol spec)
 Resume file: None
