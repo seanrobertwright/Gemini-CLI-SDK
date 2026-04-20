@@ -879,6 +879,95 @@ describe('queryFull() outputSchema → systemPrompt injection (Phase 8)', () => 
   });
 });
 
+describe('Phase 9: MCP passthrough guards (MCP-02, MCP-03)', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    vi.mocked(fsMod.writeFile).mockResolvedValue(undefined);
+    vi.mocked(fsMod.unlink).mockResolvedValue(undefined);
+    mockKillTree.mockResolvedValue(undefined);
+    mockSpawn.mockReturnValue(createMockChild([INIT_LINE, MSG_HELLO, RESULT_SUCCESS]));
+  });
+
+  it('throws InvalidPromptError when env.GEMINI_CONFIG_DIR is set with non-empty mcpServers', async () => {
+    const fn = async () => {
+      for await (const _ of query({
+        prompt: 'x',
+        mcpServers: { s: { command: 'x' } },
+        allowedMcpServerNames: ['s'],
+        env: { GEMINI_CONFIG_DIR: '/fake' },
+      })) { /* drain */ }
+    };
+    await expect(fn()).rejects.toThrow(InvalidPromptError);
+    await expect(fn()).rejects.toThrow(/GEMINI_CONFIG_DIR|MCP-02/);
+    expect(mockSpawn).not.toHaveBeenCalled();
+  });
+
+  it('throws InvalidPromptError when mcpServers is non-empty but allowedMcpServerNames is undefined', async () => {
+    const fn = async () => {
+      for await (const _ of query({
+        prompt: 'x',
+        mcpServers: { s: { command: 'x' } },
+      })) { /* drain */ }
+    };
+    await expect(fn()).rejects.toThrow(InvalidPromptError);
+    await expect(fn()).rejects.toThrow(/allowedMcpServerNames/);
+    expect(mockSpawn).not.toHaveBeenCalled();
+  });
+
+  it('throws InvalidPromptError when mcpServers is non-empty but allowedMcpServerNames is empty array', async () => {
+    const fn = async () => {
+      for await (const _ of query({
+        prompt: 'x',
+        mcpServers: { s: { command: 'x' } },
+        allowedMcpServerNames: [],
+      })) { /* drain */ }
+    };
+    await expect(fn()).rejects.toThrow(InvalidPromptError);
+  });
+
+  it('does not throw when mcpServers is an empty object (no-op path)', async () => {
+    // Empty map is a no-op — no guard fires even when GEMINI_CONFIG_DIR is set
+    let threw = false;
+    try {
+      const gen = query({ prompt: 'x', mcpServers: {}, env: { GEMINI_CONFIG_DIR: '/fake' } });
+      // Call .next() to trigger guard evaluation; expect no InvalidPromptError
+      // (spawn will be called; mock returns a valid stream)
+      await gen.next();
+      await gen.return(undefined);
+    } catch (e) {
+      if (e instanceof InvalidPromptError) threw = true;
+    }
+    expect(threw).toBe(false);
+  });
+
+  it('does not guard env.GEMINI_CONFIG_DIR when mcpServers is absent', async () => {
+    let threw = false;
+    try {
+      const gen = query({ prompt: 'x', env: { GEMINI_CONFIG_DIR: '/ok' } });
+      await gen.next();
+      await gen.return(undefined);
+    } catch (e) {
+      if (e instanceof InvalidPromptError) threw = true;
+    }
+    expect(threw).toBe(false);
+  });
+
+  it('queryFull throws InvalidPromptError from the top, before outputSchema injection', async () => {
+    // Both mcpServers set (triggers MCP-03 guard) AND outputSchema set
+    // Expect InvalidPromptError (not UnsupportedFeatureError, not SchemaValidationError)
+    await expect(
+      queryFull({
+        prompt: 'x',
+        outputSchema: { type: 'object' },
+        mcpServers: { s: { command: 'node' } },
+        // no allowedMcpServerNames — triggers MCP-03 guard
+      })
+    ).rejects.toThrow(InvalidPromptError);
+    // Spawn must not have been called (pre-spawn guard fires at queryFull top)
+    expect(mockSpawn).not.toHaveBeenCalled();
+  });
+});
+
 describe('Phase 7 multi-turn integration (SES-01 + SES-02)', () => {
   beforeEach(() => {
     vi.clearAllMocks();

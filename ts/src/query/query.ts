@@ -36,10 +36,43 @@ import { buildRetryPrompt } from '../output/retry.js';
 import { resolveAuth } from '../auth/index.js';
 import { normaliseSessionId } from '../session/index.js';
 import type { Session } from '../session/index.js';
+import { writeConfigDir, cleanupConfigDir } from '../mcp/index.js';
 
 // ────────────────────────────────────────────────────────────────────────────
 // Internal helpers
 // ────────────────────────────────────────────────────────────────────────────
+
+/**
+ * Phase 9 (MCP-02, MCP-03): pre-spawn guards for MCP options.
+ * Throws InvalidPromptError synchronously if:
+ *   1. env.GEMINI_CONFIG_DIR is set together with a non-empty mcpServers
+ *      (SDK manages GEMINI_CONFIG_DIR for isolation; caller cannot override)
+ *   2. mcpServers is non-empty but allowedMcpServerNames is undefined or
+ *      empty (gemini-cli silently ignores servers not in this whitelist)
+ * Empty mcpServers ({} or undefined) is a no-op — no guard fires.
+ */
+function assertMcpOptions(options: QueryOptions): void {
+  const hasServers =
+    options.mcpServers !== undefined &&
+    Object.keys(options.mcpServers).length > 0;
+  if (!hasServers) return;
+
+  // MCP-02 collision guard
+  if (options.env?.['GEMINI_CONFIG_DIR'] !== undefined) {
+    throw new InvalidPromptError(
+      'Cannot set env.GEMINI_CONFIG_DIR when mcpServers is provided; ' +
+      'SDK manages this variable for isolation (MCP-02). See docs/mcp.md.'
+    );
+  }
+
+  // MCP-03 required-whitelist guard
+  if (!options.allowedMcpServerNames?.length) {
+    throw new InvalidPromptError(
+      'allowedMcpServerNames is required when mcpServers is set (MCP-03). ' +
+      'gemini-cli silently ignores servers not in this whitelist. See docs/mcp.md.'
+    );
+  }
+}
 
 /**
  * Write a system prompt to a uniquely-named temp file.
@@ -97,6 +130,9 @@ export async function* query(options: QueryOptions): AsyncGenerator<MessageChunk
     }
   }
 
+  // Phase 9 (MCP-02, MCP-03): pre-spawn guards for MCP options
+  assertMcpOptions(options);
+
   // Step 1: Pre-abort check
   if (options.abortSignal?.aborted) {
     throw new AbortError();
@@ -112,6 +148,12 @@ export async function* query(options: QueryOptions): AsyncGenerator<MessageChunk
   // Step 2: Write optional system prompt to temp file (Phase 8: passes outputSchema for injection)
   const tempPath = await writeTempSystemPrompt(options.systemPrompt, options.outputSchema);
 
+  // Phase 9 (MCP-01, MCP-02): write isolated GEMINI_CONFIG_DIR if mcpServers is non-empty
+  let mcpConfigDir: string | undefined;
+  if (options.mcpServers && Object.keys(options.mcpServers).length > 0) {
+    mcpConfigDir = await writeConfigDir(options.mcpServers);
+  }
+
   // Step 3: Build env overrides
   const envOverrides: Record<string, string> = {
     ...resolved.envOverrides,  // Phase 6 placeholder (empty today)
@@ -120,6 +162,9 @@ export async function* query(options: QueryOptions): AsyncGenerator<MessageChunk
   // NotConfigured is emitted post-spawn by ErrorMapper per Phase 5; resolveAuth 'adc' fallback covers the no-explicit-var case.
   if (tempPath) {
     envOverrides['GEMINI_SYSTEM_MD'] = tempPath;
+  }
+  if (mcpConfigDir) {
+    envOverrides['GEMINI_CONFIG_DIR'] = mcpConfigDir;
   }
 
   // Step 4: Build argv and spawn subprocess
@@ -243,6 +288,9 @@ export async function* query(options: QueryOptions): AsyncGenerator<MessageChunk
     if (tempPath) {
       unlink(tempPath).catch(() => { /* ignore — temp file cleanup is best-effort */ });
     }
+    if (mcpConfigDir) {
+      await cleanupConfigDir(mcpConfigDir);
+    }
   }
 }
 
@@ -270,6 +318,9 @@ export async function* queryRaw(options: QueryOptions): AsyncGenerator<RawEvent>
     }
   }
 
+  // Phase 9 (MCP-02, MCP-03): pre-spawn guards for MCP options
+  assertMcpOptions(options);
+
   // Pre-abort check
   if (options.abortSignal?.aborted) {
     throw new AbortError();
@@ -284,12 +335,21 @@ export async function* queryRaw(options: QueryOptions): AsyncGenerator<RawEvent>
 
   const tempPath = await writeTempSystemPrompt(options.systemPrompt, options.outputSchema);
 
+  // Phase 9 (MCP-01, MCP-02): write isolated GEMINI_CONFIG_DIR if mcpServers is non-empty
+  let mcpConfigDir: string | undefined;
+  if (options.mcpServers && Object.keys(options.mcpServers).length > 0) {
+    mcpConfigDir = await writeConfigDir(options.mcpServers);
+  }
+
   const envOverrides: Record<string, string> = {
     ...resolved.envOverrides,  // Phase 6 placeholder (empty today)
     ...(options.env ?? {}),    // caller overrides win per existing contract
   };
   if (tempPath) {
     envOverrides['GEMINI_SYSTEM_MD'] = tempPath;
+  }
+  if (mcpConfigDir) {
+    envOverrides['GEMINI_CONFIG_DIR'] = mcpConfigDir;
   }
 
   const argv = buildArgv(options);
@@ -325,6 +385,9 @@ export async function* queryRaw(options: QueryOptions): AsyncGenerator<RawEvent>
     if (tempPath) {
       unlink(tempPath).catch(() => { /* ignore */ });
     }
+    if (mcpConfigDir) {
+      await cleanupConfigDir(mcpConfigDir);
+    }
   }
 }
 
@@ -337,6 +400,10 @@ export async function* queryRaw(options: QueryOptions): AsyncGenerator<RawEvent>
  * Convenience wrapper around query() for callers that don't need streaming.
  */
 export async function queryFull(options: QueryOptions): Promise<QueryResult> {
+  // Phase 9 (MCP-02, MCP-03): pre-spawn guards for MCP options.
+  // Fire here before any schema-injection side effects.
+  assertMcpOptions(options);
+
   const chunks: MessageChunk[] = [];
   let text = '';
   let sessionId = '';
