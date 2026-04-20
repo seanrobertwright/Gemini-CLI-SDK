@@ -17,6 +17,7 @@ from .errors import (
     ParseError,
     UnsupportedFeatureError,
     GeminiNotFoundError,
+    SchemaValidationError,
 )
 from .error_mapper import ErrorMapper
 
@@ -37,5 +38,6 @@ __all__ = [
     "ParseError",
     "UnsupportedFeatureError",
     "GeminiNotFoundError",
+    "SchemaValidationError",
     "ErrorMapper",
 ]
