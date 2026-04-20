@@ -183,6 +183,19 @@ The injection template is fixed in v1. If you need custom prose (e.g., different
 
 Combining `approvalMode: 'plan'` with `outputSchema` is undefined behavior. Plan mode produces a plan description (not executable JSON), so schema validation will almost certainly fail and waste a retry. Don't combine them.
 
+## Contributors: Live E2E Suite
+
+The `outputSchema` retry loop is covered by mock-spawn unit tests in
+`ts/src/query/query.spec.ts` (TS) and `python/tests/test_query.py` (Python) — no
+live-CLI test is needed here, because validation failures can be induced
+deterministically with mocked responses.
+
+The companion live suite at `ts/tests-live/e2e.live.spec.ts` covers the sibling
+Phase 8 features (`allowedTools`, `approvalMode`) that can only be verified against
+a real `gemini-cli`. It is opt-in via the `RUN_LIVE_E2E=1 GEMINI_API_KEY=sk-... pnpm test:live`
+gate. See [`ts/tests-live/README.md`](../ts/tests-live/README.md)
+and [`docs/tools.md`](./tools.md) for run instructions.
+
 ## See Also
 
 - [docs/tools.md](./tools.md) — `allowedTools` + `approvalMode`

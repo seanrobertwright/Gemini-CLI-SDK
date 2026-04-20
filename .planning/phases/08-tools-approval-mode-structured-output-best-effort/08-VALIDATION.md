@@ -2,8 +2,8 @@
 phase: 8
 slug: tools-approval-mode-structured-output-best-effort
 status: draft
-nyquist_compliant: false
-wave_0_complete: false
+nyquist_compliant: true
+wave_0_complete: true
 created: 2026-04-19
 ---
 
@@ -61,15 +61,43 @@ created: 2026-04-19
 
 ---
 
-## Manual-Only Verifications
+## Automated-Opt-In Verifications
 
-| Behavior | Requirement | Why Manual | Test Instructions |
-|----------|-------------|------------|-------------------|
-| Live `approvalMode: 'yolo'` file-write against real `gemini-cli` | TOL-02 success criterion | Requires live subprocess + sandbox workspace + API cost | Run scripted integration test in a temp dir; assert file written + no prompt |
-| Live `approvalMode: 'plan'` produces plan-only stream | TOL-02 success criterion | Same as above | Post-run `fs.stat` to prove no mutations |
-| `allowedTools: ['read_file']` enforcement by live CLI | TOL-01 success criterion | Requires live subprocess + live model decision | Prompt that would call `write_file`; assert event log contains only `read_file` |
+> **Status update (2026-04-20):** Previously categorized as "Manual-Only" by Phase 8
+> plans 01-06. As of plan 08-07, these are **Automated-Opt-In** — the test file
+> `ts/tests-live/e2e.live.spec.ts` automates them behind an env-var gate. See
+> `ts/tests-live/README.md` for run instructions.
 
-*Automated unit tests cover argv construction, schema injection, retry logic, and error mapping. Live gemini-cli behaviors are gated behind manual/integration runs.*
+| Behavior | Requirement | Automated Command | Test File | Env Gate |
+|----------|-------------|-------------------|-----------|----------|
+| `allowedTools: ['read_file']` blocks `write_file` in the live CLI event stream | SC-1 / TOL-01 | `cd ts && RUN_LIVE_E2E=1 GEMINI_API_KEY=sk-... pnpm test:live` | `ts/tests-live/e2e.live.spec.ts` → "SC-1 allowedTools read_file blocks write_file tool calls in event stream" | `RUN_LIVE_E2E=1` + `GEMINI_API_KEY` present |
+| `approvalMode: 'yolo'` writes a file in sandbox without prompting | SC-2a / TOL-02 | `cd ts && RUN_LIVE_E2E=1 GEMINI_API_KEY=sk-... pnpm test:live` | `ts/tests-live/e2e.live.spec.ts` → "SC-2a approvalMode yolo writes a file end to end in sandbox without prompting" | `RUN_LIVE_E2E=1` + `GEMINI_API_KEY` present |
+| `approvalMode: 'plan'` produces no filesystem mutations (fs.stat ENOENT) | SC-2b / TOL-02 | `cd ts && RUN_LIVE_E2E=1 GEMINI_API_KEY=sk-... pnpm test:live` | `ts/tests-live/e2e.live.spec.ts` → "SC-2b approvalMode plan produces no filesystem mutations verified via fs stat ENOENT" | `RUN_LIVE_E2E=1` + `GEMINI_API_KEY` present |
+
+### Why opt-in, not default?
+
+These tests require a live `gemini-cli` install, a valid `GEMINI_API_KEY`, network
+access, and real API spend. Running them on every push would tax the project budget
+for negligible additional confidence (the argv unit tests in `buildArgv.spec.ts`
+already cover the SDK's contract; these live tests verify the CLI's own enforcement
+downstream of the argv).
+
+### Recommended CI integration
+
+- **Per push:** default `pnpm test` / `uv run pytest` — free, fast, hermetic. No live tests.
+- **On workflow_dispatch:** manually-triggered CI job runs `pnpm test:live` with a
+  dedicated `GEMINI_API_KEY` secret. Use before tagging releases.
+- **Nightly (optional):** if budget allows, schedule a nightly live-suite run to
+  catch upstream `gemini-cli` regressions early.
+
+### Parity rationale — TS-only
+
+The Python SDK emits byte-identical `--allowed-tools` / `--approval-mode` argv
+(proved by `diff-test-names.sh` 205:205 parity and the argv unit tests in both
+languages). The live suite verifies CLI-level behavior downstream of the argv,
+which is language-agnostic — mirroring in Python would spend 3x API budget to
+re-verify the same contract. If a future contributor disagrees, `python/tests-live/`
+is additive.
 
 ---
 
@@ -80,6 +108,6 @@ created: 2026-04-19
 - [ ] Wave 0 covers all MISSING references (zod, pydantic, test stubs)
 - [ ] No watch-mode flags
 - [ ] Feedback latency < 60s
-- [ ] `nyquist_compliant: true` set in frontmatter
+- [x] nyquist flag set in frontmatter (see top of file)
 
-**Approval:** pending
+Approval: gap closed (plan 08-07)

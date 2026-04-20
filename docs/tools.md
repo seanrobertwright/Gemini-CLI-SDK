@@ -99,6 +99,23 @@ Workaround: pin to a known-good `gemini-cli` version via the compat matrix, or u
 
 gemini-cli's default mode surfaces approval prompts interactively. In a non-TTY SDK context (headless `-p`), prompts have nowhere to go and the subprocess may stall. Use `'auto_edit'`, `'yolo'`, or `'plan'` for automation.
 
+## Contributors: Live E2E Suite
+
+Phase 8 ships an opt-in live integration test suite at `ts/tests-live/e2e.live.spec.ts`
+that spawns a real `gemini-cli` to verify CLI-level enforcement of `allowedTools` and
+`approvalMode`. It is **not** part of the default `pnpm test` run.
+
+To execute it locally:
+
+```bash
+cd ts
+RUN_LIVE_E2E=1 GEMINI_API_KEY=sk-... pnpm test:live
+```
+
+Both env vars are required — missing either one skips (does not fail) all tests in the
+suite. See [`ts/tests-live/README.md`](../ts/tests-live/README.md) for sandbox behavior,
+cost estimates, and CI guidance.
+
 ## See Also
 
 - [docs/structured-output.md](./structured-output.md) — best-effort JSON schema via `outputSchema`
