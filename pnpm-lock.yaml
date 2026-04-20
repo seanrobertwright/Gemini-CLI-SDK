@@ -28,6 +28,13 @@ importers:
         version: 5.9.3
 
   ts:
+    dependencies:
+      zod:
+        specifier: ^4.3.6
+        version: 4.3.6
+      zod-from-json-schema:
+        specifier: ^0.5.2
+        version: 0.5.2
     devDependencies:
       '@fast-check/vitest':
         specifier: ^0.4.0
@@ -940,6 +947,12 @@ packages:
     resolution: {integrity: sha512-si7QWI6zUMq56bESFvagtmzMdGOtoxfR+Sez11Mobfc7tm+VkUckk9bW2UeffTGVUbOksxmSw0AA2gs8g71NCQ==}
     engines: {node: '>=12'}
 
+  zod-from-json-schema@0.5.2:
+    resolution: {integrity: sha512-/dNaicfdhJTOuUd4RImbLUE2g5yrSzzDjI/S6C2vO2ecAGZzn9UcRVgtyLSnENSmAOBRiSpUdzDS6fDWX3Z35g==}
+
+  zod@4.3.6:
+    resolution: {integrity: sha512-rftlrkhHZOcjDwkGlnUtZZkvaPHCsDATp4pGpuOOMDaTdDDXF91wuVDJoWoPsKX/3YPQ5fHuF3STjcYyKr+Qhg==}
+
 snapshots:
 
   '@ampproject/remapping@2.3.0':
@@ -1705,3 +1718,9 @@ snapshots:
       ansi-styles: 6.2.3
       string-width: 5.1.2
       strip-ansi: 7.2.0
+
+  zod-from-json-schema@0.5.2:
+    dependencies:
+      zod: 4.3.6
+
+  zod@4.3.6: {}

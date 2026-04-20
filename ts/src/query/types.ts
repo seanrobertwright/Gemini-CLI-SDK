@@ -31,6 +31,24 @@ export const Model = {
 export type Model = (typeof Model)[keyof typeof Model];
 
 // ────────────────────────────────────────────────────────────────────────────
+// ApprovalMode — gemini-cli --approval-mode values (TOL-02)
+// ────────────────────────────────────────────────────────────────────────────
+
+/**
+ * Known --approval-mode values for gemini-cli.
+ * Mirrors the Phase 4 Model const-object + union pattern.
+ */
+export const ApprovalMode = {
+  DEFAULT: 'default',
+  AUTO_EDIT: 'auto_edit',
+  YOLO: 'yolo',
+  PLAN: 'plan',
+} as const;
+
+/** Approval mode value. Accepts raw strings as forward-compat escape hatch. */
+export type ApprovalMode = (typeof ApprovalMode)[keyof typeof ApprovalMode] | string;
+
+// ────────────────────────────────────────────────────────────────────────────
 // QueryOptions — input to all query functions
 // ────────────────────────────────────────────────────────────────────────────
 
@@ -70,6 +88,33 @@ export interface QueryOptions {
    * Accepts a Session value object or a bare session id string (restored from storage).
    */
   session?: Session | string;
+
+  /**
+   * Tool names to whitelist via `--allowed-tools` (TOL-01).
+   * CSV-joined at argv boundary. Empty array or undefined → flag omitted.
+   * Unknown names pass through unchallenged (subprocess is source of truth).
+   */
+  allowedTools?: string[];
+
+  /**
+   * Approval mode passed as `--approval-mode <mode>` (TOL-02).
+   * Undefined → no flag → gemini-cli's own default applies.
+   */
+  approvalMode?: ApprovalMode;
+
+  /**
+   * @experimental Best-effort JSON schema for structured output (OUT-01..04).
+   *
+   * WARNING: This is experimental. Only works with queryFull() — calling
+   * query()/queryRaw() with this option throws UnsupportedFeatureError.
+   * Subject to change; see docs/structured-output.md Known Limitations and
+   * gemini-cli upstream issue #13388.
+   *
+   * Accepts a plain JSON Schema object. SDK injects schema guidance into the
+   * system prompt, validates output with Zod, retries ONCE on validation
+   * failure with feedback, then throws SchemaValidationError.
+   */
+  outputSchema?: Record<string, unknown>;
 }
 
 // ────────────────────────────────────────────────────────────────────────────
@@ -91,6 +136,13 @@ export interface QueryResult {
 
   /** All MessageChunks yielded during the query. */
   chunks: MessageChunk[];
+
+  /**
+   * @experimental Parsed + validated output when `outputSchema` was set
+   * on the queryFull() call. Undefined when outputSchema was not set
+   * or when validation succeeded but the option was absent.
+   */
+  structured?: unknown;
 }
 
 // AbortError is now re-exported from errors/index.js (see top of file).
