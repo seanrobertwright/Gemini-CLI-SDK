@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Phase 9 context gathered
-last_updated: "2026-04-20T23:13:24.392Z"
+stopped_at: Completed 09-01-PLAN.md
+last_updated: "2026-04-20T23:50:15.416Z"
 last_activity: "2026-04-15 — Completed plan 05-01: Phase 5 Wave-1 fixture re-targeting + RED scaffolds; Task 1 Option B (synthetic_blocked) taken due to auth-isolation + quota-key gaps; 104:104 TS:Python parity achieved"
 progress:
   total_phases: 11
   completed_phases: 8
-  total_plans: 41
-  completed_plans: 41
+  total_plans: 45
+  completed_plans: 42
   percent: 10
 ---
 
@@ -87,6 +87,7 @@ Progress: [█░░░░░░░░░] 10% (Phase 1 of 11 complete + Phase 5
 | Phase 08-tools-approval-mode-structured-output-best-effort P05 | 11 | 2 tasks | 22 files |
 | Phase 08-tools-approval-mode-structured-output-best-effort P06 | 137 | 2 tasks | 2 files |
 | Phase 08-tools-approval-mode-structured-output-best-effort P07 | 2 | 2 tasks | 7 files |
+| Phase 09-mcp-passthrough-isolated-config-dir P01 | 2 | 2 tasks | 5 files |
 
 ## Accumulated Context
 
@@ -211,6 +212,9 @@ Recent decisions affecting current work:
 - [Phase 08]: [Phase 08-07]: TS-only live E2E suite (not TS+Python mirror) — argv parity proves SDK contract, CLI behavior is language-agnostic downstream of byte-identical argv; Python mirror is additive future work (template: ts/tests-live/)
 - [Phase 08]: [Phase 08-07]: Live tests gated by dual env vars (RUN_LIVE_E2E=1 AND GEMINI_API_KEY present) via describe.skipIf; missing either skips (not fails). Placed at ts/tests-live/ (outside ts/src/) so diff-test-names.sh 205:205 parity preserved
 - [Phase 08]: [Phase 08-07]: 08-VALIDATION.md reconciled — Manual-Only → Automated-Opt-In; frontmatter nyquist_compliant + wave_0_complete flipped to true; sign-off Approval: gap closed (plan 08-07)
+- [Phase 09-01]: No .gemini/ subdir in temp settings.json dir — GEMINI_CONFIG_DIR/settings.json is the direct read path per Phase 9 research spike
+- [Phase 09-01]: writeConfigDir prefix gemini-sdk-mcp- mirrors existing gemini-sdk-system- for diagnostic consistency; 8-byte hex suffix
+- [Phase 09-01]: cleanupConfigDir never re-throws: fs.rm maxRetries:3 retryDelay:200 + console.warn-on-failure (#13604 mitigation)
 
 ### Pending Todos
 
@@ -227,6 +231,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-04-20T23:13:24.388Z
-Stopped at: Phase 9 context gathered
-Resume file: .planning/phases/09-mcp-passthrough-isolated-config-dir/09-CONTEXT.md
+Last session: 2026-04-20T23:50:15.413Z
+Stopped at: Completed 09-01-PLAN.md
+Resume file: None

@@ -73,10 +73,10 @@ Requirements for initial release. Each maps to a roadmap phase.
 
 ### MCP Passthrough
 
-- [ ] **MCP-01**: SDK accepts `options.mcpServers` (map of server name → config) and writes a temp `settings.json` fragment
+- [x] **MCP-01**: SDK accepts `options.mcpServers` (map of server name → config) and writes a temp `settings.json` fragment
 - [ ] **MCP-02**: SDK uses an isolated temp `GEMINI_CONFIG_DIR` per query — NEVER mutates user's real `~/.gemini/settings.json`
 - [ ] **MCP-03**: SDK gates which MCP servers gemini-cli can use via `--allowed-mcp-server-names`
-- [ ] **MCP-04**: Temp config dir is cleaned up in `finally` (even on error/cancel)
+- [x] **MCP-04**: Temp config dir is cleaned up in `finally` (even on error/cancel)
 
 ### Authentication
 
@@ -267,10 +267,10 @@ All v1 requirements map to exactly one phase. Coverage: 102/102.
 | TOL-02 | Phase 8 | Complete |
 | TOL-03 | Phase 8 | Complete |
 | TOL-04 | Phase 8 | Complete |
-| MCP-01 | Phase 9 | Pending |
+| MCP-01 | Phase 9 | Complete |
 | MCP-02 | Phase 9 | Pending |
 | MCP-03 | Phase 9 | Pending |
-| MCP-04 | Phase 9 | Pending |
+| MCP-04 | Phase 9 | Complete |
 | AUT-01 | Phase 6 | Complete |
 | AUT-02 | Phase 6 | Complete |
 | AUT-03 | Phase 6 | Complete |
