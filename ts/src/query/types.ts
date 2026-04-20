@@ -115,6 +115,27 @@ export interface QueryOptions {
    * failure with feedback, then throws SchemaValidationError.
    */
   outputSchema?: Record<string, unknown>;
+
+  /**
+   * @experimental MCP server map (MCP-01). Written verbatim into a temp
+   * settings.json inside an isolated GEMINI_CONFIG_DIR per query.
+   * Empty/undefined -> no temp dir created.
+   *
+   * When set and non-empty, `allowedMcpServerNames` MUST also be provided
+   * (else query() throws InvalidPromptError pre-spawn). Cannot be combined
+   * with `env.GEMINI_CONFIG_DIR` (also throws InvalidPromptError).
+   *
+   * See docs/mcp.md Known Limitations (#2654, #3406, #20694, #13604, #17787).
+   */
+  mcpServers?: Record<string, Record<string, unknown>>;
+
+  /**
+   * @experimental Whitelist of MCP server names passed via
+   * --allowed-mcp-server-names (MCP-03). CSV-joined at argv boundary.
+   * Empty/undefined -> flag omitted. REQUIRED when mcpServers is set
+   * (else pre-spawn InvalidPromptError). See docs/mcp.md.
+   */
+  allowedMcpServerNames?: string[];
 }
 
 // ────────────────────────────────────────────────────────────────────────────

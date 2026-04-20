@@ -484,3 +484,47 @@ describe('buildArgv: allowedTools CSV fuzz', () => {
     );
   });
 });
+
+// ── --allowed-mcp-server-names (MCP-03) ──────────────────────────────────────
+
+describe('buildArgv: --allowed-mcp-server-names (MCP-03)', () => {
+  it('emits --allowed-mcp-server-names with comma-joined values', () => {
+    const result = buildArgv({ prompt: 'hi', allowedMcpServerNames: ['a', 'b', 'c'] });
+    expect(result).toContain('--allowed-mcp-server-names');
+    const idx = result.indexOf('--allowed-mcp-server-names');
+    expect(result[idx + 1]).toBe('a,b,c');
+  });
+
+  it('emits --allowed-mcp-server-names for a single value without extra delimiters', () => {
+    const result = buildArgv({ prompt: 'hi', allowedMcpServerNames: ['only'] });
+    expect(result).toContain('--allowed-mcp-server-names');
+    const idx = result.indexOf('--allowed-mcp-server-names');
+    expect(result[idx + 1]).toBe('only');
+  });
+
+  it('omits --allowed-mcp-server-names when array is empty', () => {
+    const result = buildArgv({ prompt: 'hi', allowedMcpServerNames: [] });
+    expect(result).not.toContain('--allowed-mcp-server-names');
+  });
+
+  it('omits --allowed-mcp-server-names when undefined', () => {
+    const result = buildArgv({ prompt: 'hi' });
+    expect(result).not.toContain('--allowed-mcp-server-names');
+  });
+
+  it('does not reference mcpServers in the argv', () => {
+    const result = buildArgv({
+      prompt: 'hi',
+      mcpServers: { foo: { command: 'node' } },
+      allowedMcpServerNames: ['foo'],
+    });
+    expect(result).toContain('--allowed-mcp-server-names');
+    const idx = result.indexOf('--allowed-mcp-server-names');
+    expect(result[idx + 1]).toBe('foo');
+    // Prove the mcpServers map is not leaked via argv
+    for (const el of result) {
+      expect(el).not.toContain('command');
+      expect(el).not.toContain('mcpServers');
+    }
+  });
+});

@@ -80,5 +80,12 @@ export function buildArgv(options: QueryOptions): string[] {
     argv.push('--approval-mode', options.approvalMode as string);
   }
 
+  // MCP-03: --allowed-mcp-server-names (skip when undefined or empty).
+  // Mirrors the --allowed-tools branch above exactly. The MCP server map is
+  // consumed by query.ts (config dir lifecycle), not emitted into argv.
+  if (options.allowedMcpServerNames?.length) {
+    argv.push('--allowed-mcp-server-names', options.allowedMcpServerNames.join(','));
+  }
+
   return argv;
 }
