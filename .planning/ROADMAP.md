@@ -209,7 +209,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8 →
 | 5. Error Taxonomy + Archon 5-Bucket Mapping | 5/5 | Complete   | 2026-04-15 |
 | 6. Auth Environment | 4/4 | Complete   | 2026-04-19 |
 | 7. Session Resume + Multi-Turn | 3/3 | Complete   | 2026-04-20 |
-| 8. Tools + Approval Mode + Structured Output | 3/6 | In Progress|  |
+| 8. Tools + Approval Mode + Structured Output | 4/6 | In Progress|  |
 | 9. MCP Passthrough + Isolated Config Dir | 0/TBD | Not started | - |
 | 10. Archon Adapter (TS only) | 0/TBD | Not started | - |
 | 11. Docs Site + Compat Matrix + Release | 0/TBD | Not started | - |
