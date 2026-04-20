@@ -8,7 +8,7 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import fc from 'fast-check';
 import { buildArgv } from './buildArgv.js';
-import { Model } from './types.js';
+import { Model, ApprovalMode } from './types.js';
 import type { Session } from '../session/index.js';
 
 // ── basic prompt ──────────────────────────────────────────────────────────────
@@ -358,5 +358,129 @@ describe('buildArgv: transcript-prepend fallback (SES-04)', () => {
     };
     const result = buildArgv({ prompt: 'x', session: s });
     expect(result).toContain('--resume');
+  });
+});
+
+// ── allowedTools (TOL-01) ─────────────────────────────────────────────────────
+
+describe('buildArgv: allowedTools (TOL-01)', () => {
+  it('emits --allowed-tools with CSV value for two tools', () => {
+    const result = buildArgv({ prompt: 'x', allowedTools: ['read_file', 'write_file'] });
+    expect(result).toContain('--allowed-tools');
+    const idx = result.indexOf('--allowed-tools');
+    expect(result[idx + 1]).toBe('read_file,write_file');
+  });
+
+  it('emits --allowed-tools with single value for one tool', () => {
+    const result = buildArgv({ prompt: 'x', allowedTools: ['only_one'] });
+    const idx = result.indexOf('--allowed-tools');
+    expect(result[idx + 1]).toBe('only_one');
+  });
+
+  it('omits --allowed-tools when array is empty', () => {
+    const result = buildArgv({ prompt: 'x', allowedTools: [] });
+    expect(result).not.toContain('--allowed-tools');
+  });
+
+  it('omits --allowed-tools when option is undefined', () => {
+    const result = buildArgv({ prompt: 'x' });
+    expect(result).not.toContain('--allowed-tools');
+  });
+
+  it('passes through mcp__server__tool-style names unchanged', () => {
+    const result = buildArgv({ prompt: 'x', allowedTools: ['mcp__srv__do'] });
+    const idx = result.indexOf('--allowed-tools');
+    expect(result[idx + 1]).toBe('mcp__srv__do');
+  });
+});
+
+// ── approvalMode (TOL-02) ─────────────────────────────────────────────────────
+
+describe('buildArgv: approvalMode (TOL-02)', () => {
+  it('emits --approval-mode yolo for literal string', () => {
+    const result = buildArgv({ prompt: 'x', approvalMode: 'yolo' });
+    expect(result).toContain('--approval-mode');
+    const idx = result.indexOf('--approval-mode');
+    expect(result[idx + 1]).toBe('yolo');
+  });
+
+  it('emits --approval-mode plan for ApprovalMode.PLAN', () => {
+    const result = buildArgv({ prompt: 'x', approvalMode: ApprovalMode.PLAN });
+    const idx = result.indexOf('--approval-mode');
+    expect(result[idx + 1]).toBe('plan');
+  });
+
+  it('emits --approval-mode for all 4 ApprovalMode values', () => {
+    for (const mode of [ApprovalMode.DEFAULT, ApprovalMode.AUTO_EDIT, ApprovalMode.YOLO, ApprovalMode.PLAN]) {
+      const result = buildArgv({ prompt: 'x', approvalMode: mode });
+      const idx = result.indexOf('--approval-mode');
+      expect(result[idx + 1]).toBe(mode);
+    }
+  });
+
+  it('passes raw string through as escape hatch', () => {
+    const result = buildArgv({ prompt: 'x', approvalMode: 'some-future-mode' });
+    const idx = result.indexOf('--approval-mode');
+    expect(result[idx + 1]).toBe('some-future-mode');
+  });
+
+  it('omits --approval-mode when option is undefined', () => {
+    const result = buildArgv({ prompt: 'x' });
+    expect(result).not.toContain('--approval-mode');
+  });
+});
+
+// ── combined tools + approval + directories ──────────────────────────────────
+
+describe('buildArgv: Phase 8 flags combined', () => {
+  it('emits all three Phase 8 additions plus model plus directories', () => {
+    const result = buildArgv({
+      prompt: 'x',
+      allowedTools: ['read_file'],
+      approvalMode: 'default',
+      additionalDirectories: ['d1'],
+      model: 'gemini-3-pro',
+    });
+    // All flags present
+    expect(result).toContain('--allowed-tools');
+    expect(result).toContain('--approval-mode');
+    expect(result).toContain('--include-directories');
+    expect(result).toContain('--model');
+    // Deterministic ordering: header → prompt → model → include-directories → allowed-tools → approval-mode
+    const posModel = result.indexOf('--model');
+    const posInclude = result.indexOf('--include-directories');
+    const posAllowed = result.indexOf('--allowed-tools');
+    const posApproval = result.indexOf('--approval-mode');
+    expect(posModel).toBeLessThan(posInclude);
+    expect(posInclude).toBeLessThan(posAllowed);
+    expect(posAllowed).toBeLessThan(posApproval);
+  });
+
+  it('allowedTools coexists with session (--resume stays between stream-json and -p)', () => {
+    const result = buildArgv({ prompt: 'x', session: 'abc', allowedTools: ['t1'] });
+    expect(result.slice(0, 4)).toEqual(['--output-format', 'stream-json', '--resume', 'abc']);
+    expect(result).toContain('--allowed-tools');
+  });
+});
+
+// ── fuzz: allowedTools CSV property ──────────────────────────────────────────
+
+describe('buildArgv: allowedTools CSV fuzz', () => {
+  it('CSV value always equals arr.join(",") for non-empty arrays', () => {
+    fc.assert(
+      fc.property(
+        fc.array(fc.string({ minLength: 1 }).filter(s => !s.includes(','))),
+        (tools) => {
+          const result = buildArgv({ prompt: 'p', allowedTools: tools });
+          if (tools.length === 0) {
+            expect(result).not.toContain('--allowed-tools');
+          } else {
+            const idx = result.indexOf('--allowed-tools');
+            expect(idx).toBeGreaterThanOrEqual(0);
+            expect(result[idx + 1]).toBe(tools.join(','));
+          }
+        }
+      )
+    );
   });
 });

@@ -70,5 +70,15 @@ export function buildArgv(options: QueryOptions): string[] {
     }
   }
 
+  // TOL-01: --allowed-tools (skip when undefined or empty array)
+  if (options.allowedTools?.length) {
+    argv.push('--allowed-tools', options.allowedTools.join(','));
+  }
+
+  // TOL-02: --approval-mode (skip when undefined)
+  if (options.approvalMode !== undefined) {
+    argv.push('--approval-mode', options.approvalMode as string);
+  }
+
   return argv;
 }
