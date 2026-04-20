@@ -66,10 +66,10 @@ Requirements for initial release. Each maps to a roadmap phase.
 
 ### Tools
 
-- [ ] **TOL-01**: SDK passes `options.allowedTools` to `--allowed-tools` / Policy Engine (whichever is current)
-- [ ] **TOL-02**: SDK passes `options.approvalMode` to `--approval-mode` (`default` | `auto_edit` | `yolo` | `plan`)
+- [x] **TOL-01**: SDK passes `options.allowedTools` to `--allowed-tools` / Policy Engine (whichever is current)
+- [x] **TOL-02**: SDK passes `options.approvalMode` to `--approval-mode` (`default` | `auto_edit` | `yolo` | `plan`)
 - [ ] **TOL-03**: `--allowed-tools` → Policy Engine migration is handled gracefully (runtime compat matrix check)
-- [ ] **TOL-04**: SDK documents that caller-defined custom tool definitions are NOT supported in v1.0 — only built-in gemini-cli tools + MCP passthrough
+- [x] **TOL-04**: SDK documents that caller-defined custom tool definitions are NOT supported in v1.0 — only built-in gemini-cli tools + MCP passthrough
 
 ### MCP Passthrough
 
@@ -95,7 +95,7 @@ Requirements for initial release. Each maps to a roadmap phase.
 - [ ] **OUT-01**: `options.outputSchema` / `responseFormat` enables best-effort JSON schema mode
 - [ ] **OUT-02**: Best-effort mode injects schema guidance into the system prompt + runtime-validates output with Zod/Pydantic
 - [ ] **OUT-03**: Best-effort mode retries ONCE with validation feedback on failure, then raises `SchemaValidationError`
-- [ ] **OUT-04**: Structured output is marked `@experimental` in types and docs; limitations are clearly documented (wait for upstream #13388)
+- [x] **OUT-04**: Structured output is marked `@experimental` in types and docs; limitations are clearly documented (wait for upstream #13388)
 
 ### Error Taxonomy
 
@@ -263,10 +263,10 @@ All v1 requirements map to exactly one phase. Coverage: 102/102.
 | SES-02 | Phase 7 | Complete |
 | SES-03 | Phase 7 | Complete |
 | SES-04 | Phase 7 | Complete |
-| TOL-01 | Phase 8 | Pending |
-| TOL-02 | Phase 8 | Pending |
+| TOL-01 | Phase 8 | Complete |
+| TOL-02 | Phase 8 | Complete |
 | TOL-03 | Phase 8 | Pending |
-| TOL-04 | Phase 8 | Pending |
+| TOL-04 | Phase 8 | Complete |
 | MCP-01 | Phase 9 | Pending |
 | MCP-02 | Phase 9 | Pending |
 | MCP-03 | Phase 9 | Pending |
@@ -283,7 +283,7 @@ All v1 requirements map to exactly one phase. Coverage: 102/102.
 | OUT-01 | Phase 8 | Pending |
 | OUT-02 | Phase 8 | Pending |
 | OUT-03 | Phase 8 | Pending |
-| OUT-04 | Phase 8 | Pending |
+| OUT-04 | Phase 8 | Complete |
 | ERR-01 | Phase 5 | Complete |
 | ERR-02 | Phase 5 | Complete |
 | ERR-03 | Phase 5 | Complete |
