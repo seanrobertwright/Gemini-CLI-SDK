@@ -172,7 +172,12 @@ Plans:
   2. A test that records the `mtime` of `~/.gemini/settings.json` before and after running a full `query()` with `mcpServers` asserts `mtime` is unchanged — the user's real settings file is never touched
   3. After a `query()` call with `mcpServers` completes (or is aborted mid-stream, or raises an error), the temp `GEMINI_CONFIG_DIR` is removed from disk — verified by a `fs.stat` assertion in the test's `finally` block
   4. The CI job runs the MCP passthrough test on all three OSes and it passes on Windows (the highest-risk platform for MCP child-process cleanup per pitfall #4)
-**Plans**: TBD
+**Plans**: 4 plans
+Plans:
+- [ ] 09-01-PLAN.md — Wave 1: TS mcp module (writeConfigDir + cleanupConfigDir + barrel + unit specs)
+- [ ] 09-02-PLAN.md — Wave 2: TS QueryOptions extension + buildArgv branch + query/queryRaw/queryFull pre-spawn guards + config-dir lifecycle + mtime-invariant spec
+- [ ] 09-03-PLAN.md — Wave 3: Python mechanical port (mcp module + types + build_argv + query wiring + parity tests)
+- [ ] 09-04-PLAN.md — Wave 4: stub MCP servers + opt-in live E2E suite (SC-1/SC-2/SC-3) + docs/mcp.md
 
 ### Phase 10: Archon Adapter (TS only)
 **Goal**: Implement `GeminiClient implements IAssistantClient` in the `adapter-archon/` subpackage as a thin shim (~200 LOC target, business logic stays in the SDK), source-published `.ts` to match Archon's Bun-based monorepo convention. The adapter translates Archon's `AssistantRequestOptions` to SDK options (11 fully honored, 4 partially, 4 deferred, 5 silently ignored per Claude/Codex precedent), uses only `GEMINI_*` and `GEMINI_SDK_*` env vars (no collisions with Claude/Codex), and proves `DEFAULT_AI_ASSISTANT=gemini` works end-to-end in a real Archon checkout via contract tests. Then opens a PR against `coleam00/Archon` adding `packages/core/src/clients/gemini.ts` + a 3-line `factory.ts` edit + `.env.example` entries. **This is the only TS-only phase — no Python work.** If the adapter is hard to write, the SDK's shape is wrong and we loop back to an earlier phase.
@@ -211,7 +216,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8 →
 | 6. Auth Environment | 4/4 | Complete   | 2026-04-19 |
 | 7. Session Resume + Multi-Turn | 3/3 | Complete   | 2026-04-20 |
 | 8. Tools + Approval Mode + Structured Output | 6/6 | Complete   | 2026-04-20 |
-| 9. MCP Passthrough + Isolated Config Dir | 0/TBD | Not started | - |
+| 9. MCP Passthrough + Isolated Config Dir | 0/4 | Not started | - |
 | 10. Archon Adapter (TS only) | 0/TBD | Not started | - |
 | 11. Docs Site + Compat Matrix + Release | 0/TBD | Not started | - |
 
