@@ -6,7 +6,9 @@ requires-python = ">=3.10"
 license = "MIT"
 dependencies = [
     "anyio>=4.0",
+    "jsonschema>=4.0",
     "psutil>=6.0",
+    "pydantic>=2.13.2",
     "typing-extensions>=4.0",
 ]
 
