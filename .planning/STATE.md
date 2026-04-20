@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Phase 7 context gathered
-last_updated: "2026-04-20T01:27:23.324Z"
+stopped_at: Completed 07-01-PLAN.md (Session value object kernel)
+last_updated: "2026-04-20T02:05:58.753Z"
 last_activity: "2026-04-15 — Completed plan 05-01: Phase 5 Wave-1 fixture re-targeting + RED scaffolds; Task 1 Option B (synthetic_blocked) taken due to auth-isolation + quota-key gaps; 104:104 TS:Python parity achieved"
 progress:
   total_phases: 11
   completed_phases: 6
-  total_plans: 31
-  completed_plans: 31
+  total_plans: 34
+  completed_plans: 32
   percent: 10
 ---
 
@@ -77,6 +77,7 @@ Progress: [█░░░░░░░░░] 10% (Phase 1 of 11 complete + Phase 5
 | Phase 06 P01 | 3 | 2 tasks | 4 files |
 | Phase 06 P02 | 6 | 2 tasks | 4 files |
 | Phase 06-auth-environment P03 | 15 | 3 tasks | 9 files |
+| Phase 07-session-resume-multi-turn P01 | 3 | 3 tasks | 9 files |
 
 ## Accumulated Context
 
@@ -177,6 +178,7 @@ Recent decisions affecting current work:
 - [Phase 06-03]: Fixture error-auth-invalid-key taken as synthetic_blocked: same Windows OAuth-cache bypass as Phase 05-01 Option B
 - [Phase 06-03]: error-auth-invalid-key.ndjson uses code:401 + status:UNAUTHENTICATED (not string code) for fromStreamEvent two-path parity
 - [Phase 06-03]: Phase 6: query()/queryRaw() call resolveAuth before spawn, emit UserWarning via warnings.warn (Python) / console.warn (TS) for multi-mode env
+- [Phase 07-session-resume-multi-turn]: 9th TS test added for frozen/readonly parity with Python test_frozen_raises_on_mutation; readonly is compile-time in TS so test uses structural assertion
 
 ### Pending Todos
 
@@ -193,6 +195,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-04-20T01:27:23.319Z
-Stopped at: Phase 7 context gathered
-Resume file: .planning/phases/07-session-resume-multi-turn/07-CONTEXT.md
+Last session: 2026-04-20T02:05:58.750Z
+Stopped at: Completed 07-01-PLAN.md (Session value object kernel)
+Resume file: None
