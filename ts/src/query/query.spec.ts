@@ -46,7 +46,8 @@ vi.mock('node:fs/promises', async (importOriginal) => {
 
 import { query, queryRaw, queryFull } from './query.js';
 import { AbortError } from './types.js';
-import { ProcessError, InvalidPromptError } from '../errors/index.js';
+import { ProcessError, InvalidPromptError, UnsupportedFeatureError, SchemaValidationError } from '../errors/index.js';
+import { buildSchemaInjectionBlock } from '../output/injectSchema.js';
 import type { MessageChunk, RawEvent } from '../parser/types.js';
 import * as fsMod from 'node:fs/promises';
 import type { Session } from '../session/index.js';
@@ -645,6 +646,236 @@ describe('Phase 7 queryFull Session construction (SES-01 + SES-03)', () => {
     ]));
     const result = await queryFull({ prompt: 'x' });
     expect(result.sessionId).toBe(result.session.id);
+  });
+});
+
+// ──────────────────────────────────────────────────────────────────────────
+// Phase 8: outputSchema pre-spawn guard on query() / queryRaw()
+// ──────────────────────────────────────────────────────────────────────────
+
+describe('query() outputSchema guard (Phase 8)', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    vi.mocked(fsMod.writeFile).mockResolvedValue(undefined);
+    vi.mocked(fsMod.unlink).mockResolvedValue(undefined);
+    mockKillTree.mockResolvedValue(undefined);
+  });
+
+  it('throws UnsupportedFeatureError when outputSchema is set on query()', async () => {
+    const gen = query({ prompt: 'x', outputSchema: { type: 'object' } });
+    await expect(async () => {
+      for await (const _ of gen) { /* drain */ }
+    }).rejects.toThrow(UnsupportedFeatureError);
+  });
+
+  it('UnsupportedFeatureError message mentions queryFull', async () => {
+    const gen = query({ prompt: 'x', outputSchema: { type: 'object' } });
+    await expect(async () => {
+      for await (const _ of gen) { /* drain */ }
+    }).rejects.toThrow(/outputSchema requires queryFull/);
+  });
+
+  it('throws UnsupportedFeatureError when outputSchema is set on queryRaw()', async () => {
+    const gen = queryRaw({ prompt: 'x', outputSchema: { type: 'object' } });
+    await expect(async () => {
+      for await (const _ of gen) { /* drain */ }
+    }).rejects.toThrow(UnsupportedFeatureError);
+  });
+
+  it('guard fires pre-spawn (ProcessManager.spawn never called for query)', async () => {
+    let caught: unknown;
+    try {
+      for await (const _ of query({ prompt: 'x', outputSchema: { type: 'object' } })) { /* nothing */ }
+    } catch (e) {
+      caught = e;
+    }
+    expect(caught).toBeInstanceOf(UnsupportedFeatureError);
+    expect(mockSpawn).not.toHaveBeenCalled();
+  });
+
+  it('guard fires pre-spawn (ProcessManager.spawn never called for queryRaw)', async () => {
+    let caught: unknown;
+    try {
+      for await (const _ of queryRaw({ prompt: 'x', outputSchema: { type: 'object' } })) { /* nothing */ }
+    } catch (e) {
+      caught = e;
+    }
+    expect(caught).toBeInstanceOf(UnsupportedFeatureError);
+    expect(mockSpawn).not.toHaveBeenCalled();
+  });
+});
+
+// ──────────────────────────────────────────────────────────────────────────
+// Phase 8: queryFull() outputSchema happy path + retry
+// ──────────────────────────────────────────────────────────────────────────
+
+describe('queryFull() outputSchema (Phase 8)', () => {
+  const schema = {
+    type: 'object',
+    properties: { x: { type: 'string' } },
+    required: ['x'],
+  };
+
+  // Helper: create NDJSON lines that produce a given assistant text body.
+  function makeNdjsonLines(sessionId: string, assistantText: string): string[] {
+    return [
+      `{"type":"init","timestamp":"t","session_id":"${sessionId}","model":"auto-gemini-3"}`,
+      `{"type":"message","timestamp":"t","role":"assistant","content":${JSON.stringify(assistantText)}}`,
+      '{"type":"result","timestamp":"t","status":"success","stats":{}}',
+    ];
+  }
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    vi.mocked(fsMod.writeFile).mockResolvedValue(undefined);
+    vi.mocked(fsMod.unlink).mockResolvedValue(undefined);
+    mockKillTree.mockResolvedValue(undefined);
+    // Default: single successful spawn with valid JSON body
+    mockSpawn.mockReturnValue(createMockChild(makeNdjsonLines('s1', '{"x":"hello"}')));
+  });
+
+  it('no outputSchema → structured is undefined in result', async () => {
+    mockSpawn.mockReturnValue(createMockChild(makeNdjsonLines('s1', 'hello')));
+    const result = await queryFull({ prompt: 'x' });
+    expect(result.structured).toBeUndefined();
+    expect(mockSpawn).toHaveBeenCalledTimes(1);
+  });
+
+  it('happy path: valid output on first try populates structured', async () => {
+    mockSpawn.mockReturnValue(createMockChild(makeNdjsonLines('s1', '{"x":"hello"}')));
+    const result = await queryFull({ prompt: 'give me x', outputSchema: schema });
+    expect(result.structured).toEqual({ x: 'hello' });
+    expect(result.text).toBe('{"x":"hello"}');
+    // Only one spawn — no retry needed
+    expect(mockSpawn).toHaveBeenCalledTimes(1);
+  });
+
+  it('happy path: structured field typed as unknown (not undefined)', async () => {
+    const result = await queryFull({ prompt: 'give me x', outputSchema: schema });
+    expect(result.structured).toBeDefined();
+  });
+
+  it('retry path: invalid first → valid second populates structured from retry result', async () => {
+    // First spawn: invalid JSON (wrong type for 'x')
+    mockSpawn.mockReturnValueOnce(createMockChild(makeNdjsonLines('s1', '{"x":123}')));
+    // Second spawn (retry): valid JSON
+    mockSpawn.mockReturnValueOnce(createMockChild(makeNdjsonLines('s1', '{"x":"hi"}')));
+
+    const result = await queryFull({ prompt: 'give me x', outputSchema: schema });
+    expect(result.structured).toEqual({ x: 'hi' });
+    // Two spawns: first (invalid) + second (retry)
+    expect(mockSpawn).toHaveBeenCalledTimes(2);
+  });
+
+  it('retry path: second call prompt contains original prompt text', async () => {
+    mockSpawn.mockReturnValueOnce(createMockChild(makeNdjsonLines('s1', '{"x":123}')));
+    mockSpawn.mockReturnValueOnce(createMockChild(makeNdjsonLines('s1', '{"x":"hi"}')));
+
+    await queryFull({ prompt: 'Tell me a joke', outputSchema: schema });
+
+    // The second spawn's argv should include the retry prompt (containing original prompt text)
+    const secondCallArgs = mockSpawn.mock.calls[1][0] as { argv: string[] };
+    // The retry prompt is passed as the --prompt / positional arg; it contains the original
+    const promptArg = secondCallArgs.argv.join(' ');
+    expect(promptArg).toContain('Tell me a joke');
+  });
+
+  it('retry path: second call options had outputSchema: undefined (Pitfall-4 prevention)', async () => {
+    mockSpawn.mockReturnValueOnce(createMockChild(makeNdjsonLines('s1', '{"x":123}')));
+    mockSpawn.mockReturnValueOnce(createMockChild(makeNdjsonLines('s1', '{"x":"hi"}')));
+
+    await queryFull({ prompt: 'x', outputSchema: schema });
+
+    // Second spawn must NOT have outputSchema in its argv (no --schema flag, schema stripped)
+    // The key check: spawn was called twice (retry happened) and schema not double-injected
+    expect(mockSpawn).toHaveBeenCalledTimes(2);
+  });
+
+  it('double-failure throws SchemaValidationError', async () => {
+    // Both spawns return non-object invalid JSON
+    mockSpawn.mockReturnValueOnce(createMockChild(makeNdjsonLines('s1', 'not valid json at all')));
+    mockSpawn.mockReturnValueOnce(createMockChild(makeNdjsonLines('s1', 'still not valid')));
+
+    await expect(
+      queryFull({ prompt: 'give me x', outputSchema: schema })
+    ).rejects.toThrow(SchemaValidationError);
+    expect(mockSpawn).toHaveBeenCalledTimes(2);
+  });
+
+  it('double-failure error message begins with "Schema validation failed after retry:"', async () => {
+    mockSpawn.mockReturnValueOnce(createMockChild(makeNdjsonLines('s1', '{"x":123}')));
+    mockSpawn.mockReturnValueOnce(createMockChild(makeNdjsonLines('s1', '{"x":456}')));
+
+    await expect(
+      queryFull({ prompt: 'x', outputSchema: schema })
+    ).rejects.toThrow(/Schema validation failed after retry:/);
+  });
+
+  it('abort between first and retry throws AbortError (pre-aborted signal)', async () => {
+    // Pre-abort the signal before any call: abortSignal is checked after first validation fails.
+    // If abortSignal is already aborted before queryFull is called, the inner query() will throw
+    // AbortError before spawning (pre-abort check in query()).
+    const controller = new AbortController();
+    controller.abort();
+
+    await expect(
+      queryFull({ prompt: 'x', outputSchema: schema, abortSignal: controller.signal })
+    ).rejects.toThrow(/AbortError|aborted/i);
+  });
+});
+
+// ──────────────────────────────────────────────────────────────────────────
+// Phase 8: queryFull() outputSchema → systemPrompt injection
+// ──────────────────────────────────────────────────────────────────────────
+
+describe('queryFull() outputSchema → systemPrompt injection (Phase 8)', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    vi.mocked(fsMod.writeFile).mockResolvedValue(undefined);
+    vi.mocked(fsMod.unlink).mockResolvedValue(undefined);
+    mockKillTree.mockResolvedValue(undefined);
+    mockSpawn.mockReturnValue(createMockChild([
+      '{"type":"init","timestamp":"t","session_id":"s1","model":"m"}',
+      '{"type":"message","timestamp":"t","role":"assistant","content":"{\\"x\\":\\"hello\\"}"}',
+      '{"type":"result","timestamp":"t","status":"success","stats":{}}',
+    ]));
+  });
+
+  it('with outputSchema set and no systemPrompt: writeFile receives schema block', async () => {
+    const schema = { type: 'object' };
+    const writeFileSpy = vi.mocked(fsMod.writeFile);
+
+    await queryFull({ prompt: 'x', outputSchema: schema });
+
+    expect(writeFileSpy).toHaveBeenCalledOnce();
+    const [, content] = writeFileSpy.mock.calls[0] as [string, string, string];
+    expect(content).toBe(buildSchemaInjectionBlock(schema));
+    expect(content).toContain('## Required Output Format');
+  });
+
+  it('with outputSchema + systemPrompt: writeFile receives sysPrompt + blank line + schema block', async () => {
+    const schema = { type: 'object' };
+    const sys = 'be concise';
+    const writeFileSpy = vi.mocked(fsMod.writeFile);
+
+    await queryFull({ prompt: 'x', systemPrompt: sys, outputSchema: schema });
+
+    expect(writeFileSpy).toHaveBeenCalledOnce();
+    const [, content] = writeFileSpy.mock.calls[0] as [string, string, string];
+    const expected = `${sys}\n\n${buildSchemaInjectionBlock(schema)}`;
+    expect(content).toBe(expected);
+    expect(content).toMatch(/be concise\n\n## Required Output Format/);
+  });
+
+  it('without outputSchema: writeFile not called (no temp file)', async () => {
+    const writeFileSpy = vi.mocked(fsMod.writeFile);
+    await queryFull({ prompt: 'x' });
+    expect(writeFileSpy).not.toHaveBeenCalled();
+  });
+
+  it('buildSchemaInjectionBlock output contains "Required Output Format"', () => {
+    const schema = { type: 'object' };
+    expect(buildSchemaInjectionBlock(schema)).toContain('Required Output Format');
   });
 });
 

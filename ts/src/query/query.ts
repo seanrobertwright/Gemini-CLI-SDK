@@ -29,7 +29,10 @@ import type { MessageChunk, RawEvent, ResultChunk } from '../parser/types.js';
 import type { QueryOptions, QueryResult } from './types.js';
 import { AbortError } from './types.js';
 import { buildArgv } from './buildArgv.js';
-import { ErrorMapper, GeminiError, InvalidPromptError } from '../errors/index.js';
+import { ErrorMapper, GeminiError, InvalidPromptError, SchemaValidationError, UnsupportedFeatureError } from '../errors/index.js';
+import { buildSchemaInjectionBlock } from '../output/injectSchema.js';
+import { validateWithSchema } from '../output/schemaValidator.js';
+import { buildRetryPrompt } from '../output/retry.js';
 import { resolveAuth } from '../auth/index.js';
 import { normaliseSessionId } from '../session/index.js';
 import type { Session } from '../session/index.js';
@@ -42,11 +45,20 @@ import type { Session } from '../session/index.js';
  * Write a system prompt to a uniquely-named temp file.
  * Returns the absolute path to the temp file, or undefined if no prompt given.
  */
-async function writeTempSystemPrompt(systemPrompt: string | undefined): Promise<string | undefined> {
-  if (!systemPrompt) return undefined;
+async function writeTempSystemPrompt(
+  systemPrompt: string | undefined,
+  outputSchema?: Record<string, unknown>,
+): Promise<string | undefined> {
+  if (!systemPrompt && !outputSchema) return undefined;
+  const base = systemPrompt ?? '';
+  let content = base;
+  if (outputSchema) {
+    const schemaBlock = buildSchemaInjectionBlock(outputSchema);
+    content = base ? `${base}\n\n${schemaBlock}` : schemaBlock;
+  }
   const suffix = randomBytes(8).toString('hex');
   const tempPath = join(tmpdir(), 'gemini-sdk-system-' + suffix + '.md');
-  await writeFile(tempPath, systemPrompt, 'utf-8');
+  await writeFile(tempPath, content, 'utf-8');
   return tempPath;
 }
 
@@ -68,6 +80,14 @@ async function writeTempSystemPrompt(systemPrompt: string | undefined): Promise<
  *   8. Finally: remove abort listener, kill subprocess, delete temp file
  */
 export async function* query(options: QueryOptions): AsyncGenerator<MessageChunk> {
+  // Phase 8 (OUT-01 guard): outputSchema only supported on queryFull().
+  // Throw pre-spawn to save a subprocess round-trip on caller mistakes.
+  if (options.outputSchema !== undefined) {
+    throw new UnsupportedFeatureError(
+      'outputSchema requires queryFull() — not supported on query()/queryRaw()'
+    );
+  }
+
   // Phase 7 (SES-01 Layer 1 guard): reject empty/whitespace session ids BEFORE spawn.
   // Saves a subprocess round-trip for client-side mistakes. Uses existing Phase 5 class.
   if (options.session !== undefined) {
@@ -89,8 +109,8 @@ export async function* query(options: QueryOptions): AsyncGenerator<MessageChunk
     console.warn(w);
   }
 
-  // Step 2: Write optional system prompt to temp file
-  const tempPath = await writeTempSystemPrompt(options.systemPrompt);
+  // Step 2: Write optional system prompt to temp file (Phase 8: passes outputSchema for injection)
+  const tempPath = await writeTempSystemPrompt(options.systemPrompt, options.outputSchema);
 
   // Step 3: Build env overrides
   const envOverrides: Record<string, string> = {
@@ -235,6 +255,13 @@ export async function* query(options: QueryOptions): AsyncGenerator<MessageChunk
  * Skips the dispatch stage — intended for low-level introspection.
  */
 export async function* queryRaw(options: QueryOptions): AsyncGenerator<RawEvent> {
+  // Phase 8 (OUT-01 guard): outputSchema only supported on queryFull().
+  if (options.outputSchema !== undefined) {
+    throw new UnsupportedFeatureError(
+      'outputSchema requires queryFull() — not supported on query()/queryRaw()'
+    );
+  }
+
   // Phase 7 (SES-01 Layer 1 guard): reject empty/whitespace session ids BEFORE spawn.
   if (options.session !== undefined) {
     const id = normaliseSessionId(options.session);
@@ -255,7 +282,7 @@ export async function* queryRaw(options: QueryOptions): AsyncGenerator<RawEvent>
     console.warn(w);
   }
 
-  const tempPath = await writeTempSystemPrompt(options.systemPrompt);
+  const tempPath = await writeTempSystemPrompt(options.systemPrompt, options.outputSchema);
 
   const envOverrides: Record<string, string> = {
     ...resolved.envOverrides,  // Phase 6 placeholder (empty today)
@@ -317,7 +344,22 @@ export async function queryFull(options: QueryOptions): Promise<QueryResult> {
   let initSessionId = '';
   let initModel = '';
 
-  for await (const chunk of query(options)) {
+  // Phase 8: query() guards against outputSchema being set (only queryFull is supported).
+  // Inject the schema block into systemPrompt here and strip outputSchema before delegating
+  // to query(). This satisfies the writeTempSystemPrompt extension contract: the combined
+  // systemPrompt written to the temp file contains the schema block when outputSchema is set.
+  let innerOptions: QueryOptions = options;
+  if (options.outputSchema !== undefined) {
+    const schemaBlock = buildSchemaInjectionBlock(options.outputSchema);
+    const combinedSystemPrompt = options.systemPrompt
+      ? `${options.systemPrompt}\n\n${schemaBlock}`
+      : schemaBlock;
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { outputSchema: _stripped, ...rest } = options;
+    innerOptions = { ...rest, systemPrompt: combinedSystemPrompt };
+  }
+
+  for await (const chunk of query(innerOptions)) {
     chunks.push(chunk);
     if (chunk.type === 'assistant') text += chunk.content;
     if (chunk.type === 'system' && chunk.subtype === 'init') {
@@ -336,5 +378,51 @@ export async function queryFull(options: QueryOptions): Promise<QueryResult> {
     createdAt: new Date().toISOString(),  // wall-clock at queryFull call time
   };
 
-  return { text, sessionId, session, stopReason, chunks };
+  // Phase 8 (OUT-01/02/03): if outputSchema is unset, existing behavior preserved.
+  if (options.outputSchema === undefined) {
+    return { text, sessionId, session, stopReason, chunks };
+  }
+
+  // Validate first response. If valid → return with structured field populated.
+  const firstValidation = validateWithSchema(options.outputSchema, text);
+  if (firstValidation.success) {
+    return {
+      text,
+      sessionId,
+      session,
+      stopReason,
+      chunks,
+      structured: firstValidation.data,
+    };
+  }
+
+  // Invalid → retry once. Honor abortSignal between calls.
+  if (options.abortSignal?.aborted) {
+    throw new AbortError();
+  }
+
+  // Build retry options: reuse session (Phase 7 --resume), strip outputSchema
+  // to prevent recursive schema injection and nested retry loops (Pitfall 4).
+  const retryPrompt = buildRetryPrompt(options.prompt, firstValidation.error, text);
+  const retryOptions: QueryOptions = {
+    ...options,
+    prompt: retryPrompt,
+    session: session,
+    outputSchema: undefined,
+  };
+
+  const retryResult = await queryFull(retryOptions);
+
+  // Validate retry response. Success → return with structured; failure → throw.
+  const secondValidation = validateWithSchema(options.outputSchema, retryResult.text);
+  if (secondValidation.success) {
+    return {
+      ...retryResult,
+      structured: secondValidation.data,
+    };
+  }
+
+  throw new SchemaValidationError(
+    `Schema validation failed after retry: ${secondValidation.error}`
+  );
 }
