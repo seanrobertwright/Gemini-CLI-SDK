@@ -54,3 +54,29 @@ budget to re-verify the same CLI contract.
 
 If a future contributor disagrees, adding `python/tests-live/` is additive — this
 suite's gating pattern (`RUN_LIVE_E2E` + api-key presence) serves as the template.
+
+---
+
+## mcp-passthrough.live.spec.ts (Phase 9)
+
+Verifies MCP passthrough end-to-end with a real `gemini-cli` and a stub MCP
+server at `spec/fixtures/mcp/stub.mjs`. Covers:
+
+- **SC-1** — tool-call round-trip (echo tool invoked; tool + tool_result chunks visible)
+- **SC-2** — real `~/.gemini/settings.json` mtime unchanged (live complement to the mock-spawn invariant in `ts/src/mcp/mcpPassthrough.spec.ts`)
+- **SC-3a/b/c** — temp `GEMINI_CONFIG_DIR` removed after success / abort / error paths
+
+SC-4 (Windows / cross-platform) is inherited from the CI matrix — this suite
+runs on Windows, macOS, and Linux via the existing FDN-06 matrix when
+`RUN_LIVE_E2E=1` and `GEMINI_API_KEY` are set.
+
+Run locally:
+
+```bash
+cd ts
+RUN_LIVE_E2E=1 GEMINI_API_KEY=sk-... pnpm test:live
+```
+
+Costs: each test makes ~1 Gemini API call; the full Phase 9 suite runs
+~5 calls per invocation. Approval mode is `yolo` to avoid interactive
+prompts in the non-TTY test environment.
