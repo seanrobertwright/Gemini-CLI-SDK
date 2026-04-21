@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Completed 09-02-PLAN.md
-last_updated: "2026-04-20T23:55:55.073Z"
+stopped_at: Completed 09-03-PLAN.md
+last_updated: "2026-04-21T00:04:26.580Z"
 last_activity: "2026-04-15 — Completed plan 05-01: Phase 5 Wave-1 fixture re-targeting + RED scaffolds; Task 1 Option B (synthetic_blocked) taken due to auth-isolation + quota-key gaps; 104:104 TS:Python parity achieved"
 progress:
   total_phases: 11
   completed_phases: 8
   total_plans: 45
-  completed_plans: 43
+  completed_plans: 44
   percent: 10
 ---
 
@@ -89,6 +89,7 @@ Progress: [█░░░░░░░░░] 10% (Phase 1 of 11 complete + Phase 5
 | Phase 08-tools-approval-mode-structured-output-best-effort P07 | 2 | 2 tasks | 7 files |
 | Phase 09-mcp-passthrough-isolated-config-dir P01 | 2 | 2 tasks | 5 files |
 | Phase 09-mcp-passthrough-isolated-config-dir P02 | 3 | 2 tasks | 6 files |
+| Phase 09-mcp-passthrough-isolated-config-dir P03 | 7 | 2 tasks | 10 files |
 
 ## Accumulated Context
 
@@ -218,6 +219,8 @@ Recent decisions affecting current work:
 - [Phase 09-01]: cleanupConfigDir never re-throws: fs.rm maxRetries:3 retryDelay:200 + console.warn-on-failure (#13604 mitigation)
 - [Phase 09-02]: assertMcpOptions placed at module scope for DRY deduplication across query/queryRaw/queryFull; queryFull guard fires before outputSchema injection block
 - [Phase 09-02]: cleanupConfigDir uses await in finally (not .catch) — safe because Plan 01 guarantees cleanupConfigDir never re-throws
+- [Phase 09-mcp-passthrough-isolated-config-dir]: Python __init__.py NOT modified — mcp module internal only, no public re-export of write_config_dir/cleanup_config_dir
+- [Phase 09-mcp-passthrough-isolated-config-dir]: cleanup_config_dir monkeypatch via importlib.import_module — pytest dotted-name monkeypatch cannot traverse module-name collisions on Windows
 
 ### Pending Todos
 
@@ -234,6 +237,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-04-20T23:55:55.069Z
-Stopped at: Completed 09-02-PLAN.md
+Last session: 2026-04-21T00:04:26.577Z
+Stopped at: Completed 09-03-PLAN.md
 Resume file: None
