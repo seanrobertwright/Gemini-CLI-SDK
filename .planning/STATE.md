@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Phase 10 context gathered
-last_updated: "2026-04-21T20:09:55.461Z"
-last_activity: "2026-04-15 — Completed plan 05-01: Phase 5 Wave-1 fixture re-targeting + RED scaffolds; Task 1 Option B (synthetic_blocked) taken due to auth-isolation + quota-key gaps; 104:104 TS:Python parity achieved"
+stopped_at: Completed 10-02-PLAN.md
+last_updated: "2026-04-21T22:39:42.625Z"
+last_activity: "2026-04-21 — Completed plan 10-02: env-namespace CI linter (ARC-09) + 3-case self-test + standalone blocking CI job wired into .github/workflows/ci.yml"
 progress:
   total_phases: 11
   completed_phases: 9
-  total_plans: 45
-  completed_plans: 45
-  percent: 10
+  total_plans: 51
+  completed_plans: 46
+  percent: 90
 ---
 
 # Project State
@@ -25,12 +25,12 @@ See: .planning/PROJECT.md (updated 2026-04-11)
 
 ## Current Position
 
-Phase: 5 of 11 (Error Taxonomy + Archon 5-Bucket Mapping)
-Plan: 1 of 4 in Phase 5 (05-01 complete; 05-02 next)
-Status: Phase 5 in progress
-Last activity: 2026-04-15 — Completed plan 05-01: Phase 5 Wave-1 fixture re-targeting + RED scaffolds; Task 1 Option B (synthetic_blocked) taken due to auth-isolation + quota-key gaps; 104:104 TS:Python parity achieved
+Phase: 10 of 11 (Archon Adapter — TS Only)
+Plan: 2 of 6 in Phase 10 (10-02 complete; 10-03 next)
+Status: Phase 10 in progress
+Last activity: 2026-04-21 — Completed plan 10-02: env-namespace CI linter (ARC-09) + 3-case self-test + standalone blocking CI job wired into .github/workflows/ci.yml
 
-Progress: [█░░░░░░░░░] 10% (Phase 1 of 11 complete + Phase 5 plan 1 of 4)
+Progress: [█████████░] 90% (46 of 51 plans complete)
 
 ## Performance Metrics
 
@@ -91,6 +91,7 @@ Progress: [█░░░░░░░░░] 10% (Phase 1 of 11 complete + Phase 5
 | Phase 09-mcp-passthrough-isolated-config-dir P02 | 3 | 2 tasks | 6 files |
 | Phase 09-mcp-passthrough-isolated-config-dir P03 | 7 | 2 tasks | 10 files |
 | Phase 09-mcp-passthrough-isolated-config-dir P04 | 4 | 2 tasks | 9 files |
+| Phase 10-archon-adapter-ts-only P02 | 8 | 2 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -224,6 +225,9 @@ Recent decisions affecting current work:
 - [Phase 09-mcp-passthrough-isolated-config-dir]: cleanup_config_dir monkeypatch via importlib.import_module — pytest dotted-name monkeypatch cannot traverse module-name collisions on Windows
 - [Phase 09-mcp-passthrough-isolated-config-dir]: Live E2E suite is TS-only per STATE decision [Phase 08-07]: argv parity proves SDK contract, CLI behavior is language-agnostic downstream of byte-identical argv
 - [Phase 09-mcp-passthrough-isolated-config-dir]: docs/mcp.md Known Limitations documents all 7 upstream issues (#2654 #3406 #20694 #13604 #17787 #23296 #23776); SDK only mitigates #13604 (Windows EBUSY via fs.rm maxRetries)
+- [Phase 10-archon-adapter-ts-only]: Plan 10-02: env-namespace linter allowlist = GEMINI_*, GEMINI_SDK_*, PATH, HOME, USERPROFILE, TMPDIR, TEMP, TMP, NODE_ENV, DEBUG; SKIP-on-missing-scope so linter lands before adapter-archon/src populated
+- [Phase 10-archon-adapter-ts-only]: Plan 10-02: linter self-testable via LINT_ENV_NS_SCOPE env override; 3-case spec (allowlisted-pass, dot-form-fail, bracket-form-fail) all green
+- [Phase 10-archon-adapter-ts-only]: Plan 10-02: CI gate is standalone 'lint-env-namespace' job (not piggy-backed on parity); clear status reporting + independent branch protection
 
 ### Pending Todos
 
@@ -240,6 +244,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-04-21T20:09:55.453Z
-Stopped at: Phase 10 context gathered
-Resume file: .planning/phases/10-archon-adapter-ts-only/10-CONTEXT.md
+Last session: 2026-04-21T22:39:42.622Z
+Stopped at: Completed 10-02-PLAN.md
+Resume file: None

@@ -225,7 +225,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8 →
 | 7. Session Resume + Multi-Turn | 3/3 | Complete   | 2026-04-20 |
 | 8. Tools + Approval Mode + Structured Output | 6/6 | Complete   | 2026-04-20 |
 | 9. MCP Passthrough + Isolated Config Dir | 4/4 | Complete   | 2026-04-21 |
-| 10. Archon Adapter (TS only) | 0/5 | Not started | - |
+| 10. Archon Adapter (TS only) | 1/6 | In Progress|  |
 | 11. Docs Site + Compat Matrix + Release | 0/TBD | Not started | - |
 
 ---
