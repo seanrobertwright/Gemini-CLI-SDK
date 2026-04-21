@@ -189,13 +189,14 @@ Plans:
   2. `adapter-archon/gemini.ts` is ≤ 250 LOC (stretch: ≤ 200), `getType()` returns `'gemini'`, `sendQuery` signature exactly matches Archon's `IAssistantClient.sendQuery`, and the subpackage source-publishes `.ts` (no compiled artifacts in the Archon import path)
   3. `gh pr list --repo coleam00/Archon --head gemini-sdk-integration` shows an open PR adding `packages/core/src/clients/gemini.ts`, the 3-line `factory.ts` edit, and `.env.example` entries for `GEMINI_API_KEY` + `GEMINI_BIN_PATH`
   4. A grep-based CI linter fails merge if any env var outside the `GEMINI_*` / `GEMINI_SDK_*` namespaces appears in the adapter source
-**Plans**: 5 plans
+**Plans**: 6 plans
 Plans:
 - [ ] 10-01-PLAN.md — Wave 1: local IAgentProvider type mirror + .archon-compat SHA pin + spec/archon/mapping.md canonical options triage + adapter-archon wired to pnpm/vitest workspace
 - [ ] 10-02-PLAN.md — Wave 1: scripts/lint-env-namespace.sh + self-test spec + CI job wiring (ARC-09)
 - [ ] 10-03-PLAN.md — Wave 2: options-translator.ts (OPTION_MAPPING, translateOptions, translateChunk, warnIgnoredOptions) + drift test (ARC-05)
 - [ ] 10-04-PLAN.md — Wave 3: capabilities.ts + provider.ts + registration.ts + index.ts + provider.spec.ts (ARC-01, ARC-02, ARC-03, ARC-04, ARC-06)
-- [ ] 10-05-PLAN.md — Wave 4: contract test + PR artifact bundle + archon-contract + archon-drift CI workflows + draft PR on coleam00/Archon (ARC-07, ARC-08)
+- [ ] 10-05-PLAN.md — Wave 4: contract test + archon-contract + archon-drift CI workflows (ARC-07)
+- [ ] 10-06-PLAN.md — Wave 4: PR artifact bundle + draft PR on coleam00/Archon (ARC-08)
 
 ### Phase 11: Docs Site + Compat Matrix + Release
 **Goal**: Publish the hosted doc site (VitePress for TS + mkdocs-material for Python, single site with two sections), auto-generate API reference via typedoc (TS) and mkdocstrings (Python), ship the compat matrix page with a runtime `gemini --version` warning probe, write the quickstart + migration + Archon integration guides, add the known-issues appendix with live upstream bug links, declare `gemini-cli` as a runtime prerequisite (not bundled, not auto-installed), dual-publish to npm via changesets and PyPI via `uv publish` with trusted publishing, write MIT `LICENSE`, maintain `CHANGELOG.md` via changesets mirrored into Python release notes, and **tag v1.0.0 only after the Phase-10 Archon PR merges and `DEFAULT_AI_ASSISTANT=gemini` is confirmed working**.
