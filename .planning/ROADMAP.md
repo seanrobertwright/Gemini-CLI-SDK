@@ -21,7 +21,8 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 6: Auth Environment** - Wire the canonical `GEMINI_API_KEY` default plus Vertex AI (service account JSON + Google Cloud API key) plus ADC/OAuth fallback, with precedence warnings and typed `AuthError` subtypes (completed 2026-04-19)
 - [x] **Phase 7: Session Resume + Multi-Turn** - Ship the `Session` value object, capture session IDs from the `init` event, wire `--resume`, and gate the transcript-prepend fallback on the Phase-1 decision about gemini-cli issue #14180 (completed 2026-04-20)
 - [x] **Phase 8: Tools + Approval Mode + Structured Output (Best-Effort)** - Pass through `--allowed-tools` / Policy Engine + `--approval-mode`, document that caller-defined custom tools are not in v1, and ship best-effort structured output via system-prompt schema injection + runtime validation + single retry (completed 2026-04-20)
-- [x] **Phase 9: MCP Passthrough + Isolated Config Dir** - Accept `options.mcpServers`, write a temp `settings.json` fragment inside an isolated `GEMINI_CONFIG_DIR` per query, gate via `--allowed-mcp-server-names`, and clean up in `finally` — never mutate the user's real `~/.gemini/settings.json` (completed 2026-04-21)
+- [x] **Phase 9: MCP Passthrough + Isolated Config Dir** - Accept `options.mcpServers`, write a temp `settings.json` fragment inside an isolated `GEMINI_CONFIG_DIR` per query, gate via `--allowed-mcp-server-names`, and clean up in `finally` — never mutate the user's real `~/.gemini/settings.json`
+ (completed 2026-04-21)
 - [ ] **Phase 10: Archon Adapter (TS only)** - Implement `GeminiClient implements IAssistantClient` in the `adapter-archon/` subpackage, prove `DEFAULT_AI_ASSISTANT=gemini` works end-to-end in a real Archon checkout, and open the PR against `coleam00/Archon`
 - [ ] **Phase 11: Docs Site + Compat Matrix + Release** - Publish the VitePress + mkdocs-material doc site, ship the runtime `gemini --version` compat probe, dual-publish to npm (changesets) + PyPI (`uv publish`), and tag v1.0.0 **only after** the Archon PR merges
 
@@ -188,7 +189,13 @@ Plans:
   2. `adapter-archon/gemini.ts` is ≤ 250 LOC (stretch: ≤ 200), `getType()` returns `'gemini'`, `sendQuery` signature exactly matches Archon's `IAssistantClient.sendQuery`, and the subpackage source-publishes `.ts` (no compiled artifacts in the Archon import path)
   3. `gh pr list --repo coleam00/Archon --head gemini-sdk-integration` shows an open PR adding `packages/core/src/clients/gemini.ts`, the 3-line `factory.ts` edit, and `.env.example` entries for `GEMINI_API_KEY` + `GEMINI_BIN_PATH`
   4. A grep-based CI linter fails merge if any env var outside the `GEMINI_*` / `GEMINI_SDK_*` namespaces appears in the adapter source
-**Plans**: TBD
+**Plans**: 5 plans
+Plans:
+- [ ] 10-01-PLAN.md — Wave 1: local IAgentProvider type mirror + .archon-compat SHA pin + spec/archon/mapping.md canonical options triage + adapter-archon wired to pnpm/vitest workspace
+- [ ] 10-02-PLAN.md — Wave 1: scripts/lint-env-namespace.sh + self-test spec + CI job wiring (ARC-09)
+- [ ] 10-03-PLAN.md — Wave 2: options-translator.ts (OPTION_MAPPING, translateOptions, translateChunk, warnIgnoredOptions) + drift test (ARC-05)
+- [ ] 10-04-PLAN.md — Wave 3: capabilities.ts + provider.ts + registration.ts + index.ts + provider.spec.ts (ARC-01, ARC-02, ARC-03, ARC-04, ARC-06)
+- [ ] 10-05-PLAN.md — Wave 4: contract test + PR artifact bundle + archon-contract + archon-drift CI workflows + draft PR on coleam00/Archon (ARC-07, ARC-08)
 
 ### Phase 11: Docs Site + Compat Matrix + Release
 **Goal**: Publish the hosted doc site (VitePress for TS + mkdocs-material for Python, single site with two sections), auto-generate API reference via typedoc (TS) and mkdocstrings (Python), ship the compat matrix page with a runtime `gemini --version` warning probe, write the quickstart + migration + Archon integration guides, add the known-issues appendix with live upstream bug links, declare `gemini-cli` as a runtime prerequisite (not bundled, not auto-installed), dual-publish to npm via changesets and PyPI via `uv publish` with trusted publishing, write MIT `LICENSE`, maintain `CHANGELOG.md` via changesets mirrored into Python release notes, and **tag v1.0.0 only after the Phase-10 Archon PR merges and `DEFAULT_AI_ASSISTANT=gemini` is confirmed working**.
@@ -217,7 +224,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8 →
 | 7. Session Resume + Multi-Turn | 3/3 | Complete   | 2026-04-20 |
 | 8. Tools + Approval Mode + Structured Output | 6/6 | Complete   | 2026-04-20 |
 | 9. MCP Passthrough + Isolated Config Dir | 4/4 | Complete   | 2026-04-21 |
-| 10. Archon Adapter (TS only) | 0/TBD | Not started | - |
+| 10. Archon Adapter (TS only) | 0/5 | Not started | - |
 | 11. Docs Site + Compat Matrix + Release | 0/TBD | Not started | - |
 
 ---
