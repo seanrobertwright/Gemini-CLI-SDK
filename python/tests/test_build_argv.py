@@ -490,3 +490,38 @@ class TestBuildArgvAllowedToolsCsvFuzz:
             idx = result.index("--allowed-tools")
             assert idx >= 0
             assert result[idx + 1] == ",".join(tools)
+
+
+# ── allowedMcpServerNames (MCP-03) ────────────────────────────────────────────
+
+
+class TestBuildArgvAllowedMcpServerNames:
+    def test_emits_allowed_mcp_server_names_with_comma_joined_values(self):
+        """emits --allowed-mcp-server-names with comma-joined values"""
+        argv = build_argv({"prompt": "hi", "allowed_mcp_server_names": ["a", "b", "c"]})
+        idx = argv.index("--allowed-mcp-server-names")
+        assert argv[idx + 1] == "a,b,c"
+
+    def test_emits_allowed_mcp_server_names_for_a_single_value_without_extra_delimiters(self):
+        """emits --allowed-mcp-server-names for a single value without extra delimiters"""
+        argv = build_argv({"prompt": "hi", "allowed_mcp_server_names": ["only"]})
+        idx = argv.index("--allowed-mcp-server-names")
+        assert argv[idx + 1] == "only"
+
+    def test_omits_allowed_mcp_server_names_when_array_is_empty(self):
+        """omits --allowed-mcp-server-names when array is empty"""
+        argv = build_argv({"prompt": "hi", "allowed_mcp_server_names": []})
+        assert "--allowed-mcp-server-names" not in argv
+
+    def test_omits_allowed_mcp_server_names_when_undefined(self):
+        """omits --allowed-mcp-server-names when undefined"""
+        argv = build_argv({"prompt": "hi"})
+        assert "--allowed-mcp-server-names" not in argv
+
+    def test_does_not_reference_mcpservers_in_the_argv(self):
+        """does not reference mcpServers in the argv"""
+        argv = build_argv({"prompt": "hi", "mcp_servers": {"foo": {"command": "node"}}, "allowed_mcp_server_names": ["foo"]})
+        assert "--allowed-mcp-server-names" in argv
+        joined = "|".join(argv)
+        assert "command" not in joined
+        assert "mcpServers" not in joined

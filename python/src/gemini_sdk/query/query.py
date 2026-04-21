@@ -40,12 +40,44 @@ from ..parser.parse_ndjson import parse_ndjson
 from ..parser.types import MessageChunk, RawEvent, ResultChunk
 from ..process.process_manager import ProcessManager, kill_tree
 from ..session import Session, normalise_session_id
+from ..mcp import cleanup_config_dir, write_config_dir
 from .build_argv import build_argv
 from .types import AbortError, QueryOptions, QueryResult
 
 # ────────────────────────────────────────────────────────────────────────────
 # Internal helpers
 # ────────────────────────────────────────────────────────────────────────────
+
+
+def _assert_mcp_options(options: QueryOptions) -> None:
+    """Phase 9 (MCP-02, MCP-03): pre-spawn guards for MCP options.
+
+    Raises InvalidPromptError synchronously if:
+      1. env.GEMINI_CONFIG_DIR is set together with non-empty mcp_servers
+         (SDK manages GEMINI_CONFIG_DIR for isolation)
+      2. mcp_servers is non-empty but allowed_mcp_server_names is absent
+         or empty (gemini-cli silently ignores non-whitelisted servers)
+    Empty mcp_servers ({} or absent) is a no-op.
+    """
+    servers = options.get("mcp_servers")
+    if not servers or len(servers) == 0:
+        return
+
+    # MCP-02 collision guard
+    env_map = options.get("env") or {}
+    if "GEMINI_CONFIG_DIR" in env_map:
+        raise InvalidPromptError(
+            "Cannot set env.GEMINI_CONFIG_DIR when mcpServers is provided; "
+            "SDK manages this variable for isolation (MCP-02). See docs/mcp.md."
+        )
+
+    # MCP-03 required-whitelist guard
+    allowed = options.get("allowed_mcp_server_names")
+    if not allowed:
+        raise InvalidPromptError(
+            "allowedMcpServerNames is required when mcpServers is set (MCP-03). "
+            "gemini-cli silently ignores servers not in this whitelist. See docs/mcp.md."
+        )
 
 
 async def _write_temp_system_prompt(
@@ -102,6 +134,9 @@ async def query(options: QueryOptions) -> AsyncIterator[MessageChunk]:
         if not _sid or not _sid.strip():
             raise InvalidPromptError("session id is empty")
 
+    # Phase 9 (MCP-02, MCP-03): pre-spawn guards for MCP options.
+    _assert_mcp_options(options)
+
     # Step 1: Pre-cancel check
     cancel_scope = options.get("cancel_scope")
     if cancel_scope is not None and getattr(cancel_scope, "cancel_called", False):
@@ -116,6 +151,12 @@ async def query(options: QueryOptions) -> AsyncIterator[MessageChunk]:
     # Step 2: Write optional system prompt to temp file
     temp_path = await _write_temp_system_prompt(options.get("system_prompt"))
 
+    # Phase 9 (MCP-01, MCP-02): write isolated GEMINI_CONFIG_DIR if mcp_servers is non-empty
+    mcp_config_dir: Optional[str] = None
+    mcp_servers_opt = options.get("mcp_servers")
+    if mcp_servers_opt and len(mcp_servers_opt) > 0:
+        mcp_config_dir = await write_config_dir(mcp_servers_opt)
+
     # Step 3: Build env overrides
     env_overrides: dict[str, str] = {
         **resolved["env_overrides"],
@@ -123,6 +164,8 @@ async def query(options: QueryOptions) -> AsyncIterator[MessageChunk]:
     }
     if temp_path:
         env_overrides["GEMINI_SYSTEM_MD"] = temp_path
+    if mcp_config_dir:
+        env_overrides["GEMINI_CONFIG_DIR"] = mcp_config_dir
 
     # Step 4: Build argv and spawn subprocess
     argv = build_argv(options)
@@ -246,7 +289,7 @@ async def query(options: QueryOptions) -> AsyncIterator[MessageChunk]:
         raise ErrorMapper.from_exit(exit_code=code, stderr=tail) from None
 
     finally:
-        # Cleanup: kill subprocess, remove temp file
+        # Cleanup: kill subprocess, remove temp file, remove MCP config dir
         if spawn_result.pid is not None:
             try:
                 await kill_tree(spawn_result.pid)
@@ -256,6 +299,12 @@ async def query(options: QueryOptions) -> AsyncIterator[MessageChunk]:
             try:
                 await anyio.Path(temp_path).unlink(missing_ok=True)
             except Exception:
+                pass
+        if mcp_config_dir:
+            try:
+                await cleanup_config_dir(mcp_config_dir)
+            except Exception:
+                # cleanup_config_dir already warn-swallows — this except guards against bugs
                 pass
 
 
@@ -282,6 +331,9 @@ async def query_raw(options: QueryOptions) -> AsyncIterator[RawEvent]:
         if not _raw_sid or not _raw_sid.strip():
             raise InvalidPromptError("session id is empty")
 
+    # Phase 9 (MCP-02, MCP-03): pre-spawn guards for MCP options.
+    _assert_mcp_options(options)
+
     # Pre-cancel check
     cancel_scope = options.get("cancel_scope")
     if cancel_scope is not None and getattr(cancel_scope, "cancel_called", False):
@@ -295,12 +347,20 @@ async def query_raw(options: QueryOptions) -> AsyncIterator[RawEvent]:
 
     temp_path = await _write_temp_system_prompt(options.get("system_prompt"))
 
+    # Phase 9 (MCP-01, MCP-02): write isolated GEMINI_CONFIG_DIR if mcp_servers is non-empty
+    mcp_config_dir_raw: Optional[str] = None
+    mcp_servers_raw = options.get("mcp_servers")
+    if mcp_servers_raw and len(mcp_servers_raw) > 0:
+        mcp_config_dir_raw = await write_config_dir(mcp_servers_raw)
+
     env_overrides: dict[str, str] = {
         **resolved["env_overrides"],
         **(options.get("env") or {}),
     }
     if temp_path:
         env_overrides["GEMINI_SYSTEM_MD"] = temp_path
+    if mcp_config_dir_raw:
+        env_overrides["GEMINI_CONFIG_DIR"] = mcp_config_dir_raw
 
     argv = build_argv(options)
     manager = ProcessManager()
@@ -336,6 +396,12 @@ async def query_raw(options: QueryOptions) -> AsyncIterator[RawEvent]:
                 await anyio.Path(temp_path).unlink(missing_ok=True)
             except Exception:
                 pass
+        if mcp_config_dir_raw:
+            try:
+                await cleanup_config_dir(mcp_config_dir_raw)
+            except Exception:
+                # cleanup_config_dir already warn-swallows — this except guards against bugs
+                pass
 
 
 # ────────────────────────────────────────────────────────────────────────────
@@ -351,6 +417,9 @@ async def query_full(options: QueryOptions) -> QueryResult:
     validate the model response, and retry once on failure. Raises SchemaValidationError
     on double failure.
     """
+    # Phase 9 (MCP-02, MCP-03): pre-spawn guards — fires at queryFull top before outputSchema injection.
+    _assert_mcp_options(options)
+
     import datetime
 
     # Phase 8 (OUT-01): schema injection — inline in query_full, not through query()

@@ -106,6 +106,20 @@ class QueryOptions(TypedDict, total=False):
     docs/structured-output.md Known Limitations and gemini-cli #13388.
     """
 
+    mcp_servers: Dict[str, Dict[str, Any]]
+    """**Experimental:** MCP server map (MCP-01). Written verbatim into temp
+    settings.json in isolated GEMINI_CONFIG_DIR per query. Empty/absent ->
+    no temp dir. Requires allowed_mcp_server_names when non-empty; cannot
+    be combined with env.GEMINI_CONFIG_DIR.
+    See docs/mcp.md Known Limitations (#2654, #3406, #20694, #13604, #17787).
+    """
+
+    allowed_mcp_server_names: List[str]
+    """**Experimental:** MCP server name whitelist (MCP-03). CSV-joined at
+    argv boundary as --allowed-mcp-server-names. Required when mcp_servers
+    set. See docs/mcp.md.
+    """
+
 
 # ────────────────────────────────────────────────────────────────────────────
 # QueryResult — returned by query_full() after stream is fully consumed

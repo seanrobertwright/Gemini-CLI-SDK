@@ -1225,3 +1225,88 @@ class TestQueryFullOutputSchemaSystemPromptInjectionPhase8:
         from gemini_sdk.output import build_schema_injection_block
         schema = {"type": "object"}
         assert "Required Output Format" in build_schema_injection_block(schema)
+
+
+# ── Phase 9: MCP passthrough guards (MCP-02, MCP-03) ─────────────────────────
+
+
+class TestPhase9McpPassthroughGuards:
+    @pytest.mark.anyio
+    async def test_throws_invalidprompterror_when_env_gemini_config_dir_is_set_with_non_empty_mcpservers(self):
+        """throws InvalidPromptError when env.GEMINI_CONFIG_DIR is set with non-empty mcpServers"""
+        with pytest.raises(InvalidPromptError) as exc_info:
+            async for _ in query({
+                "prompt": "x",
+                "mcp_servers": {"s": {"command": "x"}},
+                "allowed_mcp_server_names": ["s"],
+                "env": {"GEMINI_CONFIG_DIR": "/fake"},
+            }):
+                pass
+        assert "GEMINI_CONFIG_DIR" in str(exc_info.value) or "MCP-02" in str(exc_info.value)
+
+    @pytest.mark.anyio
+    async def test_throws_invalidprompterror_when_mcpservers_is_non_empty_but_allowedmcpservernames_is_undefined(self):
+        """throws InvalidPromptError when mcpServers is non-empty but allowedMcpServerNames is undefined"""
+        with pytest.raises(InvalidPromptError):
+            async for _ in query({"prompt": "x", "mcp_servers": {"s": {"command": "x"}}}):
+                pass
+
+    @pytest.mark.anyio
+    async def test_throws_invalidprompterror_when_mcpservers_is_non_empty_but_allowedmcpservernames_is_empty_array(self):
+        """throws InvalidPromptError when mcpServers is non-empty but allowedMcpServerNames is empty array"""
+        with pytest.raises(InvalidPromptError):
+            async for _ in query({"prompt": "x", "mcp_servers": {"s": {"command": "x"}}, "allowed_mcp_server_names": []}):
+                pass
+
+    @pytest.mark.anyio
+    async def test_does_not_throw_when_mcpservers_is_an_empty_object_no_op_path(self):
+        """does not throw when mcpServers is an empty object (no-op path)"""
+        proc = _make_mock_proc([INIT_LINE, MSG_HELLO, RESULT_SUCCESS])
+        with (
+            patch("gemini_sdk.query.query.ProcessManager") as mock_pm_cls,
+            patch("gemini_sdk.query.query.kill_tree", new_callable=AsyncMock),
+        ):
+            mock_pm = MagicMock()
+            mock_pm.spawn = AsyncMock(return_value=proc)
+            mock_pm_cls.return_value = mock_pm
+
+            threw = False
+            try:
+                async for _ in query({"prompt": "x", "mcp_servers": {}, "env": {"GEMINI_CONFIG_DIR": "/fake"}}):
+                    pass
+            except InvalidPromptError:
+                threw = True
+
+        assert threw is False
+
+    @pytest.mark.anyio
+    async def test_does_not_guard_env_gemini_config_dir_when_mcpservers_is_absent(self):
+        """does not guard env.GEMINI_CONFIG_DIR when mcpServers is absent"""
+        proc = _make_mock_proc([INIT_LINE, MSG_HELLO, RESULT_SUCCESS])
+        with (
+            patch("gemini_sdk.query.query.ProcessManager") as mock_pm_cls,
+            patch("gemini_sdk.query.query.kill_tree", new_callable=AsyncMock),
+        ):
+            mock_pm = MagicMock()
+            mock_pm.spawn = AsyncMock(return_value=proc)
+            mock_pm_cls.return_value = mock_pm
+
+            threw = False
+            try:
+                async for _ in query({"prompt": "x", "env": {"GEMINI_CONFIG_DIR": "/ok"}}):
+                    pass
+            except InvalidPromptError:
+                threw = True
+
+        assert threw is False
+
+    @pytest.mark.anyio
+    async def test_queryfull_throws_invalidprompterror_from_the_top_before_outputschema_injection(self):
+        """queryFull throws InvalidPromptError from the top, before outputSchema injection"""
+        with pytest.raises(InvalidPromptError):
+            await query_full({
+                "prompt": "x",
+                "output_schema": {"type": "object"},
+                "mcp_servers": {"s": {"command": "x"}},
+                # allowed_mcp_server_names intentionally missing — triggers MCP-03 guard
+            })

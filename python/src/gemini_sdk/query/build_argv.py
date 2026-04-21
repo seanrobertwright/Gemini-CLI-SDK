@@ -97,4 +97,12 @@ def build_argv(options: QueryOptions) -> list[str]:
         )
         argv.extend(["--approval-mode", mode_str])
 
+    # MCP-03: MCP server whitelist flag (skip when None or empty)
+    # Mirrors --allowed-tools branch above. query() owns the pre-spawn guard for
+    # the required-whitelist rule. The MCP server map is consumed by query.py
+    # (config dir lifecycle), not emitted into argv.
+    allowed_mcp_server_names = options.get("allowed_mcp_server_names")
+    if allowed_mcp_server_names:
+        argv.extend(["--allowed-mcp-server-names", ",".join(allowed_mcp_server_names)])
+
     return argv
