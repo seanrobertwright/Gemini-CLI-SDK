@@ -1,0 +1,6 @@
+# Pinned Archon dev SHA for contract tests (Phase 10).
+# Update adapter-archon/src/types.ts + spec/archon/mapping.md when this changes.
+ARCHON_REPO=coleam00/Archon
+ARCHON_BRANCH=dev
+ARCHON_SHA=7ea321419f0cd48e71e9ebf12968f539bc4166bc
+ARCHON_VERIFIED_AT=2026-04-21
