@@ -121,7 +121,7 @@ Requirements for initial release. Each maps to a roadmap phase.
 - [ ] **ARC-02**: `GeminiClient.sendQuery(prompt, cwd, resumeSessionId?, options?): AsyncGenerator<MessageChunk>` matches Archon's signature exactly
 - [ ] **ARC-03**: `GeminiClient.getType()` returns `'gemini'`
 - [ ] **ARC-04**: Adapter subpackage source-publishes `.ts` (matches Archon's Bun-based monorepo convention)
-- [ ] **ARC-05**: Adapter translates `AssistantRequestOptions` fields to SDK options (11 fully honored, 4 partially, 4 deferred, 5 silently ignored per Claude/Codex precedent)
+- [x] **ARC-05**: Adapter translates `AssistantRequestOptions` fields to SDK options (11 fully honored, 4 partially, 4 deferred, 5 silently ignored per Claude/Codex precedent)
 - [ ] **ARC-06**: Adapter is thin (~200 LOC target) with business logic in the SDK
 - [ ] **ARC-07**: Contract tests prove `DEFAULT_AI_ASSISTANT=gemini` works end-to-end in a real Archon checkout
 - [ ] **ARC-08**: PR opened against `coleam00/Archon` adding `packages/core/src/clients/gemini.ts` + 3-line `factory.ts` edit + `.env.example` entries
@@ -300,7 +300,7 @@ All v1 requirements map to exactly one phase. Coverage: 102/102.
 | ARC-02 | Phase 10 | Pending |
 | ARC-03 | Phase 10 | Pending |
 | ARC-04 | Phase 10 | Pending |
-| ARC-05 | Phase 10 | Pending |
+| ARC-05 | Phase 10 | Complete |
 | ARC-06 | Phase 10 | Pending |
 | ARC-07 | Phase 10 | Pending |
 | ARC-08 | Phase 10 | Pending |
