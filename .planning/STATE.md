@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: planning
-stopped_at: Completed 11-04-PLAN.md
-last_updated: "2026-04-22T12:39:48.986Z"
+stopped_at: "Paused at Task 4 checkpoint (11-06): human must push to master, merge Version Packages PR, create GitHub Release to trigger PyPI publish"
+last_updated: "2026-04-22T13:36:38.971Z"
 last_activity: "2026-04-21 — Completed plan 10-06: PR artifact bundle staged (9 files under pr-artifacts/). Task 2 (upstream draft PR) deferred — adapter stays local to user's Archon fork per user direction. ARC-08 closed locally."
 progress:
   total_phases: 11
-  completed_phases: 10
+  completed_phases: 11
   total_plans: 57
-  completed_plans: 56
+  completed_plans: 57
   percent: 100
 ---
 
@@ -102,6 +102,7 @@ Progress: [██████████] 100% (51 of 51 plans complete)
 | Phase 11-docs-site-compat-matrix-release P02 | 7 | 2 tasks | 18 files |
 | Phase 11 P05 | 5 | 1 tasks | 3 files |
 | Phase 11-docs-site-compat-matrix-release P04 | 5 | 2 tasks | 12 files |
+| Phase 11 P06 | 20 | 3 tasks | 8 files |
 
 ## Accumulated Context
 
@@ -263,6 +264,8 @@ Recent decisions affecting current work:
 - [Phase 11]: pypi-publish.yml: check-pypi-name.sh gate runs before build to fail fast on PyPI name conflicts
 - [Phase 11-docs-site-compat-matrix-release]: Temporary ignoreDeadLinks for migration/archon added in Task 1 commit, removed in Task 2 — avoids mid-execution build failure without permanent config noise
 - [Phase 11-docs-site-compat-matrix-release]: compat-matrix.md extended beyond EXACT plan content (Related pages + Quick reference table) to meet 40-line minimum requirement
+- [Phase 11]: REL-07 reframed as local-fork smoke gate — adapter stays local to user's Archon fork, no upstream PRs
+- [Phase 11]: hypothesis dev dep added to pyproject.toml to fix pytest collection failure on version-bump commit
 
 ### Pending Todos
 
@@ -279,6 +282,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-04-22T12:39:48.983Z
-Stopped at: Completed 11-04-PLAN.md
+Last session: 2026-04-22T13:36:38.967Z
+Stopped at: Paused at Task 4 checkpoint (11-06): human must push to master, merge Version Packages PR, create GitHub Release to trigger PyPI publish
 Resume file: None

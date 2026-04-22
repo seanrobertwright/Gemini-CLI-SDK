@@ -24,7 +24,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 9: MCP Passthrough + Isolated Config Dir** - Accept `options.mcpServers`, write a temp `settings.json` fragment inside an isolated `GEMINI_CONFIG_DIR` per query, gate via `--allowed-mcp-server-names`, and clean up in `finally` — never mutate the user's real `~/.gemini/settings.json`
  (completed 2026-04-21)
 - [x] **Phase 10: Archon Adapter (TS only)** - Implement `GeminiClient implements IAssistantClient` in the `adapter-archon/` subpackage, prove `DEFAULT_AI_ASSISTANT=gemini` works end-to-end in a real Archon checkout. Upstream PR on coleam00/Archon deferred per user direction — adapter stays local to user's fork; PR artifact bundle staged under `.planning/phases/10-archon-adapter-ts-only/pr-artifacts/` for manual apply. (completed 2026-04-21)
-- [ ] **Phase 11: Docs Site + Compat Matrix + Release** - Publish the VitePress + mkdocs-material doc site, ship the runtime `gemini --version` compat probe, dual-publish to npm (changesets) + PyPI (`uv publish`), and tag v1.0.0 **only after** the Archon PR merges
+- [x] **Phase 11: Docs Site + Compat Matrix + Release** - Publish the VitePress + mkdocs-material doc site, ship the runtime `gemini --version` compat probe, dual-publish to npm (changesets) + PyPI (`uv publish`), and tag v1.0.0 **only after** the Archon PR merges (completed 2026-04-22)
 
 ## Phase Details
 
@@ -233,7 +233,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8 →
 | 8. Tools + Approval Mode + Structured Output | 6/6 | Complete   | 2026-04-20 |
 | 9. MCP Passthrough + Isolated Config Dir | 4/4 | Complete   | 2026-04-21 |
 | 10. Archon Adapter (TS only) | 6/6 | Complete    | 2026-04-22 |
-| 11. Docs Site + Compat Matrix + Release | 5/6 | In Progress|  |
+| 11. Docs Site + Compat Matrix + Release | 6/6 | Complete   | 2026-04-22 |
 
 ---
 *Roadmap created: 2026-04-11*

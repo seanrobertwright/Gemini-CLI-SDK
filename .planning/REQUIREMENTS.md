@@ -109,8 +109,8 @@ Requirements for initial release. Each maps to a roadmap phase.
 
 ### Cross-Platform
 
-- [ ] **PLT-01**: TS package works on Windows, macOS, and Linux at v1 launch
-- [ ] **PLT-02**: Python package works on Windows, macOS, and Linux at v1 launch
+- [x] **PLT-01**: TS package works on Windows, macOS, and Linux at v1 launch
+- [x] **PLT-02**: Python package works on Windows, macOS, and Linux at v1 launch
 - [x] **PLT-03**: CI matrix runs `{ubuntu, macos, windows} × {node 18/20/22} × {python 3.10–3.13}` — Windows is a required job, NOT `continue-on-error`
 - [x] **PLT-04**: Python uses `anyio` on top of asyncio/trio; Windows subprocess handling uses ProactorEventLoop correctly
 - [x] **PLT-05**: CI includes at least one non-en-US Windows runner to catch encoding mojibake
@@ -153,7 +153,7 @@ Requirements for initial release. Each maps to a roadmap phase.
 - [x] **REL-04**: CHANGELOG.md maintained via changesets (TS) and mirrored in Python release notes
 - [x] **REL-05**: `gemini-cli` is declared a runtime prerequisite (NOT bundled, NOT auto-installed)
 - [x] **REL-06**: Runtime version probe warns if detected `gemini-cli` version is outside tested range (warn-not-error)
-- [ ] **REL-07**: v1.0.0 tagged only when Archon adapter PR merges and `DEFAULT_AI_ASSISTANT=gemini` is confirmed working
+- [x] **REL-07**: v1.0.0 tagged only when Archon adapter PR merges and `DEFAULT_AI_ASSISTANT=gemini` is confirmed working
 
 ## v2 Requirements
 
@@ -291,8 +291,8 @@ All v1 requirements map to exactly one phase. Coverage: 102/102.
 | ERR-05 | Phase 5 | Complete |
 | ERR-06 | Phase 5 | Complete |
 | ERR-07 | Phase 5 | Complete |
-| PLT-01 | Phase 11 | Pending |
-| PLT-02 | Phase 11 | Pending |
+| PLT-01 | Phase 11 | Complete |
+| PLT-02 | Phase 11 | Complete |
 | PLT-03 | Phase 2 | Complete |
 | PLT-04 | Phase 2 | Complete |
 | PLT-05 | Phase 2 | Complete |
@@ -323,7 +323,7 @@ All v1 requirements map to exactly one phase. Coverage: 102/102.
 | REL-04 | Phase 11 | Complete |
 | REL-05 | Phase 11 | Complete |
 | REL-06 | Phase 11 | Complete |
-| REL-07 | Phase 11 | Pending |
+| REL-07 | Phase 11 | Complete |
 
 **Coverage:**
 - v1 requirements: 102 total
