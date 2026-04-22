@@ -1,0 +1,14 @@
+--- a/packages/providers/src/registry.ts
++++ b/packages/providers/src/registry.ts
+@@ -1,4 +1,5 @@
+ import { registerPiProvider } from './community/pi/index.js';
++import { registerGeminiProvider } from './community/gemini/index.js';
+
+ /**
+  * Register all community providers with the registry.
+@@ -7,4 +8,5 @@
+  */
+ export function registerCommunityProviders(): void {
+   registerPiProvider();
++  registerGeminiProvider();
+ }
