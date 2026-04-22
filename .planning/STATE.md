@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Completed 10-04-PLAN.md
-last_updated: "2026-04-22T00:30:39.322Z"
+stopped_at: Completed 10-05-PLAN.md
+last_updated: "2026-04-22T00:34:53.845Z"
 last_activity: "2026-04-22 — Completed plan 10-04: GeminiProvider + GEMINI_CAPABILITIES + registerGeminiProvider (DI-based ProviderRegistryLike) + barrel index; provider.ts 49 LOC (under 250 cap); 5 vitest cases + compile-time ARC-02 structural check; full adapter suite 25/25 green; ARC-01/02/03/04/06 closed"
 progress:
   total_phases: 11
   completed_phases: 9
   total_plans: 51
-  completed_plans: 49
+  completed_plans: 50
   percent: 96
 ---
 
@@ -26,11 +26,11 @@ See: .planning/PROJECT.md (updated 2026-04-11)
 ## Current Position
 
 Phase: 10 of 11 (Archon Adapter — TS Only)
-Plan: 4 of 6 in Phase 10 (10-01 + 10-02 + 10-03 + 10-04 complete; 10-05 next)
+Plan: 5 of 6 in Phase 10 (10-01 + 10-02 + 10-03 + 10-04 + 10-05 complete; 10-06 next)
 Status: Phase 10 in progress
-Last activity: 2026-04-22 — Completed plan 10-04: GeminiProvider + GEMINI_CAPABILITIES + registerGeminiProvider (DI-based ProviderRegistryLike) + barrel index; provider.ts 49 LOC (under 250 cap); 5 vitest cases + compile-time ARC-02 structural check; full adapter suite 25/25 green; ARC-01/02/03/04/06 closed
+Last activity: 2026-04-22 — Completed plan 10-05: fixture-backed Archon contract test (4 cases over a 5-line NDJSON stub; renames + workflow_dispatch + leak-check + session forwarding) + archon-contract.yml (per-PR Archon-clone+bundle-apply gate) + archon-drift.yml (weekly dev-HEAD drift-guard with labelled issue auto-file); adapter suite 29/29 green; ARC-07 closed
 
-Progress: [██████████] 96% (49 of 51 plans complete)
+Progress: [██████████] 98% (50 of 51 plans complete)
 
 ## Performance Metrics
 
@@ -95,6 +95,7 @@ Progress: [██████████] 96% (49 of 51 plans complete)
 | Phase 10-archon-adapter-ts-only P01 | 10 | 3 tasks | 5 files |
 | Phase 10-archon-adapter-ts-only P03 | 30 | 2 tasks | 4 files |
 | Phase 10-archon-adapter-ts-only P04 | 5 | 2 tasks | 5 files |
+| Phase 10-archon-adapter-ts-only P05 | 6 | 2 tasks | 6 files |
 
 ## Accumulated Context
 
@@ -239,6 +240,10 @@ Recent decisions affecting current work:
 - [Phase 10-archon-adapter-ts-only]: Plan 10-04: provider.ts stays pure delegation shim (49 LOC); translation in options-translator.ts per plan 10-03; workflow_dispatch emitted before translated tool chunk with workerConversationId=''
 - [Phase 10-archon-adapter-ts-only]: Plan 10-04: registerGeminiProvider takes ProviderRegistryLike structural parameter (DI) — enables standalone typecheck/test without @archon/providers dep; 1-line header swap when dropped into Archon source tree (plan 10-05)
 - [Phase 10-archon-adapter-ts-only]: Plan 10-04: ARC-02 signature compliance enforced at compile time via const _structuralCheck: IAgentProvider = new GeminiProvider() at module scope — tsc catches drift, stricter than runtime assertion
+- [Phase 10-archon-adapter-ts-only]: Plan 10-05: contract test hand-authors SDK-shape chunks (not re-parsed from fixture) so it stays independent of Phase 3 dispatch internals; NDJSON fixture is sanity-checked only
+- [Phase 10-archon-adapter-ts-only]: Plan 10-05: archon-contract.yml bundle-copy/apply/bun-test steps guarded by existence check for pr-artifacts/gemini — lets this plan land in parallel with plan 10-06 without CI failures
+- [Phase 10-archon-adapter-ts-only]: Plan 10-05: archon-drift.yml files labelled 'archon-drift' issues via github-script@v7 with listForRepo dedupe on exact title match to prevent weekly spam
+- [Phase 10-archon-adapter-ts-only]: Plan 10-05: both CI workflows are Linux-only (10-RESEARCH Pitfall 5: Windows symlink unreliability for clone+copy+apply); matches Archon's own CI
 
 ### Pending Todos
 
@@ -255,6 +260,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-04-22T00:30:02.702Z
-Stopped at: Completed 10-04-PLAN.md
+Last session: 2026-04-22T00:34:34.961Z
+Stopped at: Completed 10-05-PLAN.md
 Resume file: None
