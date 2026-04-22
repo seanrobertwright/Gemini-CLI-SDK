@@ -121,7 +121,7 @@ Requirements for initial release. Each maps to a roadmap phase.
 - [ ] **ARC-02**: `GeminiClient.sendQuery(prompt, cwd, resumeSessionId?, options?): AsyncGenerator<MessageChunk>` matches Archon's signature exactly
 - [ ] **ARC-03**: `GeminiClient.getType()` returns `'gemini'`
 - [ ] **ARC-04**: Adapter subpackage source-publishes `.ts` (matches Archon's Bun-based monorepo convention)
-- [x] **ARC-05**: Adapter translates `AssistantRequestOptions` fields to SDK options (11 fully honored, 4 partially, 4 deferred, 5 silently ignored per Claude/Codex precedent)
+- [x] **ARC-05**: Adapter translates `AssistantRequestOptions` fields to SDK options (7 fully honored, 5 partially, 4 deferred, 9 silently ignored per spec/archon/mapping.md — 25 prefixed keys, row-by-row triage table)
 - [ ] **ARC-06**: Adapter is thin (~200 LOC target) with business logic in the SDK
 - [ ] **ARC-07**: Contract tests prove `DEFAULT_AI_ASSISTANT=gemini` works end-to-end in a real Archon checkout
 - [ ] **ARC-08**: PR opened against `coleam00/Archon` adding `packages/core/src/clients/gemini.ts` + 3-line `factory.ts` edit + `.env.example` entries

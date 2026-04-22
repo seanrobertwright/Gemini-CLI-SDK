@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Completed 10-01-PLAN.md
-last_updated: "2026-04-21T22:40:40.602Z"
-last_activity: "2026-04-21 — Completed plan 10-01: adapter-archon wired into pnpm+vitest workspace; local Archon IAgentProvider type mirror pinned to dev @ 7ea321419f; spec/archon/mapping.md 25-key OPTION_MAPPING triage doc published (ARC-05)"
+stopped_at: Completed 10-03-PLAN.md
+last_updated: "2026-04-22T00:25:30.944Z"
+last_activity: "2026-04-22 — Completed plan 10-03: adapter-archon options-translator core (OPTION_MAPPING 25 keys / buckets 7/5/4/9, translateOptions, translateChunk, warnIgnoredOptions) + drift guard; reconciled mapping.md Counts Audit arithmetic (11/5/4/5 -> 7/5/4/9) to match triage table; 20 vitest tests green (ARC-05)"
 progress:
   total_phases: 11
   completed_phases: 9
   total_plans: 51
-  completed_plans: 47
-  percent: 92
+  completed_plans: 48
+  percent: 94
 ---
 
 # Project State
@@ -26,11 +26,11 @@ See: .planning/PROJECT.md (updated 2026-04-11)
 ## Current Position
 
 Phase: 10 of 11 (Archon Adapter — TS Only)
-Plan: 2 of 6 in Phase 10 (10-01 + 10-02 complete; 10-03 next)
+Plan: 3 of 6 in Phase 10 (10-01 + 10-02 + 10-03 complete; 10-04 next)
 Status: Phase 10 in progress
-Last activity: 2026-04-21 — Completed plan 10-01: adapter-archon wired into pnpm+vitest workspace; local Archon IAgentProvider type mirror pinned to dev @ 7ea321419f; spec/archon/mapping.md 25-key OPTION_MAPPING triage doc published (ARC-05)
+Last activity: 2026-04-22 — Completed plan 10-03: adapter-archon options-translator core (OPTION_MAPPING 25 keys / buckets 7/5/4/9, translateOptions, translateChunk, warnIgnoredOptions) + drift guard; reconciled mapping.md Counts Audit arithmetic (11/5/4/5 -> 7/5/4/9) to match triage table; 20 vitest tests green (ARC-05)
 
-Progress: [█████████░] 92% (47 of 51 plans complete)
+Progress: [█████████░] 94% (48 of 51 plans complete)
 
 ## Performance Metrics
 
@@ -93,6 +93,7 @@ Progress: [█████████░] 92% (47 of 51 plans complete)
 | Phase 09-mcp-passthrough-isolated-config-dir P04 | 4 | 2 tasks | 9 files |
 | Phase 10-archon-adapter-ts-only P02 | 8 | 2 tasks | 3 files |
 | Phase 10-archon-adapter-ts-only P01 | 10 | 3 tasks | 5 files |
+| Phase 10-archon-adapter-ts-only P03 | 30 | 2 tasks | 4 files |
 
 ## Accumulated Context
 
@@ -231,6 +232,9 @@ Recent decisions affecting current work:
 - [Phase 10-archon-adapter-ts-only]: Plan 10-02: CI gate is standalone 'lint-env-namespace' job (not piggy-backed on parity); clear status reporting + independent branch protection
 - [Phase 10-archon-adapter-ts-only]: Mirror Archon types locally (no @archon/providers npm dep); SHA pinned in .archon-compat; drift test in plan 10-05 guards upstream drift
 - [Phase 10-archon-adapter-ts-only]: NodeConfig duplicates (systemPrompt, maxBudgetUsd, fallbackModel) registered as DISTINCT prefixed rows in OPTION_MAPPING (nodeConfig.<field>) — NOT collapsed with top-level; 25-key drift test in plan 10-03 depends on this convention
+- [Phase 10-archon-adapter-ts-only]: Plan 10-03: mapping.md Counts Audit (11/5/4/5) was an arithmetic mistake; row-by-row triage table sums to 7/5/4/9 — triage table wins, counts + drift expectations reconciled in a dedicated pre-Task-1 commit (f959926)
+- [Phase 10-archon-adapter-ts-only]: Plan 10-03: translateOptions returns approvalMode='yolo' unconditionally (headless-only SDK); tool_result.toolName='' because SDK ToolResultChunk lacks toolName — provider layer (10-04) may backfill via call-state tracking later
+- [Phase 10-archon-adapter-ts-only]: Plan 10-03: _resetWarnedForTesting() one-line export keeps vitest hermetic without vi.resetModules() churn for the module-level WARNED Set dedupe
 
 ### Pending Todos
 
@@ -247,6 +251,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-04-21T22:40:11.156Z
-Stopped at: Completed 10-01-PLAN.md
+Last session: 2026-04-22T00:24:19Z
+Stopped at: Completed 10-03-PLAN.md
 Resume file: None
