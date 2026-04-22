@@ -1,7 +1,7 @@
 # Archon Options → Gemini SDK Options — Canonical Triage (ARC-05)
 
 **Scope:** Phase 10 adapter-archon. Mirror status: Archon `dev` @ SHA in `.archon-compat`.
-**Totals:** 11 honored / 5 partial / 4 deferred / 5 ignored = 25 keys (distinct prefixed NodeConfig entries).
+**Totals:** 7 honored / 5 partial / 4 deferred / 9 ignored = 25 keys (distinct prefixed NodeConfig entries).
 
 Every key in `SendQueryOptions` (including inherited `AgentRequestOptions`)
 and `NodeConfig` MUST appear in this table. The drift test in
@@ -46,10 +46,12 @@ key `nodeConfig.<field>` — NodeConfig duplicates of `systemPrompt`,
 ## Counts Audit
 
 25 distinct `OPTION_MAPPING` keys, bucketed as follows (drift test pins these):
-- honored: 11
+- honored: 7 — model, abortSignal, systemPrompt, env, nodeConfig, nodeConfig.allowed_tools, nodeConfig.systemPrompt
 - partial: 5 — outputFormat, nodeConfig.denied_tools, nodeConfig.mcp, nodeConfig.output_format, nodeConfig.idle_timeout
 - deferred: 4 — nodeConfig.effort, nodeConfig.hooks, nodeConfig.skills, nodeConfig.agents
-- ignored: 5 — maxBudgetUsd, fallbackModel, forkSession, persistSession, assistantConfig (plus `nodeConfig.maxBudgetUsd` listed as its own ignored entry, which keeps total key count at 25 but increments the ignored bucket; resolve bucket math at implementation time by cross-checking the triage table row-by-row)
+- ignored: 9 — maxBudgetUsd, fallbackModel, forkSession, persistSession, assistantConfig, nodeConfig.thinking, nodeConfig.betas, nodeConfig.sandbox, nodeConfig.maxBudgetUsd
+
+The triage table above is the row-by-row source of truth; these bucket counts are derived from it.
 
 NodeConfig prefixed keys are DISTINCT from top-level keys of the same short
 name. The drift test in plan 10-03 asserts
@@ -69,5 +71,5 @@ surfaces an error chunk.
 `OPTION_MAPPING` and asserts:
   - exactly 25 distinct keys (set equality with the prefixed EXPECTED_KEYS)
   - every mapping value is one of the 4 triage buckets
-  - bucket counts match this document (11/5/4/5)
+  - bucket counts match this document (7/5/4/9)
 Failing test message names the uncategorized key or the diverging bucket.
