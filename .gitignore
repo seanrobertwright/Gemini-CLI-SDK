@@ -3,3 +3,10 @@ node_modules/
 npm-debug.log*
 .DS_Store
 Thumbs.db
+
+# Docs generated artifacts (plan 11-02)
+docs/ts/api/
+docs/public/python/
+docs/.vitepress/dist/
+docs/.vitepress/cache/
+docs/node_modules/

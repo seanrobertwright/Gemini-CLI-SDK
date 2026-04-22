@@ -70,7 +70,7 @@ export interface QueryOptions {
 
   /**
    * Additional directories for gemini-cli to include.
-   * Each entry maps to one `--include-directories <dir>` flag (CWD-02).
+   * Each entry maps to one `--include-directories {dir}` flag (CWD-02).
    */
   additionalDirectories?: string[];
 
@@ -97,7 +97,7 @@ export interface QueryOptions {
   allowedTools?: string[];
 
   /**
-   * Approval mode passed as `--approval-mode <mode>` (TOL-02).
+   * Approval mode passed as `--approval-mode {mode}` (TOL-02).
    * Undefined → no flag → gemini-cli's own default applies.
    */
   approvalMode?: ApprovalMode;

@@ -61,7 +61,7 @@ print(result["text"])        # the raw assistant text
 
 The SDK appends a fixed deterministic block to your `systemPrompt`/`system_prompt` (or uses it standalone if you didn't provide one):
 
-```markdown
+~~~markdown
 ## Required Output Format
 Your response MUST be valid JSON matching this JSON Schema:
 
@@ -70,7 +70,7 @@ Your response MUST be valid JSON matching this JSON Schema:
 ```
 
 Return ONLY the JSON object. No prose, no markdown fences in the output.
-```
+~~~
 
 This goes into the temp `GEMINI_SYSTEM_MD` file (SYS-01) and is cleaned up in `finally` (SYS-02).
 
@@ -88,7 +88,7 @@ On success → `QueryResult.structured` contains the parsed validated object.
 
 On validation failure, the SDK spawns a second subprocess with a retry prompt:
 
-```
+~~~
 <your original prompt>
 
 Your previous response was invalid JSON for the required schema.
@@ -99,7 +99,7 @@ Your previous response was:
 ```
 
 Return ONLY valid JSON matching the schema.
-```
+~~~
 
 The retry:
 

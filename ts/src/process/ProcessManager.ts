@@ -70,7 +70,7 @@ export class ProcessManager {
 /**
  * Terminates a process tree rooted at `pid`.
  *
- * - Windows: uses `taskkill /T /F /PID <pid>` (immediate tree-kill)
+ * - Windows: uses `taskkill /T /F /PID {pid}` (immediate tree-kill)
  * - Unix: sends SIGTERM, waits `gracePeriodMs`, then sends SIGKILL if still alive
  *
  * Silently ignores ESRCH (process already dead).

@@ -2,7 +2,7 @@
  * ts/src/session/Session.ts
  *
  * Session value object — immutable, identifier-based, NOT process-bound.
- * Plain Readonly<interface> — no class, no methods, no toJSON/fromJSON helpers.
+ * Plain `Readonly` interface — no class, no methods, no toJSON/fromJSON helpers.
  * JSON round-trip is free: JSON.parse(JSON.stringify(s)) returns an equivalent Session.
  *
  * Requirement: SES-03
