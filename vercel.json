@@ -1,0 +1,8 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "framework": null,
+  "installCommand": "pnpm install --frozen-lockfile",
+  "buildCommand": "curl -LsSf https://astral.sh/uv/install.sh | sh && export PATH=\"$HOME/.local/bin:$PATH\" && (cd python && uv sync --extra docs) && uv run --project python mkdocs build --strict --config-file mkdocs.yml && pnpm docs:typedoc && pnpm docs:build",
+  "outputDirectory": "docs/.vitepress/dist",
+  "ignoreCommand": "git diff HEAD^ HEAD --quiet -- docs docs-python ts/src python/src typedoc.json mkdocs.yml docs/.vitepress vercel.json"
+}

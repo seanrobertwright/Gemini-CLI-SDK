@@ -4,7 +4,7 @@ import typedocSidebar from '../ts/api/typedoc-sidebar.json' with { type: 'json' 
 export default defineConfig({
   title: 'Gemini SDK',
   description: 'TypeScript + Python SDK for gemini-cli (Claude Agent SDK-shaped).',
-  base: '/Gemini-SDK/',
+  base: process.env.DOCS_BASE ?? '/Gemini-SDK/',
   lastUpdated: true,
   // Dead links to repo files outside the docs tree (e.g. ts/tests-live/README,
   // .planning/REQUIREMENTS) are expected — these are repo cross-references only.
