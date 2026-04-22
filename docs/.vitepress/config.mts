@@ -11,6 +11,9 @@ export default defineConfig({
   ignoreDeadLinks: [
     /\/ts\/tests-live\//,
     /\/\.planning\//,
+    /migration-claude/,
+    /migration-codex/,
+    /archon-integration/,
   ],
   themeConfig: {
     nav: [

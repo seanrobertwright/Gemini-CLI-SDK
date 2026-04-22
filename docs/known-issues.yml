@@ -1,0 +1,26 @@
+# known-issues.yml — source of truth for docs/known-issues.md table
+# Schema: {upstream_issue, title, sdk_defense, status: open|fixed}
+- upstream_issue: "#14180"
+  title: "--resume + -p interop broken in some gemini-cli versions"
+  sdk_defense: "Transcript-prepend fallback in Session + ArgvBuilder (SES-04); primary path verified pass on 0.37.1"
+  status: open
+- upstream_issue: "#13388"
+  title: "No native JSON schema enforcement in output"
+  sdk_defense: "Best-effort schema injection + Zod/Pydantic runtime validation + one retry (OUT-01..04); marked @experimental"
+  status: open
+- upstream_issue: "#3485"
+  title: "MCP server config format drift across versions"
+  sdk_defense: "Isolated temp GEMINI_CONFIG_DIR per query; user's ~/.gemini/settings.json never mutated (MCP-02)"
+  status: open
+- upstream_issue: "#22970"
+  title: "OAuth ToS risk in headless/SDK contexts"
+  sdk_defense: "GEMINI_API_KEY is canonical default; OAuth auto-login explicitly forbidden (AUT-05, AUT-08)"
+  status: open
+- upstream_issue: "#4945"
+  title: "Encoding issues in non-UTF-8 environments"
+  sdk_defense: "Force UTF-8 at subprocess spawn; decode stderr/stdout with replacement on error (FDN-04)"
+  status: open
+- upstream_issue: "#13604"
+  title: "Windows EBUSY on settings.json cleanup"
+  sdk_defense: "fs.rm with maxRetries:3 retryDelay:200 in cleanupConfigDir (MCP-04)"
+  status: open
