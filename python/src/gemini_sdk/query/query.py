@@ -31,6 +31,7 @@ import anyio
 import anyio.abc
 
 from ..auth import resolve_auth
+from ..compat import check_compat_once
 from ..errors import ErrorMapper, GeminiError, InvalidPromptError, SchemaValidationError, UnsupportedFeatureError
 from ..output.inject_schema import build_schema_injection_block
 from ..output.schema_validator import validate_with_schema
@@ -39,6 +40,7 @@ from ..parser.dispatch import dispatch
 from ..parser.parse_ndjson import parse_ndjson
 from ..parser.types import MessageChunk, RawEvent, ResultChunk
 from ..process.process_manager import ProcessManager, kill_tree
+from ..process.binary_resolver import resolve_binary
 from ..session import Session, normalise_session_id
 from ..mcp import cleanup_config_dir, write_config_dir
 from .build_argv import build_argv
@@ -169,6 +171,8 @@ async def query(options: QueryOptions) -> AsyncIterator[MessageChunk]:
 
     # Step 4: Build argv and spawn subprocess
     argv = build_argv(options)
+    # Phase 11 (REL-06): run once-per-process compat probe before first spawn.
+    check_compat_once(resolve_binary(options.get("cli_path")))
     manager = ProcessManager()
     spawn_result = await manager.spawn(
         argv=argv,
@@ -363,6 +367,8 @@ async def query_raw(options: QueryOptions) -> AsyncIterator[RawEvent]:
         env_overrides["GEMINI_CONFIG_DIR"] = mcp_config_dir_raw
 
     argv = build_argv(options)
+    # Phase 11 (REL-06): run once-per-process compat probe before first spawn.
+    check_compat_once(resolve_binary(options.get("cli_path")))
     manager = ProcessManager()
     spawn_result = await manager.spawn(
         argv=argv,

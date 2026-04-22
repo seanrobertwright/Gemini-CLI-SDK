@@ -23,7 +23,7 @@ import { writeFile, unlink } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { randomBytes } from 'node:crypto';
-import { ProcessManager, killTree } from '../process/index.js';
+import { ProcessManager, killTree, resolveBinary } from '../process/index.js';
 import { parseNdjson, dispatch } from '../parser/index.js';
 import type { MessageChunk, RawEvent, ResultChunk } from '../parser/types.js';
 import type { QueryOptions, QueryResult } from './types.js';
@@ -37,6 +37,7 @@ import { resolveAuth } from '../auth/index.js';
 import { normaliseSessionId } from '../session/index.js';
 import type { Session } from '../session/index.js';
 import { writeConfigDir, cleanupConfigDir } from '../mcp/index.js';
+import { checkCompatOnce } from '../compat.js';
 
 // ────────────────────────────────────────────────────────────────────────────
 // Internal helpers
@@ -169,6 +170,8 @@ export async function* query(options: QueryOptions): AsyncGenerator<MessageChunk
 
   // Step 4: Build argv and spawn subprocess
   const argv = buildArgv(options);
+  // Phase 11 (REL-06): run once-per-process compat probe before first spawn.
+  checkCompatOnce({ cliPath: resolveBinary(options.cliPath) });
   const manager = new ProcessManager();
   const spawnResult = manager.spawn({
     argv,
@@ -353,6 +356,8 @@ export async function* queryRaw(options: QueryOptions): AsyncGenerator<RawEvent>
   }
 
   const argv = buildArgv(options);
+  // Phase 11 (REL-06): run once-per-process compat probe before first spawn.
+  checkCompatOnce({ cliPath: resolveBinary(options.cliPath) });
   const manager = new ProcessManager();
   const spawnResult = manager.spawn({
     argv,
