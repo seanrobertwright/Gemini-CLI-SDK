@@ -1,0 +1,101 @@
+name: archon-contract
+
+# Phase 10 ARC-07: prove the adapter-archon PR bundle (plan 10-06) applies
+# cleanly against Archon at the pinned SHA and that Archon's provider tests
+# still pass. Also runs the local fixture-backed contract test.
+
+on:
+  push:
+    branches: [main, dev]
+  pull_request:
+    branches: [main, dev]
+
+jobs:
+  archon-contract:
+    name: archon-contract
+    # Linux-only: RESEARCH Pitfall 5 notes symlinks are unreliable on Windows
+    # for the clone+copy+apply sequence. Linux is sufficient for this gate.
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - name: Setup Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: pnpm
+          cache-dependency-path: pnpm-lock.yaml
+
+      - name: Install adapter-archon deps
+        run: pnpm -F @gemini-sdk/adapter-archon install
+
+      - name: Run local adapter-archon contract suite
+        run: pnpm -F @gemini-sdk/adapter-archon test
+
+      - name: Read pinned Archon SHA from .archon-compat
+        id: archon-sha
+        run: |
+          set -euo pipefail
+          # shellcheck disable=SC1091
+          source .archon-compat
+          echo "ARCHON_SHA=${ARCHON_SHA}" >> "$GITHUB_ENV"
+          echo "ARCHON_REPO=${ARCHON_REPO}" >> "$GITHUB_ENV"
+          echo "resolved ARCHON_SHA=${ARCHON_SHA}"
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Clone Archon at pinned SHA
+        run: |
+          set -euo pipefail
+          git clone "https://github.com/${ARCHON_REPO}" "$RUNNER_TEMP/archon"
+          cd "$RUNNER_TEMP/archon"
+          git checkout "$ARCHON_SHA"
+          git log -1 --oneline
+
+      - name: Check for plan 10-06 PR bundle
+        id: bundle
+        run: |
+          set -euo pipefail
+          if [ -d ".planning/phases/10-archon-adapter-ts-only/pr-artifacts/gemini" ]; then
+            echo "present=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "present=false" >> "$GITHUB_OUTPUT"
+            echo "::warning::plan 10-06 pr-artifacts/ bundle not found; skipping Archon-side validation. Local contract test already passed."
+          fi
+
+      - name: Copy PR bundle into Archon clone
+        if: steps.bundle.outputs.present == 'true'
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/archon/packages/providers/src/community"
+          cp -r .planning/phases/10-archon-adapter-ts-only/pr-artifacts/gemini \
+            "$RUNNER_TEMP/archon/packages/providers/src/community/"
+
+      - name: Apply registry patch
+        if: steps.bundle.outputs.present == 'true'
+        run: |
+          set -euo pipefail
+          cd "$RUNNER_TEMP/archon"
+          git apply "$GITHUB_WORKSPACE/.planning/phases/10-archon-adapter-ts-only/pr-artifacts/registry.patch"
+
+      - name: Install Archon deps (bun)
+        if: steps.bundle.outputs.present == 'true'
+        run: |
+          set -euo pipefail
+          cd "$RUNNER_TEMP/archon"
+          bun install
+
+      - name: Run Archon providers test suite
+        if: steps.bundle.outputs.present == 'true'
+        run: |
+          set -euo pipefail
+          cd "$RUNNER_TEMP/archon"
+          bun test packages/providers

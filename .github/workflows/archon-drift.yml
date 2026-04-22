@@ -1,0 +1,139 @@
+name: archon-drift
+
+# Phase 10 ARC-07 drift-guard: weekly re-run of the contract test against
+# Archon's `dev` HEAD (not the pinned SHA). On failure, opens an issue so
+# the team sees upstream drift without blocking normal CI.
+
+on:
+  schedule:
+    # Mondays at 12:00 UTC
+    - cron: "0 12 * * MON"
+  workflow_dispatch:
+
+jobs:
+  archon-drift:
+    name: archon-drift
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - name: Setup Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: pnpm
+          cache-dependency-path: pnpm-lock.yaml
+
+      - name: Install adapter-archon deps
+        run: pnpm -F @gemini-sdk/adapter-archon install
+
+      - name: Run local adapter-archon contract suite
+        run: pnpm -F @gemini-sdk/adapter-archon test
+
+      - name: Read Archon repo from .archon-compat (ignore pinned SHA)
+        run: |
+          set -euo pipefail
+          # shellcheck disable=SC1091
+          source .archon-compat
+          echo "ARCHON_REPO=${ARCHON_REPO}" >> "$GITHUB_ENV"
+          echo "ARCHON_BRANCH=${ARCHON_BRANCH:-dev}" >> "$GITHUB_ENV"
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Clone Archon at dev HEAD
+        run: |
+          set -euo pipefail
+          git clone --branch "$ARCHON_BRANCH" --depth 1 \
+            "https://github.com/${ARCHON_REPO}" "$RUNNER_TEMP/archon"
+          cd "$RUNNER_TEMP/archon"
+          git log -1 --oneline
+
+      - name: Check for plan 10-06 PR bundle
+        id: bundle
+        run: |
+          set -euo pipefail
+          if [ -d ".planning/phases/10-archon-adapter-ts-only/pr-artifacts/gemini" ]; then
+            echo "present=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "present=false" >> "$GITHUB_OUTPUT"
+            echo "::warning::plan 10-06 pr-artifacts/ bundle not found; drift-guard cannot validate Archon-side integration."
+          fi
+
+      - name: Copy PR bundle into Archon clone
+        if: steps.bundle.outputs.present == 'true'
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/archon/packages/providers/src/community"
+          cp -r .planning/phases/10-archon-adapter-ts-only/pr-artifacts/gemini \
+            "$RUNNER_TEMP/archon/packages/providers/src/community/"
+
+      - name: Apply registry patch
+        if: steps.bundle.outputs.present == 'true'
+        run: |
+          set -euo pipefail
+          cd "$RUNNER_TEMP/archon"
+          git apply "$GITHUB_WORKSPACE/.planning/phases/10-archon-adapter-ts-only/pr-artifacts/registry.patch"
+
+      - name: Install Archon deps (bun)
+        if: steps.bundle.outputs.present == 'true'
+        run: |
+          set -euo pipefail
+          cd "$RUNNER_TEMP/archon"
+          bun install
+
+      - name: Run Archon providers test suite
+        id: archon_test
+        if: steps.bundle.outputs.present == 'true'
+        run: |
+          set -euo pipefail
+          cd "$RUNNER_TEMP/archon"
+          bun test packages/providers
+
+      - name: File drift issue on failure
+        if: failure()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const today = new Date().toISOString().slice(0, 10);
+            const title = `Archon drift detected ${today}`;
+            const runUrl = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
+            const body = [
+              `The weekly **archon-drift** workflow failed against Archon \`dev\` HEAD.`,
+              ``,
+              `**Run:** ${runUrl}`,
+              `**Commit:** ${context.sha}`,
+              ``,
+              `Likely causes:`,
+              `- Archon changed \`IAgentProvider\` or \`MessageChunk\` shape`,
+              `- Archon's \`packages/providers\` test harness changed`,
+              `- \`registry.patch\` no longer applies cleanly`,
+              ``,
+              `Action: bump \`ARCHON_SHA\` in \`.archon-compat\`, regenerate \`spec/archon/mapping.md\`, and rerun the phase-10 contract + drift workflows.`,
+            ].join('\n');
+            const { data: issues } = await github.rest.issues.listForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: 'open',
+              labels: 'archon-drift',
+              per_page: 50,
+            });
+            const existing = issues.find((i) => i.title === title);
+            if (existing) {
+              core.info(`Drift issue already open: #${existing.number}`);
+              return;
+            }
+            await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title,
+              body,
+              labels: ['archon-drift'],
+            });
