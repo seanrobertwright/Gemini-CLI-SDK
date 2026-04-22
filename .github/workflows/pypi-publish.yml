@@ -1,0 +1,47 @@
+name: Publish to PyPI
+
+on:
+  release:
+    types: [created]
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Skip actual publish (build only)"
+        required: false
+        default: "false"
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    environment:
+      name: release
+      url: https://pypi.org/project/gemini-sdk/
+    permissions:
+      id-token: write  # required for PyPI trusted publishing OIDC
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Setup uv
+        uses: astral-sh/setup-uv@v5
+      - name: Verify PyPI name available / owned
+        run: bash scripts/check-pypi-name.sh
+      - name: Sync version file into pyproject
+        run: bash scripts/sync-version.sh
+      - name: Build distribution
+        run: |
+          cd python
+          uv build
+      - name: List built artifacts
+        run: ls -la python/dist/
+      - name: Publish to PyPI (trusted publishing)
+        if: github.event_name == 'release' || inputs.dry_run != 'true'
+        run: |
+          cd python
+          uv publish --trusted-publishing always
+      - name: Dry-run notice
+        if: github.event_name == 'workflow_dispatch' && inputs.dry_run == 'true'
+        run: echo "DRY RUN — skipped uv publish. Artifacts in python/dist/ ready for manual upload if needed."
