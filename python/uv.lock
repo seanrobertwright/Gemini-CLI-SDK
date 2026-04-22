@@ -362,7 +362,7 @@ wheels = [
 
 [[package]]
 name = "gemini-sdk"
-version = "0.0.0"
+version = "1.0.0"
 source = { editable = "." }
 dependencies = [
     { name = "anyio" },
@@ -389,6 +389,7 @@ docs = [
 
 [package.dev-dependencies]
 dev = [
+    { name = "hypothesis" },
     { name = "pytest" },
     { name = "pyyaml" },
 ]
@@ -414,6 +415,7 @@ provides-extras = ["dev", "docs"]
 
 [package.metadata.requires-dev]
 dev = [
+    { name = "hypothesis", specifier = ">=6.151.13" },
     { name = "pytest", specifier = ">=9.0.3" },
     { name = "pyyaml", specifier = ">=6.0.3" },
 ]

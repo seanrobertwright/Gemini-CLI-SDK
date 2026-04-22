@@ -1,6 +1,6 @@
 [project]
 name = "gemini-sdk"
-version = "0.0.0"
+version = "1.0.0"
 description = "Python SDK for gemini-cli"
 requires-python = ">=3.10"
 license = "MIT"
@@ -60,6 +60,7 @@ python_functions = ["test_*", "run_*"]
 
 [dependency-groups]
 dev = [
+    "hypothesis>=6.151.13",
     "pytest>=9.0.3",
     "pyyaml>=6.0.3",
 ]
