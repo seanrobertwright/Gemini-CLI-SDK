@@ -4,7 +4,7 @@ milestone: v1.0
 milestone_name: milestone
 status: planning
 stopped_at: Completed 11-06-PLAN.md — v1.0.0 released to npm + PyPI; all 11 phases complete
-last_updated: "2026-04-22T13:51:16.082Z"
+last_updated: "2026-04-22T15:00:56.333Z"
 last_activity: "2026-04-21 — Completed plan 10-06: PR artifact bundle staged (9 files under pr-artifacts/). Task 2 (upstream draft PR) deferred — adapter stays local to user's Archon fork per user direction. ARC-08 closed locally."
 progress:
   total_phases: 11
