@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: planning
-stopped_at: "Completed 11-01-PLAN.md: runtime compat probe in TS + Python"
-last_updated: "2026-04-22T12:30:59.845Z"
+stopped_at: Completed 11-02-PLAN.md
+last_updated: "2026-04-22T12:32:53.622Z"
 last_activity: "2026-04-21 — Completed plan 10-06: PR artifact bundle staged (9 files under pr-artifacts/). Task 2 (upstream draft PR) deferred — adapter stays local to user's Archon fork per user direction. ARC-08 closed locally."
 progress:
   total_phases: 11
   completed_phases: 10
   total_plans: 57
-  completed_plans: 53
+  completed_plans: 54
   percent: 100
 ---
 
@@ -99,6 +99,7 @@ Progress: [██████████] 100% (51 of 51 plans complete)
 | Phase 10-archon-adapter-ts-only P06 | 45 | 1 task (Task 2 deferred) | 9 files |
 | Phase 11 P03 | 3 | 2 tasks | 10 files |
 | Phase 11-docs-site-compat-matrix-release P01 | 5 | 3 tasks | 10 files |
+| Phase 11-docs-site-compat-matrix-release P02 | 7 | 2 tasks | 18 files |
 
 ## Accumulated Context
 
@@ -254,6 +255,8 @@ Recent decisions affecting current work:
 - [Phase 11-01]: vi.resetAllMocks() required instead of vi.clearAllMocks() in TS beforeEach: clearAllMocks resets call counts but NOT mockReturnValue implementations
 - [Phase 11-01]: TS+Python compat probe: both query() and queryRaw() independently receive checkCompatOnce calls since both spawn subprocesses; module-level cache ensures one probe per process
 - [Phase 11-01]: resolveBinary(options.cliPath) called before probe to get exact resolved path matching ProcessManager's own resolution
+- [Phase 11-docs-site-compat-matrix-release]: TypeDoc runs before VitePress in CI; docs:typedoc must precede docs:build; config.mts statically imports typedoc-sidebar.json
+- [Phase 11-docs-site-compat-matrix-release]: JSDoc angle-bracket placeholders must use {curly-brace} or backtick form; bare <angle-bracket> tokens outside code fences cause Vue 3 template compiler errors in VitePress
 
 ### Pending Todos
 
@@ -270,6 +273,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-04-22T12:30:59.842Z
-Stopped at: Completed 11-01-PLAN.md: runtime compat probe in TS + Python
+Last session: 2026-04-22T12:32:53.618Z
+Stopped at: Completed 11-02-PLAN.md
 Resume file: None
