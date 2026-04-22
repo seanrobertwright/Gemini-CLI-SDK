@@ -33,6 +33,11 @@ dev = [
     "hypothesis>=6.0",
     "mcp[cli]>=1.27.0",
 ]
+docs = [
+    "mkdocs-material>=9.5",
+    "mkdocstrings[python]>=0.29",
+    "griffe>=1.0",
+]
 
 [project.urls]
 Homepage = "https://seanrobertwright.github.io/Gemini-SDK/"

@@ -1,0 +1,30 @@
+site_name: Gemini SDK — Python
+site_url: https://seanrobertwright.github.io/Gemini-SDK/python/
+docs_dir: docs-python
+site_dir: docs/public/python
+use_directory_urls: true
+
+theme:
+  name: material
+  features:
+    - navigation.tabs
+    - navigation.sections
+    - content.code.copy
+    - content.code.annotate
+
+plugins:
+  - search
+  - mkdocstrings:
+      handlers:
+        python:
+          paths: [python/src]
+          options:
+            docstring_style: google
+            show_source: true
+            show_signature_annotations: true
+            separate_signature: true
+            merge_init_into_class: true
+
+nav:
+  - Home: index.md
+  - API Reference: api.md
