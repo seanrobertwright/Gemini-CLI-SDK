@@ -4,9 +4,22 @@ version = "0.0.0"
 description = "Python SDK for gemini-cli"
 requires-python = ">=3.10"
 license = "MIT"
+readme = "CHANGELOG.md"
+authors = [{ name = "Sean Robert Wright" }]
+keywords = ["gemini", "gemini-cli", "sdk", "llm", "ai"]
+classifiers = [
+  "License :: OSI Approved :: MIT License",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+  "Operating System :: OS Independent",
+]
 dependencies = [
     "anyio>=4.0",
     "jsonschema>=4.0",
+    "packaging>=23.0",
     "psutil>=6.0",
     "pydantic>=2.13.2",
     "typing-extensions>=4.0",
@@ -36,5 +49,6 @@ python_functions = ["test_*", "run_*"]
 
 [dependency-groups]
 dev = [
+    "pytest>=9.0.3",
     "pyyaml>=6.0.3",
 ]

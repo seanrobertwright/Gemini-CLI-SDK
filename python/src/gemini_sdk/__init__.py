@@ -2,6 +2,7 @@
 
 __version__ = "0.0.0"
 
+from .compat import check_compat_once
 from .auth import resolve_auth, AUTH_PRECEDENCE
 from .errors import GeminiNotFoundError, SchemaValidationError, UnsupportedFeatureError
 from .process import (
@@ -26,6 +27,7 @@ from .query import (
 from .session import Session, TranscriptEntry, normalise_session_id
 
 __all__ = [
+    "check_compat_once",
     "resolve_auth",
     "AUTH_PRECEDENCE",
     "ProcessStrategy",
