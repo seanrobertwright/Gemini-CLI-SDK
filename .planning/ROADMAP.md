@@ -207,7 +207,14 @@ Plans:
   2. `npm install @gemini-sdk/gemini` on Windows/macOS/Linux and `uv add gemini-sdk` on Windows/macOS/Linux both succeed from clean machines, the installed packages import and run their smoke tests, and the runtime `gemini --version` probe emits a warning (not an error) when the detected CLI version is outside the tested range
   3. `git tag` shows `v1.0.0` exists, `npm view @gemini-sdk/gemini version` and `pip index versions gemini-sdk` both report `1.0.0`, and the Archon PR from Phase 10 is in `merged` state — the tag was cut **after** the merge
   4. The compat matrix page lists the tested `gemini-cli` version range and links every upstream issue the SDK defends against (#14180, #13388, #3485, #22970, #4945 et al.), and the migration guide covers translating Claude Agent SDK / Codex SDK call sites to `query()`
-**Plans**: TBD
+**Plans**: 6 plans
+Plans:
+- [ ] 11-01-PLAN.md — Wave 1: Runtime compat probe (TS + Python) wired into query()
+- [ ] 11-02-PLAN.md — Wave 1: VitePress + MkDocs-material + TypeDoc scaffolding + MIT LICENSE
+- [ ] 11-03-PLAN.md — Wave 1: Release infrastructure — changesets init + ts/package.json publishable + CHANGELOG mirror script + PyPI name check
+- [ ] 11-04-PLAN.md — Wave 2: Doc content — quickstart, compat matrix, known-issues, migration guides, Archon integration
+- [ ] 11-05-PLAN.md — Wave 2: CI workflows — docs.yml (GitHub Pages), release.yml (changesets), pypi-publish.yml (trusted publishing)
+- [ ] 11-06-PLAN.md — Wave 3: local-release-smoke.sh (REL-07 gate) + v1.0.0 changeset + version bump + tag
 
 ## Progress
 
@@ -226,7 +233,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8 →
 | 8. Tools + Approval Mode + Structured Output | 6/6 | Complete   | 2026-04-20 |
 | 9. MCP Passthrough + Isolated Config Dir | 4/4 | Complete   | 2026-04-21 |
 | 10. Archon Adapter (TS only) | 6/6 | Complete    | 2026-04-22 |
-| 11. Docs Site + Compat Matrix + Release | 0/TBD | Not started | - |
+| 11. Docs Site + Compat Matrix + Release | 0/6 | Not started | - |
 
 ---
 *Roadmap created: 2026-04-11*
