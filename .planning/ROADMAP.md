@@ -233,7 +233,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8 →
 | 8. Tools + Approval Mode + Structured Output | 6/6 | Complete   | 2026-04-20 |
 | 9. MCP Passthrough + Isolated Config Dir | 4/4 | Complete   | 2026-04-21 |
 | 10. Archon Adapter (TS only) | 6/6 | Complete    | 2026-04-22 |
-| 11. Docs Site + Compat Matrix + Release | 1/6 | In Progress|  |
+| 11. Docs Site + Compat Matrix + Release | 2/6 | In Progress|  |
 
 ---
 *Roadmap created: 2026-04-11*

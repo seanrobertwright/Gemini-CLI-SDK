@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: planning
-stopped_at: Completed 11-03-PLAN.md
-last_updated: "2026-04-22T12:29:29.234Z"
+stopped_at: "Completed 11-01-PLAN.md: runtime compat probe in TS + Python"
+last_updated: "2026-04-22T12:30:59.845Z"
 last_activity: "2026-04-21 — Completed plan 10-06: PR artifact bundle staged (9 files under pr-artifacts/). Task 2 (upstream draft PR) deferred — adapter stays local to user's Archon fork per user direction. ARC-08 closed locally."
 progress:
   total_phases: 11
   completed_phases: 10
   total_plans: 57
-  completed_plans: 52
+  completed_plans: 53
   percent: 100
 ---
 
@@ -98,6 +98,7 @@ Progress: [██████████] 100% (51 of 51 plans complete)
 | Phase 10-archon-adapter-ts-only P05 | 6 | 2 tasks | 6 files |
 | Phase 10-archon-adapter-ts-only P06 | 45 | 1 task (Task 2 deferred) | 9 files |
 | Phase 11 P03 | 3 | 2 tasks | 10 files |
+| Phase 11-docs-site-compat-matrix-release P01 | 5 | 3 tasks | 10 files |
 
 ## Accumulated Context
 
@@ -250,6 +251,9 @@ Recent decisions affecting current work:
 - [Phase 11]: Empty changeset seeded so pnpm changeset status exits 0 — correct pre-release state for pipeline skeleton before any release bump
 - [Phase 11]: PyPI name gemini-sdk confirmed available (HTTP 404 from pypi.org as of 2026-04-22) — no fallback name needed
 - [Phase 11]: python/pyproject.toml readme field points to CHANGELOG.md so PyPI shows version history as the package description
+- [Phase 11-01]: vi.resetAllMocks() required instead of vi.clearAllMocks() in TS beforeEach: clearAllMocks resets call counts but NOT mockReturnValue implementations
+- [Phase 11-01]: TS+Python compat probe: both query() and queryRaw() independently receive checkCompatOnce calls since both spawn subprocesses; module-level cache ensures one probe per process
+- [Phase 11-01]: resolveBinary(options.cliPath) called before probe to get exact resolved path matching ProcessManager's own resolution
 
 ### Pending Todos
 
@@ -266,6 +270,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-04-22T12:29:29.231Z
-Stopped at: Completed 11-03-PLAN.md
+Last session: 2026-04-22T12:30:59.842Z
+Stopped at: Completed 11-01-PLAN.md: runtime compat probe in TS + Python
 Resume file: None

@@ -151,8 +151,8 @@ Requirements for initial release. Each maps to a roadmap phase.
 - [x] **REL-02**: Python package published to PyPI via `uv publish` + trusted publishing
 - [ ] **REL-03**: MIT license in root LICENSE file
 - [x] **REL-04**: CHANGELOG.md maintained via changesets (TS) and mirrored in Python release notes
-- [ ] **REL-05**: `gemini-cli` is declared a runtime prerequisite (NOT bundled, NOT auto-installed)
-- [ ] **REL-06**: Runtime version probe warns if detected `gemini-cli` version is outside tested range (warn-not-error)
+- [x] **REL-05**: `gemini-cli` is declared a runtime prerequisite (NOT bundled, NOT auto-installed)
+- [x] **REL-06**: Runtime version probe warns if detected `gemini-cli` version is outside tested range (warn-not-error)
 - [ ] **REL-07**: v1.0.0 tagged only when Archon adapter PR merges and `DEFAULT_AI_ASSISTANT=gemini` is confirmed working
 
 ## v2 Requirements
@@ -321,8 +321,8 @@ All v1 requirements map to exactly one phase. Coverage: 102/102.
 | REL-02 | Phase 11 | Complete |
 | REL-03 | Phase 11 | Pending |
 | REL-04 | Phase 11 | Complete |
-| REL-05 | Phase 11 | Pending |
-| REL-06 | Phase 11 | Pending |
+| REL-05 | Phase 11 | Complete |
+| REL-06 | Phase 11 | Complete |
 | REL-07 | Phase 11 | Pending |
 
 **Coverage:**
