@@ -1,0 +1,4 @@
+# file: D:\repos\Gemini-SDK\python\src\gemini_sdk\query\build_argv.py
+# hypothesis_version: 6.151.13
+
+[',', '--allowed-tools', '--approval-mode', '--model', '--output-format', '--resume', '-p', '1', 'allowed_tools', 'approval_mode', 'auto', 'model', 'prompt', 'session', 'stream-json']

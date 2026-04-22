@@ -1,0 +1,4 @@
+# file: D:\repos\Gemini-SDK\python\src\gemini_sdk\compat.py
+# hypothesis_version: 6.151.13
+
+[5.0, '--version', '.gemini-cli-compat', 'GEMINI_SDK_COMPAT', '\\d+\\.\\d+\\.\\d+', 'silent', 'strict', 'utf-8', 'warn']
