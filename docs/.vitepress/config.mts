@@ -11,9 +11,6 @@ export default defineConfig({
   ignoreDeadLinks: [
     /\/ts\/tests-live\//,
     /\/\.planning\//,
-    /migration-claude/,
-    /migration-codex/,
-    /archon-integration/,
   ],
   themeConfig: {
     nav: [
@@ -21,12 +18,22 @@ export default defineConfig({
       { text: 'Python', link: '/python/' },
       { text: 'Compat Matrix', link: '/compat-matrix' },
       { text: 'Known Issues', link: '/known-issues' },
+      { text: 'Archon', link: '/archon-integration' },
     ],
     sidebar: {
       '/ts/api/': typedocSidebar,
       '/ts/': [
         { text: 'Getting Started', items: [{ text: 'Quickstart', link: '/ts/quickstart' }] },
+        { text: 'Migration', items: [
+          { text: 'From Claude Agent SDK', link: '/ts/migration-claude' },
+          { text: 'From Codex SDK', link: '/ts/migration-codex' },
+        ]},
         { text: 'API Reference', link: '/ts/api/' },
+      ],
+      '/': [
+        { text: 'Compat Matrix', link: '/compat-matrix' },
+        { text: 'Known Issues', link: '/known-issues' },
+        { text: 'Archon Integration', link: '/archon-integration' },
       ],
     },
     socialLinks: [{ icon: 'github', link: 'https://github.com/seanrobertwright/Gemini-SDK' }],
