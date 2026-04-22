@@ -137,19 +137,19 @@ Requirements for initial release. Each maps to a roadmap phase.
 
 ### Documentation
 
-- [ ] **DOC-01**: Hosted doc site is published (VitePress + mkdocs-material, single site with two sections)
-- [ ] **DOC-02**: Quickstart guide covers installing `gemini-cli` (required prerequisite), obtaining an API key, first `query()` call, first multi-turn session, first MCP server
-- [ ] **DOC-03**: API reference is auto-generated from types (typedoc for TS, mkdocstrings for Python)
-- [ ] **DOC-04**: Compat matrix documents supported `gemini-cli` version range with runtime `gemini --version` warning
-- [ ] **DOC-05**: Known-issues appendix links the live gemini-cli bugs the SDK defends against (#14180, #13388, #3485 et al., encoding issues, OAuth 403)
-- [ ] **DOC-06**: Migration guide for users coming from Claude Agent SDK / Codex SDK
-- [ ] **DOC-07**: Archon integration guide shows how to configure `DEFAULT_AI_ASSISTANT=gemini`
+- [x] **DOC-01**: Hosted doc site is published (VitePress + mkdocs-material, single site with two sections)
+- [x] **DOC-02**: Quickstart guide covers installing `gemini-cli` (required prerequisite), obtaining an API key, first `query()` call, first multi-turn session, first MCP server
+- [x] **DOC-03**: API reference is auto-generated from types (typedoc for TS, mkdocstrings for Python)
+- [x] **DOC-04**: Compat matrix documents supported `gemini-cli` version range with runtime `gemini --version` warning
+- [x] **DOC-05**: Known-issues appendix links the live gemini-cli bugs the SDK defends against (#14180, #13388, #3485 et al., encoding issues, OAuth 403)
+- [x] **DOC-06**: Migration guide for users coming from Claude Agent SDK / Codex SDK
+- [x] **DOC-07**: Archon integration guide shows how to configure `DEFAULT_AI_ASSISTANT=gemini`
 
 ### Release & Publishing
 
 - [x] **REL-01**: TS package published to npm via changesets
 - [x] **REL-02**: Python package published to PyPI via `uv publish` + trusted publishing
-- [ ] **REL-03**: MIT license in root LICENSE file
+- [x] **REL-03**: MIT license in root LICENSE file
 - [x] **REL-04**: CHANGELOG.md maintained via changesets (TS) and mirrored in Python release notes
 - [x] **REL-05**: `gemini-cli` is declared a runtime prerequisite (NOT bundled, NOT auto-installed)
 - [x] **REL-06**: Runtime version probe warns if detected `gemini-cli` version is outside tested range (warn-not-error)
@@ -310,16 +310,16 @@ All v1 requirements map to exactly one phase. Coverage: 102/102.
 | PAR-03 | Phase 2 | Complete |
 | PAR-04 | Phase 2 | Complete |
 | PAR-05 | Phase 5 | Complete |
-| DOC-01 | Phase 11 | Pending |
-| DOC-02 | Phase 11 | Pending |
-| DOC-03 | Phase 11 | Pending |
-| DOC-04 | Phase 11 | Pending |
-| DOC-05 | Phase 11 | Pending |
-| DOC-06 | Phase 11 | Pending |
-| DOC-07 | Phase 11 | Pending |
+| DOC-01 | Phase 11 | Complete |
+| DOC-02 | Phase 11 | Complete |
+| DOC-03 | Phase 11 | Complete |
+| DOC-04 | Phase 11 | Complete |
+| DOC-05 | Phase 11 | Complete |
+| DOC-06 | Phase 11 | Complete |
+| DOC-07 | Phase 11 | Complete |
 | REL-01 | Phase 11 | Complete |
 | REL-02 | Phase 11 | Complete |
-| REL-03 | Phase 11 | Pending |
+| REL-03 | Phase 11 | Complete |
 | REL-04 | Phase 11 | Complete |
 | REL-05 | Phase 11 | Complete |
 | REL-06 | Phase 11 | Complete |
