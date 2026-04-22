@@ -124,7 +124,7 @@ Requirements for initial release. Each maps to a roadmap phase.
 - [x] **ARC-05**: Adapter translates `AssistantRequestOptions` fields to SDK options (7 fully honored, 5 partially, 4 deferred, 9 silently ignored per spec/archon/mapping.md — 25 prefixed keys, row-by-row triage table)
 - [x] **ARC-06**: Adapter is thin (~200 LOC target) with business logic in the SDK
 - [x] **ARC-07**: Contract tests prove `DEFAULT_AI_ASSISTANT=gemini` works end-to-end in a real Archon checkout
-- [ ] **ARC-08**: PR opened against `coleam00/Archon` adding `packages/core/src/clients/gemini.ts` + 3-line `factory.ts` edit + `.env.example` entries
+- [x] **ARC-08**: PR opened against `coleam00/Archon` adding `packages/core/src/clients/gemini.ts` + 3-line `factory.ts` edit + `.env.example` entries — **local bundle only, upstream submission deferred per user direction.** Satisfied by the PR artifact bundle staged at `.planning/phases/10-archon-adapter-ts-only/pr-artifacts/` (9 files: 5 adapted community-provider sources + registry.patch + env.example.patch + README + PR_BODY); the user applies it to their local Archon fork at their discretion. No `gh pr create` against coleam00/Archon is planned.
 - [x] **ARC-09**: Env-var namespace discipline: only `GEMINI_*` and `GEMINI_SDK_*` names used (no collisions with Archon's Claude/Codex vars)
 
 ### Parity (TS ↔ Python)
@@ -303,7 +303,7 @@ All v1 requirements map to exactly one phase. Coverage: 102/102.
 | ARC-05 | Phase 10 | Complete |
 | ARC-06 | Phase 10 | Complete |
 | ARC-07 | Phase 10 | Complete |
-| ARC-08 | Phase 10 | Pending |
+| ARC-08 | Phase 10 | Complete (local bundle only, upstream PR deferred per user direction) |
 | ARC-09 | Phase 10 | Complete |
 | PAR-01 | Phase 2 | Complete |
 | PAR-02 | Phase 3 | Complete |

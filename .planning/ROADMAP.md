@@ -23,7 +23,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 8: Tools + Approval Mode + Structured Output (Best-Effort)** - Pass through `--allowed-tools` / Policy Engine + `--approval-mode`, document that caller-defined custom tools are not in v1, and ship best-effort structured output via system-prompt schema injection + runtime validation + single retry (completed 2026-04-20)
 - [x] **Phase 9: MCP Passthrough + Isolated Config Dir** - Accept `options.mcpServers`, write a temp `settings.json` fragment inside an isolated `GEMINI_CONFIG_DIR` per query, gate via `--allowed-mcp-server-names`, and clean up in `finally` — never mutate the user's real `~/.gemini/settings.json`
  (completed 2026-04-21)
-- [ ] **Phase 10: Archon Adapter (TS only)** - Implement `GeminiClient implements IAssistantClient` in the `adapter-archon/` subpackage, prove `DEFAULT_AI_ASSISTANT=gemini` works end-to-end in a real Archon checkout, and open the PR against `coleam00/Archon`
+- [x] **Phase 10: Archon Adapter (TS only)** - Implement `GeminiClient implements IAssistantClient` in the `adapter-archon/` subpackage, prove `DEFAULT_AI_ASSISTANT=gemini` works end-to-end in a real Archon checkout. Upstream PR on coleam00/Archon deferred per user direction — adapter stays local to user's fork; PR artifact bundle staged under `.planning/phases/10-archon-adapter-ts-only/pr-artifacts/` for manual apply. (completed 2026-04-21)
 - [ ] **Phase 11: Docs Site + Compat Matrix + Release** - Publish the VitePress + mkdocs-material doc site, ship the runtime `gemini --version` compat probe, dual-publish to npm (changesets) + PyPI (`uv publish`), and tag v1.0.0 **only after** the Archon PR merges
 
 ## Phase Details
@@ -196,7 +196,7 @@ Plans:
 - [ ] 10-03-PLAN.md — Wave 2: options-translator.ts (OPTION_MAPPING, translateOptions, translateChunk, warnIgnoredOptions) + drift test (ARC-05)
 - [ ] 10-04-PLAN.md — Wave 3: capabilities.ts + provider.ts + registration.ts + index.ts + provider.spec.ts (ARC-01, ARC-02, ARC-03, ARC-04, ARC-06)
 - [ ] 10-05-PLAN.md — Wave 4: contract test + archon-contract + archon-drift CI workflows (ARC-07)
-- [ ] 10-06-PLAN.md — Wave 4: PR artifact bundle + draft PR on coleam00/Archon (ARC-08)
+- [x] 10-06-PLAN.md — Wave 4: PR artifact bundle + draft PR on coleam00/Archon (ARC-08) — Task 1 complete (bundle staged); Task 2 (upstream PR) deferred per user direction, adapter stays local to user's Archon fork
 
 ### Phase 11: Docs Site + Compat Matrix + Release
 **Goal**: Publish the hosted doc site (VitePress for TS + mkdocs-material for Python, single site with two sections), auto-generate API reference via typedoc (TS) and mkdocstrings (Python), ship the compat matrix page with a runtime `gemini --version` warning probe, write the quickstart + migration + Archon integration guides, add the known-issues appendix with live upstream bug links, declare `gemini-cli` as a runtime prerequisite (not bundled, not auto-installed), dual-publish to npm via changesets and PyPI via `uv publish` with trusted publishing, write MIT `LICENSE`, maintain `CHANGELOG.md` via changesets mirrored into Python release notes, and **tag v1.0.0 only after the Phase-10 Archon PR merges and `DEFAULT_AI_ASSISTANT=gemini` is confirmed working**.
@@ -225,7 +225,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8 →
 | 7. Session Resume + Multi-Turn | 3/3 | Complete   | 2026-04-20 |
 | 8. Tools + Approval Mode + Structured Output | 6/6 | Complete   | 2026-04-20 |
 | 9. MCP Passthrough + Isolated Config Dir | 4/4 | Complete   | 2026-04-21 |
-| 10. Archon Adapter (TS only) | 5/6 | In Progress|  |
+| 10. Archon Adapter (TS only) | 6/6 | Complete   | 2026-04-21 |
 | 11. Docs Site + Compat Matrix + Release | 0/TBD | Not started | - |
 
 ---

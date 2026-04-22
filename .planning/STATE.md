@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Completed 10-05-PLAN.md
-last_updated: "2026-04-22T00:34:53.845Z"
-last_activity: "2026-04-22 — Completed plan 10-04: GeminiProvider + GEMINI_CAPABILITIES + registerGeminiProvider (DI-based ProviderRegistryLike) + barrel index; provider.ts 49 LOC (under 250 cap); 5 vitest cases + compile-time ARC-02 structural check; full adapter suite 25/25 green; ARC-01/02/03/04/06 closed"
+stopped_at: Completed 10-06-PLAN.md (Task 2 deferred — upstream PR out of scope per user direction)
+last_updated: "2026-04-21T00:00:00.000Z"
+last_activity: "2026-04-21 — Completed plan 10-06: PR artifact bundle staged at pr-artifacts/ (9 files: 5 adapted sources + registry.patch + env.example.patch + README + PR_BODY). Task 2 (draft PR on coleam00/Archon) DEFERRED — adapter stays local to user's Archon fork per explicit user direction; no upstream submission. ARC-08 closed locally via bundle existence. Phase 10 complete (6/6)."
 progress:
   total_phases: 11
-  completed_phases: 9
+  completed_phases: 10
   total_plans: 51
-  completed_plans: 50
-  percent: 96
+  completed_plans: 51
+  percent: 100
 ---
 
 # Project State
@@ -25,12 +25,12 @@ See: .planning/PROJECT.md (updated 2026-04-11)
 
 ## Current Position
 
-Phase: 10 of 11 (Archon Adapter — TS Only)
-Plan: 5 of 6 in Phase 10 (10-01 + 10-02 + 10-03 + 10-04 + 10-05 complete; 10-06 next)
-Status: Phase 10 in progress
-Last activity: 2026-04-22 — Completed plan 10-05: fixture-backed Archon contract test (4 cases over a 5-line NDJSON stub; renames + workflow_dispatch + leak-check + session forwarding) + archon-contract.yml (per-PR Archon-clone+bundle-apply gate) + archon-drift.yml (weekly dev-HEAD drift-guard with labelled issue auto-file); adapter suite 29/29 green; ARC-07 closed
+Phase: 10 of 11 (Archon Adapter — TS Only) — COMPLETE
+Plan: 6 of 6 in Phase 10 (all complete)
+Status: Phase 10 complete; Phase 11 pending verification/planning
+Last activity: 2026-04-21 — Completed plan 10-06: PR artifact bundle staged (9 files under pr-artifacts/). Task 2 (upstream draft PR) deferred — adapter stays local to user's Archon fork per user direction. ARC-08 closed locally.
 
-Progress: [██████████] 98% (50 of 51 plans complete)
+Progress: [██████████] 100% (51 of 51 plans complete)
 
 ## Performance Metrics
 
@@ -96,6 +96,7 @@ Progress: [██████████] 98% (50 of 51 plans complete)
 | Phase 10-archon-adapter-ts-only P03 | 30 | 2 tasks | 4 files |
 | Phase 10-archon-adapter-ts-only P04 | 5 | 2 tasks | 5 files |
 | Phase 10-archon-adapter-ts-only P05 | 6 | 2 tasks | 6 files |
+| Phase 10-archon-adapter-ts-only P06 | 45 | 1 task (Task 2 deferred) | 9 files |
 
 ## Accumulated Context
 
@@ -244,6 +245,7 @@ Recent decisions affecting current work:
 - [Phase 10-archon-adapter-ts-only]: Plan 10-05: archon-contract.yml bundle-copy/apply/bun-test steps guarded by existence check for pr-artifacts/gemini — lets this plan land in parallel with plan 10-06 without CI failures
 - [Phase 10-archon-adapter-ts-only]: Plan 10-05: archon-drift.yml files labelled 'archon-drift' issues via github-script@v7 with listForRepo dedupe on exact title match to prevent weekly spam
 - [Phase 10-archon-adapter-ts-only]: Plan 10-05: both CI workflows are Linux-only (10-RESEARCH Pitfall 5: Windows symlink unreliability for clone+copy+apply); matches Archon's own CI
+- [Phase 10-archon-adapter-ts-only]: Plan 10-06: Archon integration stays local per user direction — no upstream PRs. Task 2 (fork + push + `gh pr create` against coleam00/Archon) deferred indefinitely; ARC-08 satisfied locally by existence of pr-artifacts/ bundle that user applies to their own Archon fork. Phase 11 REL-07 merge gate must be reframed accordingly when Phase 11 is planned.
 
 ### Pending Todos
 
@@ -260,6 +262,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-04-22T00:34:34.961Z
-Stopped at: Completed 10-05-PLAN.md
+Last session: 2026-04-21T00:00:00.000Z
+Stopped at: Completed 10-06-PLAN.md (Task 2 deferred — upstream PR out of scope per user direction)
 Resume file: None
