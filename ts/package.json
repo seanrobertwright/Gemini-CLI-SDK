@@ -1,9 +1,33 @@
 {
   "name": "@gemini-sdk/core",
   "version": "0.0.0",
-  "private": true,
+  "private": false,
   "type": "module",
   "description": "TypeScript SDK for gemini-cli",
+  "license": "MIT",
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/seanrobertwright/Gemini-SDK.git"
+  },
+  "homepage": "https://seanrobertwright.github.io/Gemini-SDK/",
+  "bugs": {
+    "url": "https://github.com/seanrobertwright/Gemini-SDK/issues"
+  },
+  "keywords": [
+    "gemini",
+    "gemini-cli",
+    "sdk",
+    "llm",
+    "ai"
+  ],
+  "files": [
+    "src",
+    "README.md",
+    "LICENSE"
+  ],
   "exports": {
     ".": {
       "import": "./src/index.ts",
@@ -19,6 +43,7 @@
     "gen:errors": "node ../scripts/gen-errors.mjs"
   },
   "dependencies": {
+    "semver": "^7.7.4",
     "zod": "^4.3.6",
     "zod-from-json-schema": "^0.5.2"
   },
@@ -27,6 +52,7 @@
     "@modelcontextprotocol/sdk": "^1.29.0",
     "@types/js-yaml": "^4.0.9",
     "@types/node": "^20.19.39",
+    "@types/semver": "^7.7.1",
     "@vitest/coverage-v8": "^3.2",
     "fast-check": "^4.6.0",
     "js-yaml": "^4.1.1",
