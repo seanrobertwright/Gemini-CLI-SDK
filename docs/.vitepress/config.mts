@@ -15,7 +15,7 @@ export default defineConfig({
   themeConfig: {
     nav: [
       { text: 'TypeScript', link: '/ts/quickstart' },
-      { text: 'Python', link: '/python/' },
+      { text: 'Python', link: '/python/', target: '_self' },
       { text: 'Compat Matrix', link: '/compat-matrix' },
       { text: 'Known Issues', link: '/known-issues' },
       { text: 'Archon', link: '/archon-integration' },
