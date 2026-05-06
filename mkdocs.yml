@@ -1,5 +1,5 @@
 site_name: Gemini SDK — Python
-site_url: https://seanrobertwright.github.io/Gemini-SDK/python/
+site_url: https://seanrobertwright.github.io/Gemini-CLI-SDK/python/
 docs_dir: docs-python
 site_dir: docs/public/python
 use_directory_urls: true

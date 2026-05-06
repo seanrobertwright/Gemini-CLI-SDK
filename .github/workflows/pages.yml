@@ -59,7 +59,7 @@ jobs:
 
       - name: Build VitePress site
         env:
-          DOCS_BASE: /Gemini-SDK/
+          DOCS_BASE: /Gemini-CLI-SDK/
         run: pnpm run docs:build
 
       - name: Setup Pages
