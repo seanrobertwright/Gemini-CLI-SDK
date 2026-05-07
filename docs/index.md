@@ -10,8 +10,7 @@ hero:
       link: /ts/quickstart
     - theme: alt
       text: Python Quickstart
-      link: /python/
-      target: _self
+      link: /python/quickstart
 features:
   - title: Subprocess-based
     details: Wraps gemini-cli via child_process / anyio — no library entry point needed.

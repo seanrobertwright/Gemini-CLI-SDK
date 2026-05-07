@@ -82,5 +82,5 @@ The SDK writes a temp `settings.json` in an isolated `GEMINI_CONFIG_DIR` for the
 
 ## Next steps
 
-- [API reference](./api.md)
+- [API reference](/python/api/)
 - [Migration guides](./migration-claude.md) — Claude Agent SDK / Codex SDK

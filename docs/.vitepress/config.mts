@@ -11,11 +11,12 @@ export default defineConfig({
   ignoreDeadLinks: [
     /\/ts\/tests-live\//,
     /\/\.planning\//,
+    /\/python\/api\//,
   ],
   themeConfig: {
     nav: [
       { text: 'TypeScript', link: '/ts/quickstart' },
-      { text: 'Python', link: '/python/', target: '_self' },
+      { text: 'Python', link: '/python/quickstart' },
       { text: 'Compat Matrix', link: '/compat-matrix' },
       { text: 'Known Issues', link: '/known-issues' },
       { text: 'Archon', link: '/archon-integration' },
@@ -29,6 +30,14 @@ export default defineConfig({
           { text: 'From Codex SDK', link: '/ts/migration-codex' },
         ]},
         { text: 'API Reference', link: '/ts/api/' },
+      ],
+      '/python/': [
+        { text: 'Getting Started', items: [{ text: 'Quickstart', link: '/python/quickstart' }] },
+        { text: 'Migration', items: [
+          { text: 'From Claude Agent SDK', link: '/python/migration-claude' },
+          { text: 'From Codex SDK', link: '/python/migration-codex' },
+        ]},
+        { text: 'API Reference', link: '/python/api/', target: '_self' },
       ],
       '/': [
         { text: 'Compat Matrix', link: '/compat-matrix' },

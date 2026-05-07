@@ -1,6 +1,8 @@
-# Gemini SDK — Python
+# API Reference
 
-_Quickstart content authored in plan 11-04._
-
-See the [API reference](api.md) for the generated surface, or the
-[main site](../) for the combined TypeScript + Python documentation.
+::: gemini_sdk
+    options:
+      show_root_heading: true
+      show_root_full_path: false
+      members_order: source
+      heading_level: 2
