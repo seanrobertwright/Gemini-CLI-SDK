@@ -189,7 +189,7 @@ The SDK does not implement its own auth layer — it passes credentials through 
 | `GOOGLE_API_KEY` | Vertex AI alternative | Alternative Vertex path |
 | *(none)* | ADC / Sign-in-with-Google | Interactive; not recommended for automation |
 
-**Precedence** (highest to lowest): `GEMINI_API_KEY` → `GOOGLE_APPLICATION_CREDENTIALS` → `GOOGLE_API_KEY` → ADC.
+**Precedence** (highest to lowest): ADC (CLI Auth) → `GEMINI_API_KEY` → `GOOGLE_APPLICATION_CREDENTIALS` → `GOOGLE_API_KEY`.
 
 If more than one is set, the SDK emits a single warning naming the winner and reprinting the full chain. The SDK never calls `gemini auth login` or any interactive OAuth flow.
 

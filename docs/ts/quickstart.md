@@ -29,7 +29,7 @@ npm install @gemini-sdk/core
 export GEMINI_API_KEY="your-key-from-ai.google.dev"
 ```
 
-`GEMINI_API_KEY` is the canonical default. Vertex AI via `GOOGLE_APPLICATION_CREDENTIALS` or `GOOGLE_API_KEY` is also supported — see the auth reference.
+`GEMINI_API_KEY` is the canonical fallback, but if you are already authenticated via `gemini auth login` or `gcloud auth application-default login`, the SDK will automatically use your CLI session. Vertex AI is also supported — see the auth reference.
 
 ## 4. Your first `query()`
 

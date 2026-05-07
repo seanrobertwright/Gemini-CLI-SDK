@@ -14,7 +14,7 @@
   status: open
 - upstream_issue: "#22970"
   title: "OAuth ToS risk in headless/SDK contexts"
-  sdk_defense: "GEMINI_API_KEY is canonical default; OAuth auto-login explicitly forbidden (AUT-05, AUT-08)"
+  sdk_defense: "CLI Auth has priority; GEMINI_API_KEY acts as fallback (AUT-05, AUT-08)"
   status: open
 - upstream_issue: "#4945"
   title: "Encoding issues in non-UTF-8 environments"

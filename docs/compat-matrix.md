@@ -46,5 +46,5 @@ When a new `gemini-cli` minor is validated, update `.gemini-cli-compat` at the r
 | Env var | Default | Effect |
 |---------|---------|--------|
 | `GEMINI_SDK_COMPAT` | _(unset)_ = warn | Override compat probe behavior |
-| `GEMINI_API_KEY` | _(required)_ | Gemini API authentication key |
+| `GEMINI_API_KEY` | _(fallback)_ | Gemini API authentication key (used if CLI Auth is absent) |
 | `GEMINI_BIN_PATH` | resolved from PATH | Override `gemini` binary location |

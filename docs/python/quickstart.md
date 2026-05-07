@@ -28,7 +28,7 @@ uv add gemini-sdk
 export GEMINI_API_KEY="your-key-from-ai.google.dev"
 ```
 
-`GEMINI_API_KEY` is the canonical default. See the auth reference for Vertex AI alternatives.
+`GEMINI_API_KEY` is the canonical fallback, but if you are already authenticated via `gemini auth login` or `gcloud auth application-default login`, the SDK will automatically use your CLI session. See the auth reference for Vertex AI alternatives.
 
 ## 4. Your first `query()`
 

@@ -25,6 +25,9 @@ def _clean_env(monkeypatch):
         "GOOGLE_CLOUD_LOCATION",
     ]:
         monkeypatch.delenv(k, raising=False)
+    
+    # Mock os.path.exists to False by default
+    monkeypatch.setattr(os.path, "exists", lambda path: False)
     yield
 
 
@@ -104,7 +107,7 @@ def test_run_api_key_plus_vertex_sa():
 
 
 def test_run_all_four_explicit_modes():
-    """AUT-06 all four explicit modes — winner=api-key (highest precedence), warning names all losers"""
+    """AUT-06 all explicit modes — winner=api-key (highest precedence), warning names all losers"""
     r = resolve_auth({
         "GEMINI_API_KEY": "k",
         "GOOGLE_APPLICATION_CREDENTIALS": "/sa.json",
@@ -137,10 +140,29 @@ def test_run_gcp_project_vars_flow_through(monkeypatch):
 
 
 def test_run_precedence_constant():
-    """AUTH_PRECEDENCE constant equals [GEMINI_API_KEY, GOOGLE_APPLICATION_CREDENTIALS, GOOGLE_API_KEY, ADC]"""
+    """AUTH_PRECEDENCE constant equals [ADC, GEMINI_API_KEY, GOOGLE_APPLICATION_CREDENTIALS, GOOGLE_API_KEY]"""
     assert AUTH_PRECEDENCE == [
+        "ADC",
         "GEMINI_API_KEY",
         "GOOGLE_APPLICATION_CREDENTIALS",
         "GOOGLE_API_KEY",
-        "ADC",
     ]
+
+
+def test_dynamically_prioritizes_adc_if_credentials_file_exists(monkeypatch):
+    """Dynamically prioritizes ADC if credentials file exists and strips GEMINI_API_KEY"""
+    monkeypatch.setenv("GEMINI_API_KEY", "test-api-key")
+    monkeypatch.setattr(os.path, "exists", lambda path: True)
+
+    r = resolve_auth(dict(os.environ))
+
+    assert r["mode"] == "adc"
+    assert len(r["warnings"]) == 1
+    assert "ADC" in r["warnings"][0]
+    assert "GEMINI_API_KEY" in r["warnings"][0]
+
+    # API key should be overridden to empty string
+    assert r["env_overrides"]["GEMINI_API_KEY"] == ""
+
+    env = build_env(r["env_overrides"])
+    assert env.get("GEMINI_API_KEY", "") == ""

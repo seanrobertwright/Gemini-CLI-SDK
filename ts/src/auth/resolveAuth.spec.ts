@@ -1,6 +1,16 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+import * as fs from 'node:fs';
+import * as os from 'node:os';
 import { resolveAuth, AUTH_PRECEDENCE } from './resolveAuth.js';
 import { buildEnv } from '../process/EnvBuilder.js';
+
+vi.mock('node:fs', () => ({
+  existsSync: vi.fn(),
+}));
+
+vi.mock('node:os', () => ({
+  homedir: vi.fn(() => '/mock/home'),
+}));
 
 /** Keys that must be absent from process.env for deterministic test isolation. */
 const AUTH_ENV_KEYS = [
@@ -19,10 +29,12 @@ beforeEach(() => {
   for (const key of AUTH_ENV_KEYS) {
     vi.stubEnv(key, '');
   }
+  vi.mocked(fs.existsSync).mockReturnValue(false);
 });
 
 afterEach(() => {
   vi.unstubAllEnvs();
+  vi.clearAllMocks();
 });
 
 describe('resolveAuth()', () => {
@@ -97,7 +109,7 @@ describe('resolveAuth()', () => {
     expect(r.warnings[0]).toContain('GOOGLE_APPLICATION_CREDENTIALS'); // loser name
   });
 
-  it('AUT-06 all four explicit modes — winner=api-key (highest precedence), warning names all losers', () => {
+  it('AUT-06 all explicit modes — winner=api-key (highest precedence), warning names all losers', () => {
     vi.stubEnv('GEMINI_API_KEY', 'k');
     vi.stubEnv('GOOGLE_APPLICATION_CREDENTIALS', '/sa.json');
     vi.stubEnv('GOOGLE_API_KEY', 'g');
@@ -126,12 +138,30 @@ describe('resolveAuth()', () => {
     expect(env['GOOGLE_CLOUD_LOCATION']).toBe('us-central1');
   });
 
-  it('AUTH_PRECEDENCE constant equals [GEMINI_API_KEY, GOOGLE_APPLICATION_CREDENTIALS, GOOGLE_API_KEY, ADC]', () => {
+  it('AUTH_PRECEDENCE constant equals [ADC, GEMINI_API_KEY, GOOGLE_APPLICATION_CREDENTIALS, GOOGLE_API_KEY]', () => {
     expect(AUTH_PRECEDENCE).toEqual([
+      'ADC',
       'GEMINI_API_KEY',
       'GOOGLE_APPLICATION_CREDENTIALS',
       'GOOGLE_API_KEY',
-      'ADC',
     ]);
+  });
+
+  it('dynamically prioritizes ADC if credentials file exists and strips GEMINI_API_KEY', () => {
+    vi.stubEnv('GEMINI_API_KEY', 'test-api-key');
+    vi.mocked(fs.existsSync).mockReturnValue(true);
+
+    const r = resolveAuth(process.env);
+
+    expect(r.mode).toBe('adc');
+    expect(r.warnings).toHaveLength(1);
+    expect(r.warnings[0]).toContain('ADC');
+    expect(r.warnings[0]).toContain('GEMINI_API_KEY');
+    
+    // API key should be overridden to empty string
+    expect(r.envOverrides['GEMINI_API_KEY']).toBe('');
+
+    const env = buildEnv(r.envOverrides);
+    expect(env['GEMINI_API_KEY']).toBeFalsy();
   });
 });

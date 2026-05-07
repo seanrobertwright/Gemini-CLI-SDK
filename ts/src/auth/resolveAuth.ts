@@ -1,3 +1,7 @@
+import * as fs from 'node:fs';
+import * as path from 'node:path';
+import * as os from 'node:os';
+
 /**
  * Auth mode detection for gemini-sdk.
  * Pure function — zero imports, no I/O, no subprocess.
@@ -29,16 +33,40 @@ export interface ResolvedAuth {
  * Warning messages reference this constant so test assertions never hardcode the chain string.
  */
 export const AUTH_PRECEDENCE: readonly string[] = [
+  'ADC',
   'GEMINI_API_KEY',
   'GOOGLE_APPLICATION_CREDENTIALS',
   'GOOGLE_API_KEY',
-  'ADC',
 ];
+
+function hasAdcCredentials(): boolean {
+  const home = os.homedir();
+  if (!home) return false;
+
+  // Check gemini-cli's native credentials
+  if (fs.existsSync(path.join(home, '.gemini', 'credentials.json'))) {
+    return true;
+  }
+
+  // Check gcloud ADC
+  if (process.platform === 'win32') {
+    const appdata = process.env.APPDATA;
+    if (appdata && fs.existsSync(path.join(appdata, 'gcloud', 'application_default_credentials.json'))) {
+      return true;
+    }
+  } else {
+    if (fs.existsSync(path.join(home, '.config', 'gcloud', 'application_default_credentials.json'))) {
+      return true;
+    }
+  }
+
+  return false;
+}
 
 /**
  * Inspects the given env dictionary, applies the documented precedence chain
- * `GEMINI_API_KEY > GOOGLE_APPLICATION_CREDENTIALS > GOOGLE_API_KEY > ADC`,
- * and returns the resolved mode, envOverrides (empty today), and warnings.
+ * `ADC > GEMINI_API_KEY > GOOGLE_APPLICATION_CREDENTIALS > GOOGLE_API_KEY`,
+ * and returns the resolved mode, envOverrides, and warnings.
  *
  * @param env - `process.env` or any dictionary (pure: caller-supplied, not read directly)
  * @param options - Reserved for future QueryOptions.auth; currently ignored
@@ -51,6 +79,15 @@ export function resolveAuth(
   void options;
 
   const configured: Array<{ mode: AuthMode; name: string }> = [];
+  const envOverrides: Record<string, string> = {};
+
+  if (hasAdcCredentials()) {
+    configured.push({ mode: 'adc', name: 'ADC' });
+    // Strip the API key so it doesn't accidentally override the CLI Auth
+    if (env['GEMINI_API_KEY']) {
+      envOverrides['GEMINI_API_KEY'] = '';
+    }
+  }
 
   if (!!env['GEMINI_API_KEY']) {
     configured.push({ mode: 'api-key', name: 'GEMINI_API_KEY' });
@@ -75,11 +112,6 @@ export function resolveAuth(
       `See docs/auth.md.`,
     );
   }
-
-  // envOverrides is intentionally empty: all resolved env vars already flow through
-  // EnvBuilder's allowlist. resolveAuth's job is DIAGNOSIS, not MUTATION.
-  // Reserved for future per-call auth override (Deferred Ideas).
-  const envOverrides: Record<string, string> = {};
 
   return { mode: winner, envOverrides, warnings };
 }

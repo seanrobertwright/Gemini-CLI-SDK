@@ -2,15 +2,17 @@
 
 from __future__ import annotations
 
+import os
+import platform
 from typing import Literal, TypedDict
 
 AuthMode = Literal["api-key", "vertex-sa", "vertex-key", "adc", "none"]
 
 AUTH_PRECEDENCE: list[str] = [
+    "ADC",
     "GEMINI_API_KEY",
     "GOOGLE_APPLICATION_CREDENTIALS",
     "GOOGLE_API_KEY",
-    "ADC",
 ]
 
 
@@ -22,24 +24,51 @@ class ResolvedAuth(TypedDict):
     warnings: list[str]
 
 
+def _has_adc_credentials() -> bool:
+    home = os.environ.get("HOME") or os.environ.get("USERPROFILE")
+    if not home:
+        return False
+
+    # Check gemini-cli's native credentials
+    if os.path.exists(os.path.join(home, ".gemini", "credentials.json")):
+        return True
+
+    # Check gcloud ADC
+    if platform.system() == "Windows":
+        appdata = os.environ.get("APPDATA")
+        if appdata and os.path.exists(os.path.join(appdata, "gcloud", "application_default_credentials.json")):
+            return True
+    else:
+        if os.path.exists(os.path.join(home, ".config", "gcloud", "application_default_credentials.json")):
+            return True
+
+    return False
+
+
 def resolve_auth(env: dict[str, str], options: dict | None = None) -> ResolvedAuth:
     """Resolve auth mode from env vars per Phase 6 precedence chain.
 
     Inspects the given env dictionary, applies the documented precedence chain
-    GEMINI_API_KEY > GOOGLE_APPLICATION_CREDENTIALS > GOOGLE_API_KEY > ADC,
-    and returns the resolved mode, env_overrides (empty today; reserved for
-    future per-call override), and a warnings list.
+    ADC > GEMINI_API_KEY > GOOGLE_APPLICATION_CREDENTIALS > GOOGLE_API_KEY,
+    and returns the resolved mode, env_overrides, and a warnings list.
 
     Args:
         env: os.environ or any dictionary (pure: caller-supplied, not read directly).
         options: Reserved for future QueryOptions.auth; currently ignored.
 
     Returns:
-        ResolvedAuth with mode, env_overrides (empty), and warnings.
+        ResolvedAuth with mode, env_overrides, and warnings.
     """
     void = options  # noqa: F841 — reserved for future per-call auth override
 
     configured: list[tuple[AuthMode, str]] = []
+    env_overrides: dict[str, str] = {}
+
+    if _has_adc_credentials():
+        configured.append(("adc", "ADC"))
+        # Strip the API key so it doesn't accidentally override the CLI Auth
+        if env.get("GEMINI_API_KEY"):
+            env_overrides["GEMINI_API_KEY"] = ""
 
     if bool(env.get("GEMINI_API_KEY")):
         configured.append(("api-key", "GEMINI_API_KEY"))
@@ -60,10 +89,5 @@ def resolve_auth(env: dict[str, str], options: dict | None = None) -> ResolvedAu
             f"  {chain}.\n"
             f"See docs/auth.md."
         )
-
-    # env_overrides is intentionally empty: all resolved env vars already flow through
-    # EnvBuilder's allowlist. resolve_auth's job is DIAGNOSIS, not MUTATION.
-    # Reserved for future per-call auth override (Deferred Ideas).
-    env_overrides: dict[str, str] = {}
 
     return {"mode": winner, "env_overrides": env_overrides, "warnings": warnings_list}

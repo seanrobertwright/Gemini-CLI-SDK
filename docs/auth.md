@@ -6,10 +6,10 @@ This SDK is a transparent wrapper around `gemini-cli` — it does not implement 
 
 When multiple auth modes are configured simultaneously, the SDK resolves the winner using this fixed order:
 
-1. `GEMINI_API_KEY` — canonical default (AUT-01)
-2. `GOOGLE_APPLICATION_CREDENTIALS` — Vertex AI via service account JSON (AUT-02)
-3. `GOOGLE_API_KEY` — alternative Vertex path (AUT-03)
-4. ADC / Sign-in-with-Google — transparent fallback (AUT-05)
+1. ADC / CLI Auth — takes precedence if `~/.gemini/credentials.json` or `application_default_credentials.json` is detected (AUT-05)
+2. `GEMINI_API_KEY` — canonical API key fallback (AUT-01)
+3. `GOOGLE_APPLICATION_CREDENTIALS` — Vertex AI via service account JSON (AUT-02)
+4. `GOOGLE_API_KEY` — alternative Vertex path (AUT-03)
 
 If more than one is set, `resolveAuth()` emits a single `console.warn` (TypeScript) or `warnings.warn(UserWarning)` (Python) per `query()` call, naming the winner and reprinting the full chain. Single-mode configurations emit no warnings.
 
@@ -39,9 +39,11 @@ For Vertex project/region scoping, the SDK passes through the following env vars
 
 These flow through `EnvBuilder`'s allowlist; `resolveAuth()` does not strip them. (AUT-04)
 
-## ADC (Application Default Credentials)
+## ADC (Application Default Credentials) & CLI Auth
 
-If you have already authenticated via `gcloud auth application-default login` (or an equivalent ADC-producing mechanism) and no API-key / service-account env var is set, `gemini-cli` will transparently pick up your ADC credentials. The SDK does **not** probe `~/.config/gcloud` or invoke `gcloud` itself — it is a do-nothing fallback. (AUT-05)
+If you have authenticated via `gemini auth login` or `gcloud auth application-default login`, the SDK will dynamically detect the existence of your credentials file (`~/.gemini/credentials.json` or `application_default_credentials.json`).
+
+When detected, **CLI Auth takes absolute precedence over all environment variables**. The SDK will safely strip `GEMINI_API_KEY` from the environment it passes to the underlying `gemini-cli` to ensure your existing CLI session is utilized. (AUT-05)
 
 ## No `GOOGLE_AUTH_TOKEN` Passthrough
 

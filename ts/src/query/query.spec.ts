@@ -507,7 +507,7 @@ describe('Phase 6 auth warning', () => {
     await gen.next(); // start generator; warning emits before spawn
 
     expect(warnSpy).toHaveBeenCalledTimes(1);
-    expect(warnSpy.mock.calls[0][0]).toContain('GEMINI_API_KEY > GOOGLE_APPLICATION_CREDENTIALS > GOOGLE_API_KEY > ADC');
+    expect(warnSpy.mock.calls[0][0]).toContain('ADC > GEMINI_API_KEY > GOOGLE_APPLICATION_CREDENTIALS > GOOGLE_API_KEY');
 
     await gen.return(undefined); // clean up
   });
