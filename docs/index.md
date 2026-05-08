@@ -1,7 +1,7 @@
 ---
 layout: home
 hero:
-  name: Gemini SDK
+  name: Gemini-CLI SDK
   text: Drop-in TypeScript + Python SDK for gemini-cli
   tagline: Claude Agent SDK-shaped API. Windows-first. Parity-enforced.
   actions:

@@ -2,7 +2,7 @@ import { defineConfig } from 'vitepress';
 import typedocSidebar from '../ts/api/typedoc-sidebar.json' with { type: 'json' };
 
 export default defineConfig({
-  title: 'Gemini SDK',
+  title: 'Gemini-CLI SDK',
   description: 'TypeScript + Python SDK for gemini-cli (Claude Agent SDK-shaped).',
   base: process.env.DOCS_BASE ?? '/Gemini-SDK/',
   lastUpdated: true,
