@@ -6,6 +6,9 @@ export default defineConfig({
   description: 'TypeScript + Python SDK for gemini-cli (Claude Agent SDK-shaped).',
   base: process.env.DOCS_BASE ?? '/Gemini-SDK/',
   lastUpdated: true,
+  head: [
+    ['link', { rel: 'icon', type: 'image/svg+xml', href: (process.env.DOCS_BASE ?? '/Gemini-SDK/') + 'gemini-cli-icon.svg' }],
+  ],
   // Dead links to repo files outside the docs tree (e.g. ts/tests-live/README,
   // .planning/REQUIREMENTS) are expected — these are repo cross-references only.
   ignoreDeadLinks: [
@@ -14,6 +17,7 @@ export default defineConfig({
     /\/python\/api\//,
   ],
   themeConfig: {
+    logo: '/gemini-cli-icon.svg',
     nav: [
       { text: 'TypeScript', link: '/ts/quickstart' },
       { text: 'Python', link: '/python/quickstart' },
