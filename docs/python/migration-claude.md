@@ -1,6 +1,6 @@
 # Migrating from Claude Agent SDK (Python)
 
-This guide maps the top 5 call-site patterns between the Claude Agent SDK Python client and `gemini-sdk`.
+This guide maps the top 5 call-site patterns between the Claude Agent SDK Python client and `lrilai-gemini-cli-sdk` (import name: `gemini_sdk`).
 
 ## Pattern 1 — Construct the client
 

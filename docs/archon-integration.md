@@ -41,8 +41,7 @@ git apply "$GEMINI_SDK_DIR/.planning/phases/10-archon-adapter-ts-only/pr-artifac
 # 3. Apply the .env.example patch.
 git apply "$GEMINI_SDK_DIR/.planning/phases/10-archon-adapter-ts-only/pr-artifacts/env.example.patch"
 
-# 4. Add the SDK as a dependency. For pre-1.0.0, use the GitHub tarball ref.
-#    Post-1.0.0, use the npm package:
+# 4. Add the SDK as a dependency.
 cd packages/providers
 bun add @lrilai/gemini-cli-sdk
 cd ../..

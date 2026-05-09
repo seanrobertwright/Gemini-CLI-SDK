@@ -1,6 +1,6 @@
 # Migrating from Codex SDK (Python)
 
-Mapping of 5 top call-site patterns between the OpenAI Codex SDK Python client and `gemini-sdk`.
+Mapping of 5 top call-site patterns between the OpenAI Codex SDK Python client and `lrilai-gemini-cli-sdk` (import name: `gemini_sdk`).
 
 ## Pattern 1 — Construct the client
 
@@ -11,7 +11,7 @@ Mapping of 5 top call-site patterns between the OpenAI Codex SDK Python client a
 + # GEMINI_API_KEY picked up from env
 ```
 
-No client class in `gemini-sdk` — `query()` is a module-level async generator. Authentication is env-var-only.
+No client class — `query()` is a module-level async generator. Authentication is env-var-only.
 
 ## Pattern 2 — Send a query
 
