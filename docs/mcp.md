@@ -107,7 +107,7 @@ resulting "my server did nothing" silence is a common footgun.
 **The SDK never mutates `~/.gemini/settings.json`.** For every call with a
 non-empty `mcpServers`, the SDK:
 
-1. Creates a fresh temp dir named `gemini-sdk-mcp-<hex>` inside `os.tmpdir()`
+1. Creates a fresh temp dir named `gemini-cli-sdk-mcp-<hex>` inside `os.tmpdir()`
 2. Writes `settings.json` containing only `{ "mcpServers": <your verbatim input> }`
 3. Sets `GEMINI_CONFIG_DIR` on the subprocess env to the temp dir path
 4. Removes the temp dir in `finally` (success, abort, or error paths)

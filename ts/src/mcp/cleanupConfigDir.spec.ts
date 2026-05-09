@@ -59,7 +59,7 @@ describe('cleanupConfigDir', () => {
   });
 
   it('returns normally when path does not exist', async () => {
-    const nonExistent = path.join(os.tmpdir(), 'gemini-sdk-mcp-nonexistent-' + Date.now());
+    const nonExistent = path.join(os.tmpdir(), 'gemini-cli-sdk-mcp-nonexistent-' + Date.now());
     // Should resolve without throwing
     await expect(cleanupConfigDir(nonExistent)).resolves.toBeUndefined();
   });

@@ -15,7 +15,7 @@ On the first `query()` call per process, the SDK spawns `gemini --version` once,
 
 | Value | Behavior |
 |-------|----------|
-| _(unset)_ or any unrecognized value | **Default — warn:** emit `[gemini-sdk] tested against gemini-cli 0.37.x, detected <detected> — proceeding` to stderr and continue. |
+| _(unset)_ or any unrecognized value | **Default — warn:** emit `[gemini-cli-sdk] tested against gemini-cli 0.37.x, detected <detected> — proceeding` to stderr and continue. |
 | `strict` | Throw an error (TS) / raise `RuntimeError` (Python) with the same message; SDK refuses to proceed. |
 | `silent` | Suppress the warning entirely. SDK still runs. |
 

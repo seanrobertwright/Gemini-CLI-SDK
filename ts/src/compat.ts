@@ -75,7 +75,7 @@ export function checkCompatOnce(opts: CompatProbeOptions): void {
   if (!detected) return; // unparseable — silent
 
   if (!semver.satisfies(detected, range)) {
-    const msg = `[gemini-sdk] tested against gemini-cli ${displayRange}, detected ${detected} — proceeding`;
+    const msg = `[gemini-cli-sdk] tested against gemini-cli ${displayRange}, detected ${detected} — proceeding`;
     if (mode === 'strict') throw new Error(msg);
     console.warn(msg);
   }

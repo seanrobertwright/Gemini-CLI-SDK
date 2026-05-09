@@ -33,13 +33,13 @@ async def test_writes_settings_json_containing_only_mcpservers_key_at_temp_dir_r
 
 @pytest.mark.anyio
 async def test_returns_an_absolute_path_beginning_with_gemini_sdk_mcp_prefix():
-    """returns an absolute path beginning with gemini-sdk-mcp- prefix"""
+    """returns an absolute path beginning with gemini-cli-sdk-mcp- prefix"""
     path = await write_config_dir({"a": {}})
     try:
         assert os.path.isabs(path)
         basename = os.path.basename(path)
-        assert basename.startswith("gemini-sdk-mcp-")
-        assert len(basename) == len("gemini-sdk-mcp-") + 16
+        assert basename.startswith("gemini-cli-sdk-mcp-")
+        assert len(basename) == len("gemini-cli-sdk-mcp-") + 16
     finally:
         shutil.rmtree(path, ignore_errors=True)
 
@@ -93,7 +93,7 @@ async def test_removes_an_existing_temp_dir_created_by_writeconfigdir():
 @pytest.mark.anyio
 async def test_returns_normally_when_path_does_not_exist():
     """returns normally when path does not exist"""
-    fake = os.path.join(tempfile.gettempdir(), f"gemini-sdk-mcp-does-not-exist-{secrets.token_hex(4)}")
+    fake = os.path.join(tempfile.gettempdir(), f"gemini-cli-sdk-mcp-does-not-exist-{secrets.token_hex(4)}")
     assert not os.path.exists(fake)
     await cleanup_config_dir(fake)  # must not raise
 

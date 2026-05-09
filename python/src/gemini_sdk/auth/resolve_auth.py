@@ -84,7 +84,7 @@ def resolve_auth(env: dict[str, str], options: dict | None = None) -> ResolvedAu
         names = ", ".join(n for _, n in configured)
         chain = " > ".join(AUTH_PRECEDENCE)
         warnings_list.append(
-            f"[gemini-sdk] Multiple auth modes configured: {names}.\n"
+            f"[gemini-cli-sdk] Multiple auth modes configured: {names}.\n"
             f"Using {configured[0][1]} per documented precedence:\n"
             f"  {chain}.\n"
             f"See docs/auth.md."

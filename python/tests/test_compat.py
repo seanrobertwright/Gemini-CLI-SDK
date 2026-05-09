@@ -67,7 +67,7 @@ def test_warn_default_out_of_range(monkeypatch, capsys, compat_file):
 
     captured = capsys.readouterr()
     assert (
-        "[gemini-sdk] tested against gemini-cli 0.37.x, detected 0.39.2 — proceeding"
+        "[gemini-cli-sdk] tested against gemini-cli 0.37.x, detected 0.39.2 — proceeding"
         in captured.err
     )
 

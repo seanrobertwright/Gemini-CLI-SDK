@@ -74,7 +74,7 @@ describe('checkCompatOnce', () => {
 
     expect(warnSpy).toHaveBeenCalledOnce();
     expect(warnSpy).toHaveBeenCalledWith(
-      '[gemini-sdk] tested against gemini-cli 0.37.x, detected 0.39.2 — proceeding'
+      '[gemini-cli-sdk] tested against gemini-cli 0.37.x, detected 0.39.2 — proceeding'
     );
   });
 
@@ -83,7 +83,7 @@ describe('checkCompatOnce', () => {
     mockedExecFileSync.mockReturnValueOnce('gemini 0.39.2\n');
 
     expect(() => checkCompatOnce({ cliPath: '/usr/bin/gemini', compatFilePath })).toThrowError(
-      '[gemini-sdk] tested against gemini-cli 0.37.x, detected 0.39.2 — proceeding'
+      '[gemini-cli-sdk] tested against gemini-cli 0.37.x, detected 0.39.2 — proceeding'
     );
   });
 

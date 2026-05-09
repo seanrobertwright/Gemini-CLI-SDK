@@ -45,7 +45,7 @@ async def cleanup_config_dir(temp_dir: str) -> None:
                 await anyio.sleep(_RETRY_DELAY_MS / 1000.0)
     # All retries exhausted — warn but never re-raise
     warnings.warn(
-        f"[gemini-sdk] MCP config dir cleanup failed, stranded path: {temp_dir} ({last_err!r})",
+        f"[gemini-cli-sdk] MCP config dir cleanup failed, stranded path: {temp_dir} ({last_err!r})",
         UserWarning,
         stacklevel=2,
     )

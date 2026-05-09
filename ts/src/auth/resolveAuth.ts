@@ -106,7 +106,7 @@ export function resolveAuth(
     const names = configured.map(c => c.name).join(', ');
     const winnerName = configured[0].name;
     warnings.push(
-      `[gemini-sdk] Multiple auth modes configured: ${names}.\n` +
+      `[gemini-cli-sdk] Multiple auth modes configured: ${names}.\n` +
       `Using ${winnerName} per documented precedence:\n` +
       `  ${AUTH_PRECEDENCE.join(' > ')}.\n` +
       `See docs/auth.md.`,

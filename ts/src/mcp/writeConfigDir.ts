@@ -24,7 +24,7 @@ export async function writeConfigDir(
   mcpServers: Record<string, Record<string, unknown>>,
 ): Promise<string> {
   const suffix = randomBytes(8).toString('hex');
-  const tempDir = join(tmpdir(), 'gemini-sdk-mcp-' + suffix);
+  const tempDir = join(tmpdir(), 'gemini-cli-sdk-mcp-' + suffix);
   await mkdir(tempDir, { recursive: true });
   const content = JSON.stringify({ mcpServers }, null, 2);
   await writeFile(join(tempDir, 'settings.json'), content, 'utf-8');

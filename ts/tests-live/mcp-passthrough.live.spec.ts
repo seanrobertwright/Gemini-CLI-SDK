@@ -77,8 +77,8 @@ describe.skipIf(!LIVE_ENABLED)('Phase 9 live E2E: MCP passthrough + isolated con
 
   // SC-3a: success path cleanup
   it('SC-3a temp config dir removed from disk after successful live query', async () => {
-    // Snapshot the tmpdir entries with our prefix before + after; after should not contain any new gemini-sdk-mcp- dirs left over.
-    const beforeDirs = new Set(readdirSync(tmpdir()).filter(n => n.startsWith('gemini-sdk-mcp-')));
+    // Snapshot the tmpdir entries with our prefix before + after; after should not contain any new gemini-cli-sdk-mcp- dirs left over.
+    const beforeDirs = new Set(readdirSync(tmpdir()).filter(n => n.startsWith('gemini-cli-sdk-mcp-')));
     await queryFull({
       prompt: 'Say "ok".',
       mcpServers: { 'test-stub': { command: 'node', args: [STUB_PATH] } },
@@ -86,7 +86,7 @@ describe.skipIf(!LIVE_ENABLED)('Phase 9 live E2E: MCP passthrough + isolated con
       approvalMode: ApprovalMode.YOLO,
       cwd: sandbox,
     });
-    const afterDirs = new Set(readdirSync(tmpdir()).filter(n => n.startsWith('gemini-sdk-mcp-')));
+    const afterDirs = new Set(readdirSync(tmpdir()).filter(n => n.startsWith('gemini-cli-sdk-mcp-')));
     // Any new dirs that appeared should NOT remain -- symmetric difference must be empty
     const leaked = [...afterDirs].filter(n => !beforeDirs.has(n));
     expect(leaked).toEqual([]);
@@ -94,7 +94,7 @@ describe.skipIf(!LIVE_ENABLED)('Phase 9 live E2E: MCP passthrough + isolated con
 
   // SC-3b: abort path cleanup
   it('SC-3b temp config dir removed from disk when query is aborted mid-stream', async () => {
-    const beforeDirs = new Set(readdirSync(tmpdir()).filter(n => n.startsWith('gemini-sdk-mcp-')));
+    const beforeDirs = new Set(readdirSync(tmpdir()).filter(n => n.startsWith('gemini-cli-sdk-mcp-')));
     const ac = new AbortController();
     const iter = query({
       prompt: 'Say "ok".',
@@ -117,19 +117,19 @@ describe.skipIf(!LIVE_ENABLED)('Phase 9 live E2E: MCP passthrough + isolated con
     // Give the OS a moment for async cleanup to complete -- use a short poll loop rather than a long sleep.
     const deadline = Date.now() + 3000;
     while (Date.now() < deadline) {
-      const d = new Set(readdirSync(tmpdir()).filter(n => n.startsWith('gemini-sdk-mcp-')));
+      const d = new Set(readdirSync(tmpdir()).filter(n => n.startsWith('gemini-cli-sdk-mcp-')));
       const leaked = [...d].filter(n => !beforeDirs.has(n));
       if (leaked.length === 0) break;
       await new Promise(r => setTimeout(r, 200));
     }
-    const afterDirs = new Set(readdirSync(tmpdir()).filter(n => n.startsWith('gemini-sdk-mcp-')));
+    const afterDirs = new Set(readdirSync(tmpdir()).filter(n => n.startsWith('gemini-cli-sdk-mcp-')));
     const leaked = [...afterDirs].filter(n => !beforeDirs.has(n));
     expect(leaked).toEqual([]);
   });
 
   // SC-3c: error path cleanup -- bad stub path produces a spawn error, temp dir still cleaned
   it('SC-3c temp config dir removed from disk when spawn fails due to bad stub path', async () => {
-    const beforeDirs = new Set(readdirSync(tmpdir()).filter(n => n.startsWith('gemini-sdk-mcp-')));
+    const beforeDirs = new Set(readdirSync(tmpdir()).filter(n => n.startsWith('gemini-cli-sdk-mcp-')));
     try {
       await queryFull({
         prompt: 'Say "ok".',
@@ -143,7 +143,7 @@ describe.skipIf(!LIVE_ENABLED)('Phase 9 live E2E: MCP passthrough + isolated con
     } catch {
       // Any error is expected -- could be ProcessError, AuthError (if API key bad), etc.
     }
-    const afterDirs = new Set(readdirSync(tmpdir()).filter(n => n.startsWith('gemini-sdk-mcp-')));
+    const afterDirs = new Set(readdirSync(tmpdir()).filter(n => n.startsWith('gemini-cli-sdk-mcp-')));
     const leaked = [...afterDirs].filter(n => !beforeDirs.has(n));
     expect(leaked).toEqual([]);
   });

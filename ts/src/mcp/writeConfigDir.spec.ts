@@ -37,14 +37,14 @@ describe('writeConfigDir', () => {
     expect(parsed['mcpServers']).toEqual(input);
   });
 
-  it('returns an absolute path beginning with gemini-sdk-mcp- prefix', async () => {
+  it('returns an absolute path beginning with gemini-cli-sdk-mcp- prefix', async () => {
     const returned = await writeConfigDir({ server: { command: 'node' } });
     createdPaths.push(returned);
 
     expect(path.isAbsolute(returned)).toBe(true);
     const base = path.basename(returned);
-    expect(base.startsWith('gemini-sdk-mcp-')).toBe(true);
-    expect(base.length).toBe('gemini-sdk-mcp-'.length + 16);
+    expect(base.startsWith('gemini-cli-sdk-mcp-')).toBe(true);
+    expect(base.length).toBe('gemini-cli-sdk-mcp-'.length + 16);
   });
 
   it('produces unique paths for back-to-back invocations', async () => {

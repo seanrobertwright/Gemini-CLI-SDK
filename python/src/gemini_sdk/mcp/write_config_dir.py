@@ -28,7 +28,7 @@ async def write_config_dir(mcp_servers: Dict[str, Dict[str, Any]]) -> str:
     cleanup via ``cleanup_config_dir()`` in a finally block.
     """
     suffix = secrets.token_hex(8)
-    temp_dir = anyio.Path(tempfile.gettempdir()) / f"gemini-sdk-mcp-{suffix}"
+    temp_dir = anyio.Path(tempfile.gettempdir()) / f"gemini-cli-sdk-mcp-{suffix}"
     await temp_dir.mkdir(parents=True, exist_ok=True)
     content = json.dumps({"mcpServers": mcp_servers}, indent=2)
     await (temp_dir / "settings.json").write_text(content, encoding="utf-8")

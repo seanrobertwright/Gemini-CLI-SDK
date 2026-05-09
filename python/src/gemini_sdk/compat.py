@@ -51,14 +51,14 @@ def check_compat_once(cli_path: str, *, compat_file_path: Optional[str] = None) 
     compat_file = Path(compat_file_path) if compat_file_path else _find_compat_file()
     if compat_file is None or not compat_file.is_file():
         if mode == "strict":
-            raise RuntimeError("[gemini-sdk] .gemini-cli-compat not found")
+            raise RuntimeError("[gemini-cli-sdk] .gemini-cli-compat not found")
         return
 
     try:
         pinned = compat_file.read_text(encoding="utf-8").strip()
     except OSError as err:
         if mode == "strict":
-            raise RuntimeError(f"[gemini-sdk] failed to read {compat_file}: {err}") from err
+            raise RuntimeError(f"[gemini-cli-sdk] failed to read {compat_file}: {err}") from err
         return
 
     try:
@@ -80,7 +80,7 @@ def check_compat_once(cli_path: str, *, compat_file_path: Optional[str] = None) 
         detected_raw = result.stdout.strip()
     except (subprocess.SubprocessError, OSError) as err:
         if mode == "strict":
-            raise RuntimeError(f"[gemini-sdk] probe failed: {err}") from err
+            raise RuntimeError(f"[gemini-cli-sdk] probe failed: {err}") from err
         return
 
     # Extract first semver-like token
@@ -90,7 +90,7 @@ def check_compat_once(cli_path: str, *, compat_file_path: Optional[str] = None) 
     detected = match.group(0)
 
     if not _in_range(detected, pinned):
-        msg = f"[gemini-sdk] tested against gemini-cli {display_range}, detected {detected} — proceeding"
+        msg = f"[gemini-cli-sdk] tested against gemini-cli {display_range}, detected {detected} — proceeding"
         if mode == "strict":
             raise RuntimeError(msg)
         print(msg, file=sys.stderr)

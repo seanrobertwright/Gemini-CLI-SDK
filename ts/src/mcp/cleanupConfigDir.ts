@@ -23,7 +23,7 @@ export async function cleanupConfigDir(tempDir: string): Promise<void> {
     // Warn but never re-throw — a leaked temp dir is recoverable; masking
     // the original error the caller is handling is not. (#13604 fallback)
     console.warn(
-      `[gemini-sdk] MCP config dir cleanup failed, stranded path: ${tempDir}`,
+      `[gemini-cli-sdk] MCP config dir cleanup failed, stranded path: ${tempDir}`,
       err,
     );
   }
