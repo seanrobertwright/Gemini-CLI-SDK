@@ -32,10 +32,10 @@ jobs:
           cache-dependency-path: pnpm-lock.yaml
 
       - name: Install adapter-archon deps
-        run: pnpm -F @gemini-sdk/adapter-archon install
+        run: pnpm -F @lrilai/adapter-archon install
 
       - name: Run local adapter-archon contract suite
-        run: pnpm -F @gemini-sdk/adapter-archon test
+        run: pnpm -F @lrilai/adapter-archon test
 
       - name: Read pinned Archon SHA from .archon-compat
         id: archon-sha

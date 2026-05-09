@@ -5,7 +5,7 @@
  */
 
 import type { SendQueryOptions, MessageChunk as ArchonMessageChunk } from './types.js';
-import type { QueryOptions, MessageChunk as SdkMessageChunk } from '@gemini-sdk/core';
+import type { QueryOptions, MessageChunk as SdkMessageChunk } from '@lrilai/gemini-cli-sdk';
 
 // OPTION_MAPPING — 25 prefixed keys, bucketed 7/5/4/9 per spec/archon/mapping.md.
 

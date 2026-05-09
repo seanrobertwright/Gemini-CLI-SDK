@@ -1,4 +1,4 @@
-// @gemini-sdk/adapter-archon — Archon IAgentProvider implementation (Phase 10)
+// @lrilai/adapter-archon — Archon IAgentProvider implementation (Phase 10)
 //
 // Source-published .ts barrel (ARC-04). Archon resolves this via the
 // package.json "exports" field; no build step runs.

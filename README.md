@@ -2,8 +2,8 @@
 
 TypeScript and Python SDK for driving [`gemini-cli`](https://github.com/google-gemini/gemini-cli) programmatically. Mirrors the shape of `@anthropic-ai/claude-agent-sdk` and `@openai/codex-sdk` so you can swap providers without rewiring your application.
 
-[![npm](https://img.shields.io/npm/v/@gemini-sdk/core)](https://www.npmjs.com/package/@gemini-sdk/core)
-[![PyPI](https://img.shields.io/pypi/v/gemini-sdk)](https://pypi.org/project/gemini-sdk/)
+[![npm](https://img.shields.io/npm/v/@lrilai/gemini-cli-sdk)](https://www.npmjs.com/package/@lrilai/gemini-cli-sdk)
+[![PyPI](https://img.shields.io/pypi/v/lrilai-gemini-cli-sdk)](https://pypi.org/project/lrilai-gemini-cli-sdk/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
 ---
@@ -63,13 +63,13 @@ gemini --version  # should print 0.37.x
 **TypeScript**
 
 ```bash
-npm install @gemini-sdk/core
+npm install @lrilai/gemini-cli-sdk
 ```
 
 **Python**
 
 ```bash
-pip install gemini-sdk
+pip install lrilai-gemini-cli-sdk
 ```
 
 ---
@@ -81,7 +81,7 @@ pip install gemini-sdk
 #### Streaming response
 
 ```typescript
-import { query } from '@gemini-sdk/core';
+import { query } from '@lrilai/gemini-cli-sdk';
 
 for await (const chunk of query({ prompt: 'Explain async generators in one paragraph.' })) {
   if (chunk.type === 'assistant') {
@@ -93,7 +93,7 @@ for await (const chunk of query({ prompt: 'Explain async generators in one parag
 #### Accumulated result
 
 ```typescript
-import { queryFull } from '@gemini-sdk/core';
+import { queryFull } from '@lrilai/gemini-cli-sdk';
 
 const result = await queryFull({ prompt: 'What is the capital of France?' });
 console.log(result.text);     // "Paris"
@@ -139,7 +139,7 @@ Pass the `Session` object returned by `queryFull()` / `query_full()` directly in
 **TypeScript**
 
 ```typescript
-import { queryFull, query } from '@gemini-sdk/core';
+import { queryFull, query } from '@lrilai/gemini-cli-sdk';
 
 const first = await queryFull({ prompt: 'Remember the number 7.' });
 
@@ -212,7 +212,7 @@ export GOOGLE_CLOUD_LOCATION="us-central1"
 Inject [Model Context Protocol](https://modelcontextprotocol.io/) servers into a single query without touching your real `~/.gemini/settings.json`. The SDK writes a temp `settings.json` into an isolated `GEMINI_CONFIG_DIR` and cleans it up in `finally`.
 
 ```typescript
-import { query } from '@gemini-sdk/core';
+import { query } from '@lrilai/gemini-cli-sdk';
 
 for await (const chunk of query({
   prompt: 'Use the time tool to report the current UTC time.',
@@ -234,7 +234,7 @@ for await (const chunk of query({
 Pass a JSON Schema to `queryFull()` / `query_full()`. The SDK injects the schema into the system prompt, validates the response, and retries once on failure.
 
 ```typescript
-import { queryFull } from '@gemini-sdk/core';
+import { queryFull } from '@lrilai/gemini-cli-sdk';
 
 const result = await queryFull({
   prompt: 'What is the capital of France? Respond as JSON.',
@@ -258,7 +258,7 @@ Only supported on `queryFull()` — calling `query()` or `queryRaw()` with `outp
 
 ## Archon integration
 
-The `@gemini-sdk/adapter-archon` package implements Archon's `IAssistantClient` interface, enabling Gemini as a first-class provider alongside Claude and Codex.
+The `@lrilai/adapter-archon` package implements Archon's `IAssistantClient` interface, enabling Gemini as a first-class provider alongside Claude and Codex.
 
 Set in your Archon `.env`:
 
@@ -293,7 +293,7 @@ All SDK errors extend `GeminiError`. Each error carries a `bucket` (for Archon r
 | `SchemaValidationError` | `crash` | No | Structured output failed after retry |
 
 ```typescript
-import { query, RateLimitError, AuthError } from '@gemini-sdk/core';
+import { query, RateLimitError, AuthError } from '@lrilai/gemini-cli-sdk';
 
 try {
   for await (const chunk of query({ prompt: 'Hello' })) { /* ... */ }

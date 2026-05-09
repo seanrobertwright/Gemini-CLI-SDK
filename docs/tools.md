@@ -12,7 +12,7 @@ The SDK is a transparent wrapper: unknown tool names pass through, and `gemini-c
 **TypeScript:**
 
 ```typescript
-import { query, ApprovalMode } from '@gemini-sdk/core';
+import { query, ApprovalMode } from '@lrilai/gemini-cli-sdk';
 
 for await (const chunk of query({
   prompt: 'read the README and summarize',

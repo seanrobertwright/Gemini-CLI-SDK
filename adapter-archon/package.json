@@ -1,5 +1,5 @@
 {
-  "name": "@gemini-sdk/adapter-archon",
+  "name": "@lrilai/adapter-archon",
   "version": "0.0.0",
   "private": true,
   "type": "module",
@@ -15,7 +15,7 @@
     "test": "vitest run --passWithNoTests"
   },
   "dependencies": {
-    "@gemini-sdk/core": "workspace:*"
+    "@lrilai/gemini-cli-sdk": "workspace:*"
   },
   "devDependencies": {
     "@types/node": "^20.19.39",

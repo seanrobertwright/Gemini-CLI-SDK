@@ -85,7 +85,7 @@ cd "${ARCHON_DIR}/packages/providers"
 # Prefer pnpm link for dev-local; fall back to a file: dependency
 if command -v bun >/dev/null 2>&1; then
   (cd "${SDK_ROOT}/ts" && bun link || true)
-  bun link @gemini-sdk/core || bun add "file:${SDK_ROOT}/ts"
+  bun link @lrilai/gemini-cli-sdk || bun add "file:${SDK_ROOT}/ts"
 else
   fail "bun not found; Archon requires bun — install via https://bun.sh" 3
 fi

@@ -38,7 +38,7 @@ bug, the SDK documents it here rather than hiding it with a workaround.
 **TypeScript (stdio server):**
 
 ```typescript
-import { queryFull, ApprovalMode } from '@gemini-sdk/core';
+import { queryFull, ApprovalMode } from '@lrilai/gemini-cli-sdk';
 
 const result = await queryFull({
   prompt: 'Call the echo tool with "hi".',

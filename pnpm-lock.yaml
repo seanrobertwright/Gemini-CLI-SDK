@@ -35,7 +35,7 @@ importers:
 
   adapter-archon:
     dependencies:
-      '@gemini-sdk/core':
+      '@lrilai/gemini-cli-sdk':
         specifier: workspace:*
         version: link:../ts
     devDependencies:

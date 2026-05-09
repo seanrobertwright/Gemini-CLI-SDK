@@ -10,7 +10,7 @@ tests here:
 
 - Hand-author the pre-computed array of SDK-shape `MessageChunk`s that Phase 3
   dispatch would produce from the fixture NDJSON lines.
-- Mock `@gemini-sdk/core` so `query()` yields those chunks.
+- Mock `@lrilai/gemini-cli-sdk` so `query()` yields those chunks.
 - Invoke `new GeminiProvider().sendQuery(...)` through the public barrel.
 - Assert: variant order, `workflow_dispatch` sentinel shape, field renames
   (`toolCallId`/`toolInput`/`toolOutput` — NOT `toolId`/`parameters`/`output`),

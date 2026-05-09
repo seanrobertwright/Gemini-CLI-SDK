@@ -13,7 +13,7 @@
 
 set -euo pipefail
 
-NAME="${1:-gemini-sdk}"
+NAME="${1:-lrilai-gemini-cli-sdk}"
 URL="https://pypi.org/pypi/${NAME}/json"
 
 if ! command -v curl >/dev/null 2>&1; then

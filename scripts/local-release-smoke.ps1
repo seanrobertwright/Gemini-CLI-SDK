@@ -117,7 +117,7 @@ try {
     Push-Location (Join-Path $SdkRoot 'ts')
     try { & bun link 2>$null | Out-Null } finally { Pop-Location }
 
-    & bun link '@gemini-sdk/core'
+    & bun link '@lrilai/gemini-cli-sdk'
     if ($LASTEXITCODE -ne 0) {
         Invoke-OrFail 3 "bun add file: failed" {
             & bun add ("file:" + (Join-Path $SdkRoot 'ts'))

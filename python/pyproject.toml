@@ -1,5 +1,5 @@
 [project]
-name = "gemini-sdk"
+name = "lrilai-gemini-cli-sdk"
 version = "1.0.0"
 description = "Python SDK for gemini-cli"
 requires-python = ">=3.10"

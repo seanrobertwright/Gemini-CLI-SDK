@@ -1,6 +1,12 @@
 node_modules/
 *.log
 npm-debug.log*
+
+# ts/ prepack copies these from repo root; postpack removes them. Ignore in case pack is interrupted.
+ts/README.md
+ts/LICENSE
+ts/*.tgz
+ts/dist/
 .DS_Store
 Thumbs.db
 
@@ -10,3 +16,5 @@ docs/public/python/
 docs/.vitepress/dist/
 docs/.vitepress/cache/
 docs/node_modules/
+
+.env

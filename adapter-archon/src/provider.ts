@@ -4,7 +4,7 @@
  *
  * GeminiProvider: thin IAgentProvider shim. All translation lives in
  * options-translator.ts (plan 10-03); this file's only job is to delegate
- * to @gemini-sdk/core.query(), translate each emitted chunk, and emit a
+ * to @lrilai/gemini-cli-sdk.query(), translate each emitted chunk, and emit a
  * workflow_dispatch sentinel before every tool chunk (matching the Claude
  * and Codex provider cadence).
  *
@@ -12,7 +12,7 @@
  * carry a .bucket field mapped to Archon's 5 retry buckets (Phase 5).
  */
 
-import { query } from '@gemini-sdk/core';
+import { query } from '@lrilai/gemini-cli-sdk';
 import type { IAgentProvider, MessageChunk, ProviderCapabilities, SendQueryOptions } from './types.js';
 import { GEMINI_CAPABILITIES } from './capabilities.js';
 import { translateChunk, translateOptions, warnIgnoredOptions } from './options-translator.js';

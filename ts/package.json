@@ -1,5 +1,5 @@
 {
-  "name": "@gemini-sdk/core",
+  "name": "@lrilai/gemini-cli-sdk",
   "version": "1.0.0",
   "private": false,
   "type": "module",
@@ -23,15 +23,17 @@
     "llm",
     "ai"
   ],
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
   "files": [
-    "src",
+    "dist",
     "README.md",
     "LICENSE"
   ],
   "exports": {
     ".": {
-      "import": "./src/index.ts",
-      "types": "./src/index.ts"
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
     }
   },
   "scripts": {
@@ -40,6 +42,9 @@
     "test:live": "vitest run --config vitest.live.config.ts --passWithNoTests",
     "build": "tsc",
     "typecheck": "tsc --noEmit",
+    "prepublishOnly": "npm run build",
+    "prepack": "node -e \"require('node:fs').copyFileSync('../README.md','README.md');require('node:fs').copyFileSync('../LICENSE','LICENSE')\"",
+    "postpack": "node -e \"require('node:fs').rmSync('README.md',{force:true});require('node:fs').rmSync('LICENSE',{force:true})\"",
     "gen:errors": "node ../scripts/gen-errors.mjs"
   },
   "dependencies": {

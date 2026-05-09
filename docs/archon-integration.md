@@ -44,7 +44,7 @@ git apply "$GEMINI_SDK_DIR/.planning/phases/10-archon-adapter-ts-only/pr-artifac
 # 4. Add the SDK as a dependency. For pre-1.0.0, use the GitHub tarball ref.
 #    Post-1.0.0, use the npm package:
 cd packages/providers
-bun add @gemini-sdk/core
+bun add @lrilai/gemini-cli-sdk
 cd ../..
 
 # 5. Install + verify.

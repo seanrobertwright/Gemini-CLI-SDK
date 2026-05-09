@@ -18,8 +18,8 @@ gemini --version
 ## 2. Install the SDK
 
 ```bash
-uv add gemini-sdk
-# or: pip install gemini-sdk
+uv add lrilai-gemini-cli-sdk
+# or: pip install lrilai-gemini-cli-sdk
 ```
 
 ## 3. Set your API key

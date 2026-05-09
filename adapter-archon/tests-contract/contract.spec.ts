@@ -7,7 +7,7 @@
  *
  * Strategy: read the recorded NDJSON fixture to document the upstream shape,
  * then hand-author the pre-computed SDK-shape MessageChunks that Phase 3
- * dispatch would produce from it. Mock @gemini-sdk/core.query() to yield
+ * dispatch would produce from it. Mock @lrilai/gemini-cli-sdk.query() to yield
  * those SDK chunks, invoke sendQuery() via the public barrel, and assert the
  * Archon-shaped output sequence.
  *
@@ -22,7 +22,7 @@ import { dirname, resolve } from 'node:path';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
 const mocks = vi.hoisted(() => ({ query: vi.fn() }));
-vi.mock('@gemini-sdk/core', () => ({ query: mocks.query }));
+vi.mock('@lrilai/gemini-cli-sdk', () => ({ query: mocks.query }));
 
 import { GeminiProvider } from '../src/index.js';
 

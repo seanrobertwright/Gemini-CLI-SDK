@@ -16,7 +16,7 @@ Phase 8 ships `outputSchema` / `output_schema` on `queryFull()` / `query_full()`
 **TypeScript:**
 
 ```typescript
-import { queryFull } from '@gemini-sdk/core';
+import { queryFull } from '@lrilai/gemini-cli-sdk';
 
 const result = await queryFull({
   prompt: 'What is the capital of France? Return as JSON.',
@@ -113,7 +113,7 @@ The retry:
 If the retry response also fails validation, the SDK raises `SchemaValidationError`:
 
 ```typescript
-import { SchemaValidationError } from '@gemini-sdk/core';
+import { SchemaValidationError } from '@lrilai/gemini-cli-sdk';
 
 try {
   await queryFull({ prompt: '...', outputSchema: {...} });

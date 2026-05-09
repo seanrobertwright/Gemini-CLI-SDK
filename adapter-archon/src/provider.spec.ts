@@ -14,7 +14,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
 const mocks = vi.hoisted(() => ({ query: vi.fn() }));
-vi.mock('@gemini-sdk/core', () => ({ query: mocks.query }));
+vi.mock('@lrilai/gemini-cli-sdk', () => ({ query: mocks.query }));
 
 import { GeminiProvider, GEMINI_CAPABILITIES } from './index.js';
 import type { IAgentProvider } from './types.js';

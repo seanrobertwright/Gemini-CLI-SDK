@@ -1,13 +1,13 @@
 # Migrating from Codex SDK
 
-Mapping of 5 top call-site patterns between `@openai/codex-sdk` and `@gemini-sdk/core`.
+Mapping of 5 top call-site patterns between `@openai/codex-sdk` and `@lrilai/gemini-cli-sdk`.
 
 ## Pattern 1 — Construct the client
 
 ```diff
 - import { CodexClient } from '@openai/codex-sdk';
 - const client = new CodexClient({ apiKey: process.env.OPENAI_API_KEY });
-+ import { query } from '@gemini-sdk/core';
++ import { query } from '@lrilai/gemini-cli-sdk';
 + // GEMINI_API_KEY picked up from env
 ```
 

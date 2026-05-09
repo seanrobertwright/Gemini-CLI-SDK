@@ -1,6 +1,6 @@
 # Migrating from Claude Agent SDK
 
-This is not a full API cross-reference — those rot quickly. Instead, here are the top 5 call-site patterns mapped between `@anthropic-ai/claude-agent-sdk` and `@gemini-sdk/core`.
+This is not a full API cross-reference — those rot quickly. Instead, here are the top 5 call-site patterns mapped between `@anthropic-ai/claude-agent-sdk` and `@lrilai/gemini-cli-sdk`.
 
 ## Pattern 1 — Construct the client
 
@@ -11,7 +11,7 @@ This is not a full API cross-reference — those rot quickly. Instead, here are 
 ```diff
 - import { ClaudeAgentClient } from '@anthropic-ai/claude-agent-sdk';
 - const client = new ClaudeAgentClient({ apiKey: process.env.ANTHROPIC_API_KEY });
-+ import { query } from '@gemini-sdk/core';
++ import { query } from '@lrilai/gemini-cli-sdk';
 + // process.env.GEMINI_API_KEY is picked up automatically
 ```
 
@@ -60,7 +60,7 @@ for await (const chunk of query({ prompt })) {
 ```diff
 - const session = await client.createSession();
 - for await (const chunk of client.sendQuery({ prompt, sessionId: session.id })) { ... }
-+ import { queryFull, query } from '@gemini-sdk/core';
++ import { queryFull, query } from '@lrilai/gemini-cli-sdk';
 + const first = await queryFull({ prompt: 'turn 1' });
 + for await (const chunk of query({ prompt: 'turn 2', resumeSessionId: first.session.id })) { ... }
 ```

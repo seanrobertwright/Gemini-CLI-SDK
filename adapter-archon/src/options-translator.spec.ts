@@ -14,7 +14,7 @@ import {
   warnIgnoredOptions,
   _resetWarnedForTesting,
 } from './options-translator.js';
-import type { MessageChunk as SdkMessageChunk } from '@gemini-sdk/core';
+import type { MessageChunk as SdkMessageChunk } from '@lrilai/gemini-cli-sdk';
 
 // ─────────────────────────────────────────────────────────────────────────────
 describe('translateOptions', () => {

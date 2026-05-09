@@ -1,5 +1,5 @@
 ---
-"@gemini-sdk/core": major
+"@lrilai/gemini-cli-sdk": major
 ---
 
 Initial v1.0.0 release.
